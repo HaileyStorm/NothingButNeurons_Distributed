@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>NothingButNeurons.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+    <AssemblyName>NothingButNeurons.$(MSBuildProjectName)</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Proto.Actor" Version="1.1.0" />
+    <PackageReference Include="Proto.OpenTracing" Version="0.27.0" />
+    <PackageReference Include="Proto.Persistence.Sqlite" Version="1.1.0" />
+    <PackageReference Include="Proto.Remote" Version="1.1.0" />
+  </ItemGroup>
+
+</Project>
