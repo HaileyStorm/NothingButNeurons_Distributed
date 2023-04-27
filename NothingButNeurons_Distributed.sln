@@ -7,7 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared", "Shared\Shared.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Brain", "Brain\Brain.csproj", "{C9B85C58-B94D-49C6-A524-F5BF1B20195D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Debugger", "Debugger\Debugger.csproj", "{C1C00DD0-6F2D-43E4-85A6-AB0E99F85188}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Debugger", "Debugger\Debugger.csproj", "{C1C00DD0-6F2D-43E4-85A6-AB0E99F85188}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO", "IO\IO.csproj", "{4B6631B4-6B7A-4C49-9728-8DC512575209}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{C1C00DD0-6F2D-43E4-85A6-AB0E99F85188}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C1C00DD0-6F2D-43E4-85A6-AB0E99F85188}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C1C00DD0-6F2D-43E4-85A6-AB0E99F85188}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4B6631B4-6B7A-4C49-9728-8DC512575209}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B6631B4-6B7A-4C49-9728-8DC512575209}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B6631B4-6B7A-4C49-9728-8DC512575209}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B6631B4-6B7A-4C49-9728-8DC512575209}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

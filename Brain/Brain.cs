@@ -14,7 +14,7 @@ public record SpawnRegionAckMessage : Message;
 /// <summary>
 /// Represents the Brain actor, which manages the communication and coordination of neural network regions.
 /// </summary>
-internal class Brain : ActorBaseWithBroadcaster
+public class Brain : ActorBaseWithBroadcaster
 {
     /// <summary>
     /// The InputCoordinator PID associated with this Brain actor.

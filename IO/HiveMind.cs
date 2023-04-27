@@ -1,7 +1,11 @@
-﻿using NothingButNeurons.Brain.Regions.Neurons;
+﻿global using NothingButNeurons.Shared;
+global using NothingButNeurons.Shared.Messages;
+global using NothingButNeurons.CCSL;
+using NothingButNeurons.Brain;
 using Proto;
+using NothingButNeurons.Brain.Regions.Neurons;
 
-namespace NothingButNeurons.Brain;
+namespace NothingButNeurons.IO;
 
 /// <summary>
 /// HiveMind is responsible for spawning and managing Brain actors and forwarding TickMessages.
@@ -97,7 +101,7 @@ public class HiveMind : ActorBaseWithBroadcaster
     private void SpawnBrain(IContext context, SpawnBrainMessage msg)
     {
         List<(byte[] neuronData, byte[] synapseData)> regions = FindAllMatchingSections(msg.NeuronData, msg.SynapseData);
-        PID pid = context.SpawnPrefix(Props.FromProducer(() => new Brain(regions.Count)), "Brain");
+        PID pid = context.SpawnPrefix(Props.FromProducer(() => new Brain.Brain(regions.Count)), "Brain");
         AddRoutee(pid);
         foreach ((byte[] neuronData, byte[] synapseData) region in regions)
         {
