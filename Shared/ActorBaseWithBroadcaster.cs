@@ -1,6 +1,5 @@
 ﻿using Proto;
 using Proto.Router;
-using System.Diagnostics;
 using NothingButNeurons.Shared.Messages;
 
 namespace NothingButNeurons.Shared;

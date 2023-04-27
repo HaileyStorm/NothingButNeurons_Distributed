@@ -1,4 +1,5 @@
-﻿using NothingButNeurons.Shared.Messages;
+﻿global using System.Diagnostics;
+using NothingButNeurons.Shared.Messages;
 using Proto;
 
 namespace NothingButNeurons.Shared;

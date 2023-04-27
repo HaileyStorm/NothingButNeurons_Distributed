@@ -1,13 +1,13 @@
 ﻿global using NothingButNeurons.Shared;
 global using NothingButNeurons.Shared.Messages;
 global using NothingButNeurons.CCSL;
+global using System.Diagnostics;
 using NothingButNeurons.IO;
 using NothingButNeurons.Brain.Regions.Neurons;
 using Proto;
 using Proto.Timers;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Windows;

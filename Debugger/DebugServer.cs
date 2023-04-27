@@ -1,7 +1,6 @@
 ﻿using Proto;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace NothingButNeurons.Debugger;

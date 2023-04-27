@@ -1,7 +1,4 @@
-﻿global using NothingButNeurons.Shared;
-global using NothingButNeurons.Shared.Messages;
-global using NothingButNeurons.CCSL;
-using NothingButNeurons.Brain;
+﻿using NothingButNeurons.Brain;
 using Proto;
 using NothingButNeurons.Brain.Regions.Neurons;
 

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NothingButNeurons.CCSL;
+﻿namespace NothingButNeurons.CCSL;
 
 public static  class DatesAndTimes
 {

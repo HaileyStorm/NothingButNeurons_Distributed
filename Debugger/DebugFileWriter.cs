@@ -1,7 +1,5 @@
 ﻿using Proto;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 
 namespace NothingButNeurons.Debugger;

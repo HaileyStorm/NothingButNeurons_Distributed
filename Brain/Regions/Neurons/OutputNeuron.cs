@@ -1,5 +1,4 @@
 ﻿using Proto;
-using System.Diagnostics;
 
 namespace NothingButNeurons.Brain.Regions.Neurons
 {
