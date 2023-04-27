@@ -66,11 +66,3 @@ public record DebugSubscribeMessage(PID Subscriber, DebugSeverity Severity = Deb
 /// Represents a request to unsubscribe from debug messages.
 /// </summary>
 public record DebugUnsubscribeMessage(PID Subscriber) : Message;
-/// <summary>
-/// Represents a request to flush debug messages.
-/// </summary>
-public record DebugFlushMessage() : Message;
-/// <summary>
-/// Represents a request to flush all debug messages.
-/// </summary>
-public record DebugFlushAllMessage() : Message;

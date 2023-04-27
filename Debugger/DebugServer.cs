@@ -7,6 +7,15 @@ using System.Text.RegularExpressions;
 namespace NothingButNeurons.Debugger;
 
 /// <summary>
+/// Represents a request to flush debug messages.
+/// </summary>
+public record DebugFlushMessage() : Message;
+/// <summary>
+/// Represents a request to flush all debug messages.
+/// </summary>
+public record DebugFlushAllMessage() : Message;
+
+/// <summary>
 /// Manages subscriptions and processes incoming/outgoing debug messages.
 /// </summary>
 internal class DebugServer : ActorBase
