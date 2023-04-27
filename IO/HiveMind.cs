@@ -4,6 +4,10 @@ using NothingButNeurons.Brain.Regions.Neurons;
 
 namespace NothingButNeurons.IO;
 
+public record SpawnBrainMessage(byte[] NeuronData, byte[] SynapseData) : Message;
+public record SpawnBrainAckMessage : Message;
+public record ActivateHiveMindMessage : Message;
+
 /// <summary>
 /// HiveMind is responsible for spawning and managing Brain actors and forwarding TickMessages.
 /// It is the parent of all Brain actors in NothingButNeurons.
