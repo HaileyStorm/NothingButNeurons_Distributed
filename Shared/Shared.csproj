@@ -9,6 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Messages\Debugger.proto" />
+    <None Remove="Messages\IO.proto" />
+    <None Remove="Messages\Neurons.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Google.Protobuf" Version="3.22.3" />
     <PackageReference Include="Grpc.Tools" Version="2.54.0">
       <PrivateAssets>all</PrivateAssets>
@@ -22,7 +28,9 @@
           
 
   <ItemGroup>
-    <Folder Include="Messages\ProtocGen\" />
+    <Protobuf Include="Messages\Debugger.proto" />
+    <Protobuf Include="Messages\IO.proto" />
+    <Protobuf Include="Messages\Neurons.proto" />
   </ItemGroup>
 
 </Project>
