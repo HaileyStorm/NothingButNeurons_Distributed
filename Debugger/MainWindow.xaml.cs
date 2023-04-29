@@ -73,6 +73,7 @@ public partial class MainWindow : Window
         //Debug.WriteLine($"\n\n\nHIVEMIND PID FROM DEBUGGER: {HiveMind}\n\n\n");
 
         DebugServer = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DebugServer()), "DebugServer");
+        //Debug.WriteLine($"\n\n\nDEBUG SERVER PID FROM DEBUGGER: {DebugServer}\n\n\n");
         DebugUI = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DebugUI(DebugServer, rtbDebug)), "DebugUI");
         UpdateDebugUISubscription();
         DebugFileWriter = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DebugFileWriter(DebugServer)), "DebugFileWriter");

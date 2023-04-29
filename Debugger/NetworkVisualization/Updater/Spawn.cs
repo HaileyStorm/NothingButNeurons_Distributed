@@ -38,12 +38,13 @@ internal partial class Updater : ActorBase
         {
             if (msg.Context == "Spawn")
             {
+                //Debug.WriteLine($"Visualization - RAW SPAWN MESSAGE: {msg.ToMsgString()}");
                 string[] summaryParts = msg.Summary.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
                 if (msg.Summary.Contains("spawned input region") || msg.Summary.Contains("spawned interior region") || msg.Summary.Contains("spawned output region"))
                 {
                     string regionPid = summaryParts[5];
-                    regionPid = regionPid.Replace(".", "");
+                    regionPid = regionPid.TrimEnd('.');
 
                     RegionType regionType = summaryParts[3] switch
                     {
@@ -63,7 +64,7 @@ internal partial class Updater : ActorBase
                     if (!_regions.ContainsKey(regionPid))
                     {
                         RegionInfo region = new RegionInfo(regionPid, regionType, regionAddress, neuronCount);
-                        //Debug.WriteLine($"Visualization - Region: {regionPid}");
+                        Debug.WriteLine($"Visualization - Region: {regionPid}");
                         _regions[regionPid] = region;
                     }
                     else
@@ -77,14 +78,14 @@ internal partial class Updater : ActorBase
                 {
                     string regionPid = summaryParts[1];
                     string neuronPid = summaryParts[4];
-                    neuronPid = neuronPid.Replace(".", "");
+                    neuronPid = neuronPid.TrimEnd('.');
 
                     string[] messageParts = msg.Message.Split(' ');
                     ushort neuronAddress = ushort.Parse(messageParts[4]);
                     int synapseCount = int.Parse(messageParts[7]);
 
                     NeuronInfo neuron = new NeuronInfo(neuronPid, neuronAddress, new Point(0, 0));
-                    //Debug.WriteLine($"Visualization - Neuron: {neuronPid}");
+                    Debug.WriteLine($"Visualization - Neuron: {neuronPid}");
                     _neurons[neuronPid] = neuron;
                     // We received a spawn neuron debug before its spawn region debug
                     if (!_regions.ContainsKey(regionPid))
@@ -129,7 +130,7 @@ internal partial class Updater : ActorBase
                         .SelectMany(r => r.Neurons)
                         .FirstOrDefault(n => n.Address == targetNeuronAddress);
 
-                    //Debug.WriteLine($"Visualization - Synapse between {sourceNeuronPid} and {(targetNeuron == null ? "null" : targetNeuron.Id)}");
+                    Debug.WriteLine($"Visualization - Synapse between {sourceNeuronPid} and {(targetNeuron == null ? "null" : targetNeuron.Id)}");
 
                     ConnectionInfo connection = new ConnectionInfo(sourceNeuronPid, targetNeuron, connectionStrength, connectionTimeout, SetConnectionPathColor);
 
@@ -170,6 +171,7 @@ internal partial class Updater : ActorBase
                     Task.Run(async () =>
                     {
                         await Task.Delay(TimeSpan.FromSeconds(1));
+                        Debug.WriteLine("Visualization - Brain active.");
                         DrawRegionsAndNeurons();
                     });
                 }
@@ -182,6 +184,7 @@ internal partial class Updater : ActorBase
                 string fromPid = msg.Message.Split(' ')[3];
                 double signalStrength = double.Parse(msg.Message.Split(' ')[14]);
 
+                //Debug.WriteLine($"Visualization - Updating synapse {fromPid}-{toPid} with strength {signalStrength}");
                 UpdateConnection($"{fromPid}-{toPid}", signalStrength);
 
                 processed = true;
@@ -190,7 +193,7 @@ internal partial class Updater : ActorBase
             {
                 string neuronPid = msg.Summary.Split(" ")[1];
                 double signalBuffer = double.Parse(msg.Message.Split(' ')[2]);
-                //Debug.WriteLine($"Updating {neuronPid} signalBuffer to {signalBuffer}");
+                Debug.WriteLine($"Visualization - Updating neuron {neuronPid} signalBuffer to {signalBuffer}");
                 UpdateNeuron(neuronPid, signalBuffer);
 
                 processed = true;
@@ -199,7 +202,7 @@ internal partial class Updater : ActorBase
             {
                 string neuronPid = msg.Summary.Split(" ")[1];
                 double signalBuffer = double.Parse(msg.Message.Split(' ')[7].TrimEnd('.'));
-                //Debug.WriteLine($"Updating {neuronPid} signalBuffer to {signalBuffer} (reset)");
+                Debug.WriteLine($"Visualization - Updating neuron {neuronPid} signalBuffer to {signalBuffer} (reset)");
                 UpdateNeuron(neuronPid, signalBuffer);
 
                 processed = true;
