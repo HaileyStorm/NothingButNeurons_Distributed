@@ -20,7 +20,6 @@ public class HiveMind : ActorBaseWithBroadcaster
     /// </summary>
     public HiveMind(PID debugServerPID) : base(debugServerPID)
     {
-        Debug.WriteLine($"\n\nHiveMind's DebugServerPID: {debugServerPID}\n\n");
         _behavior = new Behavior(Spawn);
     }
 
@@ -83,7 +82,6 @@ public class HiveMind : ActorBaseWithBroadcaster
                 _processed = true;
                 break;
             case TickMessage msg:
-                SendDebugMessage(DebugSeverity.Test, "HiveMind Got Tick");
                 //SendDebugMessage(DebugSeverity.Trace, "Tick", "HiveMind received tick", "Broadcasting to all Brains.");
                 Broadcast(msg);
                 _processed = true;
@@ -100,7 +98,6 @@ public class HiveMind : ActorBaseWithBroadcaster
     /// <param name="msg">The SpawnBrainMessage containing neuron and synapse data.</param>
     private void SpawnBrain(IContext context, SpawnBrainMessage msg)
     {
-        SendDebugMessage(DebugSeverity.Test, "HiveMind Got SpawnBrain");
         List<(byte[] neuronData, byte[] synapseData)> regions = FindAllMatchingSections(msg.NeuronData.ToByteArray(), msg.SynapseData.ToByteArray());
         PID pid = context.SpawnPrefix(Props.FromProducer(() => new Brain.Brain(DebugServerPID, regions.Count)), "Brain");
         AddRoutee(pid);

@@ -50,7 +50,6 @@ public abstract class ActorBase : IActor
                 BaseContext = context;
                 SelfPID = context.Self;
                 ParentPID = context.Parent;
-                DebugServerPID = new PID(context.System.Address, "DebugServer");
                 _ProcessStartedMessage(context, msg);
                 ProcessStartedMessage(context, msg);
                 SendDebugMessage(DebugSeverity.Trace, "Spawn", $"{SelfPID.Address}/{SelfPID.Id} spawned.");
@@ -142,6 +141,7 @@ public abstract class ActorBase : IActor
     {
         if (BaseContext == null || DebugServerPID == null || SelfPID == null)
         {
+            Debug.WriteLine($"\n\n\nSubscribeToDebugs called before startup. BaseContext ({BaseContext}) or DebugServerPID ({DebugServerPID}) or SelfPID ({SelfPID}) null.\n\n\n");
             SendDebugMessage(DebugSeverity.Warning, "Spawn(?)", "SubscribeToDebugs called before startup", "BaseContext or DebugServerPID or SelfPID null.");
             return;
         }

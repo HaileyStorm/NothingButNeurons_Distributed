@@ -43,6 +43,7 @@ internal class DebugServer : ActorBase
                     regex = new Regex(subscriber.Value.Context);
                     if (msg.Severity >= subscriber.Value.Severity && (string.IsNullOrEmpty(subscriber.Value.Context) || regex.IsMatch(msg.Context)))
                     {
+                        //Debug.WriteLine($"\nDebugServer {SelfPID} forwarding debug message to subscriber {subscriber.Key}. Message: {msg.ToMsgString()}\n");
                         context.Send(subscriber.Key, msg.AsInbound(DateTimeOffset.Now.ToUnixTimeMilliseconds()));
                     }
                 }

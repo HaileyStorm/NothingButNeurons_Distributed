@@ -8,6 +8,10 @@ public static class DebugMessageExtensions {
     {
         return $"DebugOutboundMessage {{ Severity = {message.Severity}, Context = {message.Context}, Summary = {message.Summary}, Message = {message.Message}, SenderClass = {message.SenderClass}, SenderName = {message.SenderName}, SenderSystemAddr = {message.SenderSystemAddr}, ParentName = {message.ParentName}, ParentSystemAddr = {message.ParentSystemAddr}, MessageSentTime = {CCSL.DatesAndTimes.UnixTimeToLocalDateTime(message.MessageSentTime):MM/dd/yyyy hh:mm:ss.fff tt} }}";
     }
+    public static string ToMsgString(this DebugInboundMessage message)
+    {
+        return $"DebugOutboundMessage {{ Severity = {message.Severity}, Context = {message.Context}, Summary = {message.Summary}, Message = {message.Message}, SenderClass = {message.SenderClass}, SenderName = {message.SenderName}, SenderSystemAddr = {message.SenderSystemAddr}, ParentName = {message.ParentName}, ParentSystemAddr = {message.ParentSystemAddr}, MessageSentTime = {CCSL.DatesAndTimes.UnixTimeToLocalDateTime(message.MessageSentTime):MM/dd/yyyy hh:mm:ss.fff tt}, ServerReceivedTime = {CCSL.DatesAndTimes.UnixTimeToLocalDateTime(message.ServerReceivedTime):MM/dd/yyyy hh:mm:ss.fff tt} }}";
+    }
 
     public static DebugInboundMessage AsInbound(this DebugOutboundMessage outbound, long serverReceivedTime)
     {
