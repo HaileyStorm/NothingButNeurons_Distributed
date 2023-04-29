@@ -47,7 +47,7 @@ public abstract class ActorBaseWithBroadcaster : ActorBase
     /// Broadcasts a message to all routees.
     /// </summary>
     /// <param name="msg">The message to be broadcasted.</param>
-    protected virtual void Broadcast(Message msg)
+    protected virtual void Broadcast(Google.Protobuf.IMessage msg)
     {
         if (BaseContext == null || RouterPID == null)
         {

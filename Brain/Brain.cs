@@ -8,10 +8,6 @@ using Proto;
 
 namespace NothingButNeurons.Brain;
 
-public record SpawnRegionMessage(RegionAddress Address, byte[] NeuronData, byte[] SynapseData) : Message;
-
-public record SpawnRegionAckMessage : Message;
-
 /// <summary>
 /// Represents the Brain actor, which manages the communication and coordination of neural network regions.
 /// </summary>
@@ -94,30 +90,31 @@ public class Brain : ActorBaseWithBroadcaster
                 PID pid;
                 bool isInputRegion = false;
                 bool isOutputRegion = false;
+                RegionAddress regionAddress = new RegionAddress((byte)msg.Address);
                 // Input
-                if (msg.Address.Address < 6)
+                if (new RegionAddress((byte)msg.Address).Address < 6)
                 {
-                    pid = context.SpawnNamed(Props.FromProducer(() => new InputRegion(msg.Address, InputCoordinator!, neuronCt)), msg.Address.Address.ToString());
+                    pid = context.SpawnNamed(Props.FromProducer(() => new InputRegion(regionAddress, InputCoordinator!, neuronCt)), regionAddress.Address.ToString());
                     isInputRegion = true;
                 }
                 // Output
-                else if (msg.Address.Address > 12)
+                else if (regionAddress.Address > 12)
                 {
-                    pid = context.SpawnNamed(Props.FromProducer(() => new OutputRegion(msg.Address, OutputCoordinator!, neuronCt)), msg.Address.Address.ToString());
+                    pid = context.SpawnNamed(Props.FromProducer(() => new OutputRegion(new RegionAddress((byte)msg.Address), OutputCoordinator!, neuronCt)), regionAddress.Address.ToString());
                     isOutputRegion = true;
                 }
                 // Interior
                 else
                 {
-                    pid = context.SpawnNamed(Props.FromProducer(() => new Region(msg.Address, neuronCt)), msg.Address.Address.ToString());
+                    pid = context.SpawnNamed(Props.FromProducer(() => new Region(regionAddress, neuronCt)), regionAddress.Address.ToString());
                 }
                 
-                Regions[msg.Address] = pid;
+                Regions[new RegionAddress((byte)msg.Address)] = pid;
                 AddRoutee(pid);
                 AwaitingNeuronAck += neuronCt;
 
                 // Find all matching sections for the neuron and synapse data.
-                List<(byte[] neuronData, List<int> synapseData)> neurons = FindAllMatchingSections(msg.NeuronData, msg.SynapseData);
+                List<(byte[] neuronData, List<int> synapseData)> neurons = FindAllMatchingSections(msg.NeuronData.ToByteArray(), msg.SynapseData.ToByteArray());
                 Span<byte> neuronData;
                 List<int> synapseData;
                 NeuronPart1BitField part1;
@@ -144,12 +141,24 @@ public class Brain : ActorBaseWithBroadcaster
                     neuronData[4..6].CopyTo(part2Data.AsSpan(2));
                     part2 = new NeuronPart2BitField(BitConverter.ToInt32(part2Data));
                     // Send the SpawnNeuronMessage to the region containing the neuron data and synapse data.
-                    context.Send(pid, new SpawnNeuronMessage(part1.Address, part1.AccumulationFunction, part1.PreActivationThreshold, part1.ActivationFunction, part1.ActivationParameterA, part2.ActivationParameterB, part2.ActivationThreshold, part2.ResetFunction, synapseData.ToArray()));
+                    var spawnNeuronMessage = new SpawnNeuronMessage
+                    {
+                        Address = part1.Address.Address.Data,
+                        AccumulationFunction = part1.AccumulationFunction,
+                        PreActivationThreshold = part1.PreActivationThreshold,
+                        ActivationFunction = part1.ActivationFunction,
+                        ActivationParameterA = part1.ActivationParameterA,
+                        ActivationParameterB = part2.ActivationParameterB,
+                        ActivationThreshold = part2.ActivationThreshold,
+                        ResetFunction = part2.ResetFunction,
+                    };
+                    spawnNeuronMessage.Synapses.AddRange(synapseData.ToArray());
+                    context.Send(pid, spawnNeuronMessage);
                 }
 
                 // Send an acknowledgement message to the parent actor (HiveMind) that the region has been spawned.
                 context.Send(ParentPID!, new SpawnRegionAckMessage());
-                SendDebugMessage(DebugSeverity.Trace, "Spawn", $"Brain {SelfPID!.Address}/{SelfPID!.Id} spawned {(isInputRegion ? "input" : (isOutputRegion ? "output" : "interior"))} region {pid.Address}/{pid.Id}.", $"Region {pid.Address}/{pid.Id} has address {msg.Address.Address} and contains {neuronCt} neurons.");
+                SendDebugMessage(DebugSeverity.Trace, "Spawn", $"Brain {SelfPID!.Address}/{SelfPID!.Id} spawned {(isInputRegion ? "input" : (isOutputRegion ? "output" : "interior"))} region {pid.Address}/{pid.Id}.", $"Region {pid.Address}/{pid.Id} has address {regionAddress.Address} and contains {neuronCt} neurons.");
                 AwaitingRegions--;
                 if (Regions.Count == 0) CheckRegionsAndNeurons();
 
@@ -185,11 +194,13 @@ public class Brain : ActorBaseWithBroadcaster
         {
             // Handle the SignalAxonsMessage to forward signals to appropriate regions.
             case SignalAxonsMessage msg:
-                SendDebugMessage(DebugSeverity.Trace, "Signal", "Brain received SignalAxonsMessage", $"{msg.Axons.Length} Axons, potential {msg.Val}. Splitting to regions and forwarding.");
+                SendDebugMessage(DebugSeverity.Trace, "Signal", "Brain received SignalAxonsMessage", $"{msg.Axons.Count} Axons, potential {msg.Val}. Splitting to regions and forwarding.");
                 // Split the message into separate messages for each region.
                 var result = new Dictionary<byte, List<Axon>>();
-                foreach (Axon axon in msg.Axons)
+                Axon axon;
+                foreach (MsgAxon msgAxon in msg.Axons)
                 {
+                    axon = new Axon(msgAxon);
                     byte regionPart = axon.ToAddress.RegionPart;
                     if (!result.ContainsKey(regionPart))
                     {
@@ -208,7 +219,9 @@ public class Brain : ActorBaseWithBroadcaster
                     if (Regions.TryGetValue(new RegionAddress(region), out PID pid))
                     {
                         //SendDebugMessage(DebugSeverity.Trace, "Signal", $"Forwarding SignalAxonsMessage with {byRegion[region].Length} Neurons, potential {msg.Val} to Region {region}");
-                        context.Send(pid, new SignalAxonsMessage(msg.Sender, byRegion[region], msg.Val));
+                        SignalAxonsMessage signalAxonsMessage = new SignalAxonsMessage { Sender = msg.Sender, Val = msg.Val };
+                        signalAxonsMessage.Axons.AddRange(byRegion[region].Select(axon => axon.ToMsgAxon()));
+                        context.Send(pid, signalAxonsMessage);
                     } else
                     {
                         SendDebugMessage(DebugSeverity.Warning, "Signal", $"Neuron tried to send message to a Neuron within a Region {region} that should exist in this Brain but doesn't.");

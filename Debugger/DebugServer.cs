@@ -6,15 +6,6 @@ using System.Text.RegularExpressions;
 namespace NothingButNeurons.Debugger;
 
 /// <summary>
-/// Represents a request to flush debug messages.
-/// </summary>
-public record DebugFlushMessage() : Message;
-/// <summary>
-/// Represents a request to flush all debug messages.
-/// </summary>
-public record DebugFlushAllMessage() : Message;
-
-/// <summary>
 /// Manages subscriptions and processes incoming/outgoing debug messages.
 /// </summary>
 internal class DebugServer : ActorBase
@@ -52,7 +43,7 @@ internal class DebugServer : ActorBase
                     regex = new Regex(subscriber.Value.Context);
                     if (msg.Severity >= subscriber.Value.Severity && (string.IsNullOrEmpty(subscriber.Value.Context) || regex.IsMatch(msg.Context)))
                     {
-                        context.Send(subscriber.Key, new DebugInboundMessage(msg, DateTimeOffset.Now.ToUnixTimeMilliseconds()));
+                        context.Send(subscriber.Key, msg.AsInbound(DateTimeOffset.Now.ToUnixTimeMilliseconds()));
                     }
                 }
                 break;

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
@@ -9,10 +9,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.22.3" />
+    <PackageReference Include="Grpc.Tools" Version="2.54.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Proto.Actor" Version="1.1.0" />
     <PackageReference Include="Proto.OpenTracing" Version="0.27.0" />
     <PackageReference Include="Proto.Persistence.Sqlite" Version="1.1.0" />
     <PackageReference Include="Proto.Remote" Version="1.1.0" />
+  </ItemGroup>
+          
+
+  <ItemGroup>
+    <Folder Include="Messages\ProtocGen\" />
   </ItemGroup>
 
 </Project>

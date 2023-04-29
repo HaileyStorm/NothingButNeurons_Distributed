@@ -1,13 +1,11 @@
 ﻿global using System.Diagnostics;
+using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 using NothingButNeurons.Shared.Messages;
 using Proto;
+using System;
 
 namespace NothingButNeurons.Shared;
-
-/// <summary>
-/// Base class for message types used by ActorBase.
-/// </summary>
-public abstract record Message;
 
 /// <summary>
 /// Delegate for handling unstable messages without return values.
@@ -21,11 +19,6 @@ public delegate void UnstableMessageHandler<TUnstableMessage>(IContext context, 
 /// <typeparam name="TUnstableMessage">The type of unstable message.</typeparam>
 /// <typeparam name="TUnstableReturn">The type of the return value.</typeparam>
 public delegate TUnstableReturn UnstableMessageHandlerWithReturn<TUnstableMessage, TUnstableReturn>(IContext context, TUnstableMessage msg);
-
-/// <summary>
-/// Represents an exception that occurs when handling an unstable message.
-/// </summary>
-public record UnstableHandlerException(Message FailedMessage) : Message;
 
 /// <summary>
 /// Base class for actors in the NothingButNeurons project.
@@ -107,7 +100,7 @@ public abstract class ActorBase : IActor
     /// <summary>
     /// Forwards an unstable message to a child actor for processing.
     /// </summary>
-    protected virtual void ForwardUnstable<TUnstableMessage>(IContext context, UnstableMessageHandler<TUnstableMessage> handler) where TUnstableMessage : Message
+    protected virtual void ForwardUnstable<TUnstableMessage>(IContext context, UnstableMessageHandler<TUnstableMessage> handler) where TUnstableMessage : IMessage
     {
         // TODO: If context.Message is not TUnstableMessage, send debug message
         PID child = context.Spawn(Props.FromProducer(() => new UnstableActor<TUnstableMessage>(handler)));
@@ -117,7 +110,7 @@ public abstract class ActorBase : IActor
     /// <summary>
     /// Forwards an unstable message with a return value to a child actor for processing.
     /// </summary>
-    protected virtual void ForwardUnstable<TUnstableMessage, TUnstableReturn>(IContext context, UnstableMessageHandlerWithReturn<TUnstableMessage, TUnstableReturn> handler) where TUnstableMessage : Message where TUnstableReturn : Message
+    protected virtual void ForwardUnstable<TUnstableMessage, TUnstableReturn>(IContext context, UnstableMessageHandlerWithReturn<TUnstableMessage, TUnstableReturn> handler) where TUnstableMessage : IMessage where TUnstableReturn : IMessage
     {
         // TODO: If context.Message is not TUnstableMessage, send debug message
         PID child = context.Spawn(Props.FromProducer(() => new UnstableActorWithReturn<TUnstableMessage, TUnstableReturn>(handler)));
@@ -125,13 +118,13 @@ public abstract class ActorBase : IActor
         context.Poison(child);
     }
     
-    protected virtual void HandleUnstable<TUnstableMessage>(IContext context, TUnstableMessage msg, UnstableMessageHandler<TUnstableMessage> handler) where TUnstableMessage : Message
+    protected virtual void HandleUnstable<TUnstableMessage>(IContext context, TUnstableMessage msg, UnstableMessageHandler<TUnstableMessage> handler) where TUnstableMessage : IMessage
     {
         PID child = context.Spawn(Props.FromProducer(() => new UnstableActor<TUnstableMessage>(handler)));
         context.Send(child, msg);
         context.Poison(child);
     }
-    protected virtual void HandleUnstable<TUnstableMessage, TUnstableReturn>(IContext context, TUnstableMessage msg, UnstableMessageHandlerWithReturn<TUnstableMessage, TUnstableReturn> handler) where TUnstableMessage : Message where TUnstableReturn : Message
+    protected virtual void HandleUnstable<TUnstableMessage, TUnstableReturn>(IContext context, TUnstableMessage msg, UnstableMessageHandlerWithReturn<TUnstableMessage, TUnstableReturn> handler) where TUnstableMessage : IMessage where TUnstableReturn : IMessage
     {
         PID child = context.Spawn(Props.FromProducer(() => new UnstableActorWithReturn<TUnstableMessage, TUnstableReturn>(handler)));
         context.Send(child, msg);
@@ -147,7 +140,7 @@ public abstract class ActorBase : IActor
             SendDebugMessage(DebugSeverity.Warning, "Spawn(?)", "SubscribeToDebugs called before startup", "BaseContext or DebugServerPID or SelfPID null.");
             return;
         }
-        BaseContext.Send(DebugServerPID, new DebugSubscribeMessage(SelfPID, severity, context));
+        BaseContext.Send(DebugServerPID, new DebugSubscribeMessage { Subscriber = SelfPID, Severity = severity, Context = context });
     }
     protected virtual void UnsubscribeFromDebugs()
     {
@@ -156,7 +149,7 @@ public abstract class ActorBase : IActor
             SendDebugMessage(DebugSeverity.Warning, "Spawn(?)", "UnsubscribeFromDebugs called before startup", "BaseContext or DebugServerPID or SelfPID null.");
             return;
         }
-        BaseContext.Send(DebugServerPID, new DebugUnsubscribeMessage(SelfPID));
+        BaseContext.Send(DebugServerPID, new DebugUnsubscribeMessage { Subscriber = SelfPID });
     }
     protected virtual void SendDebugMessage(DebugOutboundMessage msg)
     {
@@ -174,7 +167,8 @@ public abstract class ActorBase : IActor
         string senderSystemAddr = SelfPID == null ? "" : SelfPID.Address;
         string parentName = ParentPID == null ? "" : ParentPID.Id;
         string parentSystemAddr = ParentPID == null ? "" : ParentPID.Address;
-        SendDebugMessage(new DebugOutboundMessage(severity, context, summary, message, senderClass, senderName, senderSystemAddr, parentName, parentSystemAddr, DateTimeOffset.Now.ToUnixTimeMilliseconds()));
+
+        SendDebugMessage(new DebugOutboundMessage { Severity = severity, Context = context, Summary = summary, Message = message, SenderClass = senderClass, SenderName = senderName, SenderSystemAddr = senderSystemAddr, ParentName = parentName, ParentSystemAddr = parentSystemAddr, MessageSentTime = DateTimeOffset.Now.ToUnixTimeMilliseconds() });
     }
     #endregion
 }
@@ -183,7 +177,7 @@ public abstract class ActorBase : IActor
 /// <summary>
 /// An actor that handles unstable messages without return values.
 /// </summary>
-internal class UnstableActor<TUnstableMessage> : IActor where TUnstableMessage : Message
+internal class UnstableActor<TUnstableMessage> : IActor where TUnstableMessage : IMessage
 {
     private UnstableMessageHandler<TUnstableMessage> Handler { get; init; }
     
@@ -202,9 +196,10 @@ internal class UnstableActor<TUnstableMessage> : IActor where TUnstableMessage :
                 try
                 {
                     Handler(context, msg);
-                } catch
+                }
+                catch
                 {
-                    context.Send(context.Parent!, new UnstableHandlerException(msg));
+                    context.Send(context.Parent!, new UnstableHandlerException { FailedMessage = Any.Pack(msg) });
                 }
                 break;
         }
@@ -216,7 +211,7 @@ internal class UnstableActor<TUnstableMessage> : IActor where TUnstableMessage :
 /// <summary>
 /// An actor that handles unstable messages with return values.
 /// </summary>
-internal class UnstableActorWithReturn<TUnstableMessage, TUnstableReturn> : IActor where TUnstableMessage : Message where TUnstableReturn : Message
+internal class UnstableActorWithReturn<TUnstableMessage, TUnstableReturn> : IActor where TUnstableMessage : IMessage where TUnstableReturn : IMessage
 {
     private UnstableMessageHandlerWithReturn<TUnstableMessage, TUnstableReturn> Handler { get; init; }
 
@@ -238,7 +233,7 @@ internal class UnstableActorWithReturn<TUnstableMessage, TUnstableReturn> : IAct
                     context.Send(context.Parent!, ret);
                 } catch
                 {
-                    context.Send(context.Parent!, new UnstableHandlerException(msg));
+                    context.Send(context.Parent!, new UnstableHandlerException { FailedMessage = Any.Pack(msg) });
                 }
                 break;
         }

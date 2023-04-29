@@ -1,12 +1,9 @@
 ﻿using NothingButNeurons.Brain;
 using Proto;
 using NothingButNeurons.Brain.Regions.Neurons;
+using Google.Protobuf;
 
 namespace NothingButNeurons.IO;
-
-public record SpawnBrainMessage(byte[] NeuronData, byte[] SynapseData) : Message;
-public record SpawnBrainAckMessage : Message;
-public record ActivateHiveMindMessage : Message;
 
 /// <summary>
 /// HiveMind is responsible for spawning and managing Brain actors and forwarding TickMessages.
@@ -101,7 +98,7 @@ public class HiveMind : ActorBaseWithBroadcaster
     /// <param name="msg">The SpawnBrainMessage containing neuron and synapse data.</param>
     private void SpawnBrain(IContext context, SpawnBrainMessage msg)
     {
-        List<(byte[] neuronData, byte[] synapseData)> regions = FindAllMatchingSections(msg.NeuronData, msg.SynapseData);
+        List<(byte[] neuronData, byte[] synapseData)> regions = FindAllMatchingSections(msg.NeuronData.ToByteArray(), msg.SynapseData.ToByteArray());
         PID pid = context.SpawnPrefix(Props.FromProducer(() => new Brain.Brain(regions.Count)), "Brain");
         AddRoutee(pid);
         foreach ((byte[] neuronData, byte[] synapseData) region in regions)
@@ -118,7 +115,7 @@ public class HiveMind : ActorBaseWithBroadcaster
                 string binary = Convert.ToString(b, 2).PadLeft(8, '0');
                 Debug.WriteLine(binary);
             }*/
-            context.Send(pid, new SpawnRegionMessage(new RegionAddress(GetLeftMost4Bits(region.neuronData)), region.neuronData, region.synapseData));
+            context.Send(pid, new SpawnRegionMessage { Address = GetLeftMost4Bits(region.neuronData), NeuronData = ByteString.CopyFrom(region.neuronData), SynapseData = ByteString.CopyFrom(region.synapseData) });
         }
         if (ParentPID != null)
             context.Send(ParentPID, new SpawnBrainAckMessage());

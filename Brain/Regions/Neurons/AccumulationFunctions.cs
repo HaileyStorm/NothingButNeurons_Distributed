@@ -1,16 +1,6 @@
 ﻿namespace NothingButNeurons.Brain.Regions.Neurons;
 
 /// <summary>
-/// Enum representing different accumulation functions to be used in neurons.
-/// </summary>
-public enum AccumulationFunction : byte
-{
-    None,
-    Sum,
-    Product
-}
-
-/// <summary>
 /// Provides extension methods for the AccumulationFunction enum.
 /// </summary>
 internal static class AccumulationFunctionExtensions
@@ -26,12 +16,12 @@ internal static class AccumulationFunctionExtensions
     {
         switch (function)
         {
-            case AccumulationFunction.None:
-                return new NeuronFunctionReturn(buffer, 1d);
+            case AccumulationFunction.AccumNone:
+                return new NeuronFunctionReturn { Val = buffer, Cost = 1d };
             case AccumulationFunction.Sum:
-                return new NeuronFunctionReturn(buffer + val, 1.5d);
+                return new NeuronFunctionReturn { Val = buffer + val, Cost = 1.5d };
             case AccumulationFunction.Product:
-                return new NeuronFunctionReturn(buffer * val, 1.5d);
+                return new NeuronFunctionReturn{ Val = buffer * val, Cost = 1.5d };
             default:
                 throw new NotImplementedException("Unknown AccumulationFunction.");
         }

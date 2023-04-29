@@ -1,24 +1,8 @@
-﻿using NothingButNeurons.Brain.Regions.Neurons;
+﻿using Google.Protobuf.WellKnownTypes;
+using NothingButNeurons.Brain.Regions.Neurons;
 using Proto;
 
 namespace NothingButNeurons.Brain.Regions;
-
-/// <summary>
-/// Represents a message to spawn a neuron.
-/// </summary>
-public record SpawnNeuronMessage(NeuronAddress Address, AccumulationFunction AccumulationFunction, byte PreActivationThreshold, ActivationFunction ActivationFunction, byte ActivationParameterA, byte ActivationParameterB, byte ActivationThreshold, ResetFunction ResetFunction, int[] Synapses) : Message;
-/// <summary>
-/// Represents a message returning the spawn neuron request with converted properties.
-/// </summary>
-public record SpawnNeuronReturnMessage(NeuronAddress Address, AccumulationFunction AccumulationFunction, double PreActivationThreshold, ActivationFunction ActivationFunction, double ActivationParameterA, double ActivationParameterB, double ActivationThreshold, ResetFunction ResetFunction, int[] Synapses) : Message;
-/// <summary>
-/// Represents a message indicating that neuron spawning has failed.
-/// </summary>
-public record SpawnNeuronFailedMessage(Message FailedMessage) : Message;
-/// <summary>
-/// Represents an acknowledgment message for a successful neuron spawn.
-/// </summary>
-public record SpawnNeuronAckMessage : Message;
 
 /// <summary>
 /// The base class for different neural network-like region types.
@@ -91,17 +75,19 @@ internal class Region : ActorBaseWithBroadcaster
         {
             // Handles the unstable message and converts the properties before creating the neuron
             case SpawnNeuronMessage msg:
-                HandleUnstable(context, msg, (context, msg) => new SpawnNeuronReturnMessage(
-                    Address: msg.Address,
-                    AccumulationFunction: msg.AccumulationFunction,
-                    PreActivationThreshold: NeuronBase.BitsToDouble(msg.PreActivationThreshold, 31),
-                    ActivationFunction: msg.ActivationFunction,
-                    ActivationParameterA: NeuronBase.BitsToDouble(msg.ActivationParameterA, 63, -3d, 3d),
-                    ActivationParameterB: NeuronBase.BitsToDouble(msg.ActivationParameterB, 63, -3d, 3d),
-                    ActivationThreshold: NeuronBase.BitsToDouble(msg.ActivationThreshold, 15, 0d, 1d),
-                    ResetFunction: msg.ResetFunction,
-                    Synapses: msg.Synapses
-                    ));
+                SpawnNeuronReturnMessage spawnNeuronReturnMessage = new SpawnNeuronReturnMessage
+                {
+                    Address = msg.Address,
+                    AccumulationFunction = msg.AccumulationFunction,
+                    PreActivationThreshold = NeuronBase.BitsToDouble(msg.PreActivationThreshold, 31),
+                    ActivationFunction = msg.ActivationFunction,
+                    ActivationParameterA = NeuronBase.BitsToDouble(msg.ActivationParameterA, 63, -3d, 3d),
+                    ActivationParameterB = NeuronBase.BitsToDouble(msg.ActivationParameterB, 63, -3d, 3d),
+                    ActivationThreshold = NeuronBase.BitsToDouble(msg.ActivationThreshold, 15, 0d, 1d),
+                    ResetFunction = msg.ResetFunction,
+                };
+                spawnNeuronReturnMessage.Synapses.AddRange(msg.Synapses);
+                HandleUnstable(context, msg, (context, msg) => spawnNeuronReturnMessage);
                 _processed = true;
                 break;
             // Spawns the appropriate neuron type based on the region type
@@ -110,34 +96,34 @@ internal class Region : ActorBaseWithBroadcaster
                 PID pid;
                 if (IsInputRegion)
                 {
-                    pid = context.SpawnNamed(Props.FromProducer(() => new InputNeuron(msg.Address, msg.Synapses.Length, msg.AccumulationFunction, msg.PreActivationThreshold, msg.ActivationFunction, msg.ActivationParameterA, msg.ActivationParameterB, msg.ActivationThreshold, msg.ResetFunction)), msg.Address.NeuronPart.ToString());
+                    pid = context.SpawnNamed(Props.FromProducer(() => new InputNeuron(new NeuronAddress(msg.Address), msg.Synapses.Count, msg.AccumulationFunction, msg.PreActivationThreshold, msg.ActivationFunction, msg.ActivationParameterA, msg.ActivationParameterB, msg.ActivationThreshold, msg.ResetFunction)), new NeuronAddress(msg.Address).NeuronPart.ToString());
                 }
                 else if (IsOutputRegion)
                 {
-                    pid = context.SpawnNamed(Props.FromProducer(() => new OutputNeuron(msg.Address, msg.Synapses.Length, msg.AccumulationFunction, msg.PreActivationThreshold, msg.ActivationFunction, msg.ActivationParameterA, msg.ActivationParameterB, msg.ActivationThreshold, msg.ResetFunction)), msg.Address.NeuronPart.ToString());
+                    pid = context.SpawnNamed(Props.FromProducer(() => new OutputNeuron(new NeuronAddress(msg.Address), msg.Synapses.Count, msg.AccumulationFunction, msg.PreActivationThreshold, msg.ActivationFunction, msg.ActivationParameterA, msg.ActivationParameterB, msg.ActivationThreshold, msg.ResetFunction)), new NeuronAddress(msg.Address).NeuronPart.ToString());
                 }
                 else
                 {
-                    pid = context.SpawnNamed(Props.FromProducer(() => new InteriorNeuron(msg.Address, msg.Synapses.Length, msg.AccumulationFunction, msg.PreActivationThreshold, msg.ActivationFunction, msg.ActivationParameterA, msg.ActivationParameterB, msg.ActivationThreshold, msg.ResetFunction)), msg.Address.NeuronPart.ToString());
+                    pid = context.SpawnNamed(Props.FromProducer(() => new InteriorNeuron(new NeuronAddress(msg.Address), msg.Synapses.Count, msg.AccumulationFunction, msg.PreActivationThreshold, msg.ActivationFunction, msg.ActivationParameterA, msg.ActivationParameterB, msg.ActivationThreshold, msg.ResetFunction)), new NeuronAddress(msg.Address).NeuronPart.ToString());
                 }
 
-                Neurons[msg.Address] = pid;
+                Neurons[new NeuronAddress(msg.Address)] = pid;
                 //Debug.WriteLine($"Add neuron routee {pid}");
                 AddRoutee(pid);
-                AwaitingSynapseAck += msg.Synapses.Length;
+                AwaitingSynapseAck += msg.Synapses.Count;
                 foreach (int synapse in msg.Synapses)
                 {
-                    context.Send(pid, new SpawnSynapseMessage(synapse));
+                    context.Send(pid, new SpawnSynapseMessage { Data = synapse });
                 }
                 context.Send(ParentPID!, new SpawnNeuronAckMessage());
-                SendDebugMessage(DebugSeverity.Trace, "Spawn", $"Region {SelfPID!.Address}/{SelfPID!.Id} spawned neuron {pid.Address}/{pid.Id}.", $"Neuron {pid.Address}/{pid.Id} has address {msg.Address.NeuronPart} and has {msg.Synapses.Length} synapses.");
+                SendDebugMessage(DebugSeverity.Trace, "Spawn", $"Region {SelfPID!.Address}/{SelfPID!.Id} spawned neuron {pid.Address}/{pid.Id}.", $"Neuron {pid.Address}/{pid.Id} has address {new NeuronAddress(msg.Address).NeuronPart} and has {msg.Synapses.Count} synapses.");
                 AwaitingNeurons--;
-                if (msg.Synapses.Length == 0) CheckNeuronsAndSynapses();
+                if (msg.Synapses.Count == 0) CheckNeuronsAndSynapses();
                 _processed = true;
                 break;
             // Handles an unstable message exception by sending a SpawnNeuronFailedMessage to the parent
             case UnstableHandlerException msg:
-                context.Send(ParentPID!, new SpawnNeuronFailedMessage(msg.FailedMessage));
+                context.Send(ParentPID!, new SpawnNeuronFailedMessage { FailedMessage = Any.Pack(msg.FailedMessage) });
                 AwaitingNeurons--;
                 CheckNeuronsAndSynapses();
                 _processed = true;
@@ -168,16 +154,18 @@ internal class Region : ActorBaseWithBroadcaster
         {
             // Handles the SignalAxonsMessage by forwarding non-local axons to Brain and signaling local axons
             case SignalAxonsMessage msg:
-                SendDebugMessage(DebugSeverity.Trace, "Signal", "Region received SignalAxonsMessage", $"{msg.Axons.Length} Axons, potential {msg.Val}. Forwarding signal to in-region neurons and forwarding the rest up to Brain.");
+                SendDebugMessage(DebugSeverity.Trace, "Signal", "Region received SignalAxonsMessage", $"{msg.Axons.Count} Axons, potential {msg.Val}. Forwarding signal to in-region neurons and forwarding the rest up to Brain.");
                 // Forward the signals for Axons outside this region to the Brain
-                Axon[] elsewhere = msg.Axons.Where(axon => axon.ToAddress.RegionPart != Address.Address).ToArray();
+                Axon[] elsewhere = msg.Axons.Where(axon => new Axon(axon).ToAddress.RegionPart != Address.Address).Select(msgAxon => new Axon(msgAxon)).ToArray();
                 if (elsewhere.Length > 0)
                 {
                     //SendDebugMessage(DebugSeverity.Trace, "Signal", $"Forwarding SignalAxonsMessage with {elsewhere.Length} non-local Neurons, potential {msg.Val} to Brain.");
-                    context.Send(ParentPID!, new SignalAxonsMessage(msg.Sender, elsewhere, msg.Val));
+                    SignalAxonsMessage signalAxonsMessage = new SignalAxonsMessage { Sender = msg.Sender, Val = msg.Val };
+                    signalAxonsMessage.Axons.AddRange(elsewhere.Select(axon => axon.ToMsgAxon()));
+                    context.Send(ParentPID!, signalAxonsMessage);
                 }
                 // Signal Axons within this region
-                IEnumerable<Axon> local = msg.Axons.Where(axon => axon.ToAddress.RegionPart == Address.Address);
+                IEnumerable<Axon> local = msg.Axons.Where(axon => new Axon(axon).ToAddress.RegionPart == Address.Address).Select(msgAxon => new Axon(msgAxon));
                 //if (local.Any()) SendDebugMessage(DebugSeverity.Trace, "Signal", $"Region signaling {local.Count()} local Neurons, potential {msg.Val}");
                 foreach (Axon axon in local)
                 {
@@ -185,7 +173,7 @@ internal class Region : ActorBaseWithBroadcaster
                     {
                         double str = msg.Val * axon.Strength;
                         SendDebugMessage(DebugSeverity.Trace, "Signal", $"Region {SelfPID!.Address}/{SelfPID!.Id} sending Signal to {pid.Address}/{pid.Id}", $"Signal is from {msg.Sender.Address}/{msg.Sender.Id} and has total strength (axon connection strength * signal strength) {str}");
-                        context.Send(pid, new SignalMessage(str));
+                        context.Send(pid, new SignalMessage { Val = str });
                     } else
                     {
                         SendDebugMessage(DebugSeverity.Warning, "Signal", $"Neuron tried to send message using Axon (to Neuron) {axon.ToAddress.RegionPart}/{axon.ToAddress.NeuronPart} that should exist in this region but doesn't.");

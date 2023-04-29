@@ -12,6 +12,9 @@ using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using Proto.Remote;
+using Proto.Remote.GrpcNet;
+using Google.Protobuf;
 
 namespace NothingButNeurons.Debugger;
 
@@ -54,7 +57,16 @@ public partial class MainWindow : Window
 
         var random = new System.Random();
 
-        ProtoSystem = new ActorSystem();
+        var remoteConfig = GrpcNetRemoteConfig
+            .BindToLocalhost(8001)
+            .WithProtoMessages(DebuggerReflection.Descriptor, NeuronsReflection.Descriptor, IOReflection.Descriptor)
+            .WithRemoteDiagnostics(true);
+        ProtoSystem = new ActorSystem().WithRemote(remoteConfig);
+        ProtoSystem.Remote().StartAsync();
+        while (!ProtoSystem.Remote().Started)
+        {
+            Thread.Sleep(100);
+        }
 
         DebugServer = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DebugServer()), "DebugServer");
         DebugUI = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DebugUI(rtbDebug)), "DebugUI");
@@ -77,7 +89,9 @@ public partial class MainWindow : Window
             SendDebugMessage(DebugSeverity.Test, "ResetFunction Test", $"{func}\t{watch.ElapsedMilliseconds}");
         }*/
 
-        HiveMind = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new HiveMind()), "HiveMind");
+        //HiveMind = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new HiveMind()), "HiveMind");
+        HiveMind = PID.FromAddress("127.0.0.1:8000", "HiveMind");
+        //Debug.WriteLine($"\n\n\nHIVEMIND PID FROM DEBUGGER: {HiveMind}\n\n\n");
 
         List<int> neurons = new()
         {
@@ -244,7 +258,7 @@ public partial class MainWindow : Window
             new NeuronPart1BitField(10, 20, AccumulationFunction.Sum, 5, ActivationFunction.TanH, 50).Data.Data,
             new NeuronPart2BitField(32, 12, ResetFunction.Half).Data.Data,
 
-            new NeuronPart1BitField(11, 123, AccumulationFunction.Product, 7, ActivationFunction.ReLU, 60).Data.Data,
+            new NeuronPart1BitField(11, 123, AccumulationFunction.Product, 7, ActivationFunction.ReLu, 60).Data.Data,
             new NeuronPart2BitField(32, 11, ResetFunction.Hold).Data.Data,
 
             new NeuronPart1BitField(12, 333, AccumulationFunction.Sum, 9, ActivationFunction.TanH, 29).Data.Data,
@@ -253,7 +267,7 @@ public partial class MainWindow : Window
             new NeuronPart1BitField(13, 356, AccumulationFunction.Sum, 4, ActivationFunction.TanH, 45).Data.Data,
             new NeuronPart2BitField(32, 8, ResetFunction.Zero).Data.Data,
 
-            new NeuronPart1BitField(13, 980, AccumulationFunction.Sum, 2, ActivationFunction.SiLU, 52).Data.Data,
+            new NeuronPart1BitField(13, 980, AccumulationFunction.Sum, 2, ActivationFunction.SiLu, 52).Data.Data,
             new NeuronPart2BitField(32, 7, ResetFunction.Zero).Data.Data,
 
             new NeuronPart1BitField(15, 929, AccumulationFunction.Sum, 11, ActivationFunction.TanH, 11).Data.Data,
@@ -331,35 +345,28 @@ public partial class MainWindow : Window
             string binary = Convert.ToString(b, 2).PadLeft(8, '0');
             Debug.WriteLine(binary);
         }*/
-        ProtoSystem.Root.Send(HiveMind, new SpawnBrainMessage(neuronData, synapseData));
+        ProtoSystem.Root.Send(HiveMind, new SpawnBrainMessage { NeuronData = ByteString.CopyFrom(neuronData), SynapseData = ByteString.CopyFrom(synapseData) });
         ProtoSystem.Root.Send(HiveMind, new ActivateHiveMindMessage());
 
         Scheduler scheduler = new(ProtoSystem.Root);
         scheduler.SendRepeatedly(TimeSpan.FromMilliseconds(tickTime), HiveMind, new TickMessage());
 
         Thread.Sleep(2000);
-        // TODO: This is a random number ONCE, not every message, can't use scheduler for that
-        /*scheduler.SendRepeatedly(TimeSpan.FromMilliseconds(random.Next(100, 2000)), new PID(ProtoSystem.Address, "HiveMind/Brain$1/3/100"), new SignalMessage(random.NextDouble()));
-        scheduler.SendRepeatedly(TimeSpan.FromMilliseconds(random.Next(100, 2000)), new PID(ProtoSystem.Address, "HiveMind/Brain$1/1/789"), new SignalMessage(random.NextDouble()));
-        scheduler.SendRepeatedly(TimeSpan.FromMilliseconds(random.Next(100, 2000)), new PID(ProtoSystem.Address, "HiveMind/Brain$1/2/600"), new SignalMessage(random.NextDouble()));
-        scheduler.SendRepeatedly(TimeSpan.FromMilliseconds(random.Next(100, 2000)), new PID(ProtoSystem.Address, "HiveMind/Brain$1/4/800"), new SignalMessage(random.NextDouble()));
-        scheduler.SendRepeatedly(TimeSpan.FromMilliseconds(random.Next(100, 2000)), new PID(ProtoSystem.Address, "HiveMind/Brain$1/5/150"), new SignalMessage(random.NextDouble()));
-        scheduler.SendRepeatedly(TimeSpan.FromMilliseconds(random.Next(100, 2000)), new PID(ProtoSystem.Address, "HiveMind/Brain$1/3/444"), new SignalMessage(random.NextDouble()));*/
         System.Timers.Timer inputNeuronTimer = new(100);
         inputNeuronTimer.Elapsed += (s, e) =>
         {
             if (random.Next(0, 15) == 0)
-                ProtoSystem.Root.Send(new PID(ProtoSystem.Address, "HiveMind/Brain$1/3/100"), new SignalMessage(random.NextDouble() * 2d - 1d));
+                ProtoSystem.Root.Send(new PID(ProtoSystem.Address, "HiveMind/Brain$1/3/100"), new SignalMessage { Val = random.NextDouble() * 2d - 1d });
             if (random.Next(0, 15) == 0)
-                ProtoSystem.Root.Send(new PID(ProtoSystem.Address, "HiveMind/Brain$1/1/789"), new SignalMessage(random.NextDouble() * 2d - 1d));
+                ProtoSystem.Root.Send(new PID(ProtoSystem.Address, "HiveMind/Brain$1/1/789"), new SignalMessage { Val = random.NextDouble() * 2d - 1d });
             if (random.Next(0, 15) == 0)
-                ProtoSystem.Root.Send(new PID(ProtoSystem.Address, "HiveMind/Brain$1/2/600"), new SignalMessage(random.NextDouble() * 2d - 1d));
+                ProtoSystem.Root.Send(new PID(ProtoSystem.Address, "HiveMind/Brain$1/2/600"), new SignalMessage{ Val = random.NextDouble() * 2d - 1d });
             if (random.Next(0, 15) == 0)
-                ProtoSystem.Root.Send(new PID(ProtoSystem.Address, "HiveMind/Brain$1/4/800"), new SignalMessage(random.NextDouble() * 2d - 1d));
+                ProtoSystem.Root.Send(new PID(ProtoSystem.Address, "HiveMind/Brain$1/4/800"), new SignalMessage{ Val = random.NextDouble() * 2d - 1d });
             if (random.Next(0, 15) == 0)
-                ProtoSystem.Root.Send(new PID(ProtoSystem.Address, "HiveMind/Brain$1/5/150"), new SignalMessage(random.NextDouble() * 2d - 1d));
+                ProtoSystem.Root.Send(new PID(ProtoSystem.Address, "HiveMind/Brain$1/5/150"), new SignalMessage{ Val = random.NextDouble() * 2d - 1d });
             if (random.Next(0, 15) == 0)
-                ProtoSystem.Root.Send(new PID(ProtoSystem.Address, "HiveMind/Brain$1/3/444"), new SignalMessage(random.NextDouble() * 2d - 1d));
+                ProtoSystem.Root.Send(new PID(ProtoSystem.Address, "HiveMind/Brain$1/3/444"), new SignalMessage{ Val = random.NextDouble() * 2d - 1d });
         };
         inputNeuronTimer.Start();
     }
@@ -406,7 +413,17 @@ public partial class MainWindow : Window
     /// <param name="message">Content of the debug message.</param>
     private void SendDebugMessage(DebugSeverity severity = DebugSeverity.Trace, string context = "", string summary = "", string message = "")
     {
-        ProtoSystem.Root.Send(DebugServer, new DebugOutboundMessage(severity, context, summary, message, "", "", "", "", "", DateTimeOffset.Now.ToUnixTimeMilliseconds()));
+        ProtoSystem.Root.Send(DebugServer, new DebugOutboundMessage {
+            Severity = severity,
+            Context = context,
+            Summary = summary,
+            Message = message,
+            SenderClass = "",
+            SenderName = "",
+            SenderSystemAddr = "",
+            ParentName = "",
+            ParentSystemAddr = "",
+            MessageSentTime = DateTimeOffset.Now.ToUnixTimeMilliseconds() });
     }
 
     private void chkDebugEnable_Checked(object sender, RoutedEventArgs e)
@@ -449,7 +466,7 @@ public partial class MainWindow : Window
     {
         if (DebugUI is null) return;
 
-        ProtoSystem.Root.Send(DebugUI, new DebugUIIncludesMessage(chkShowSenderInfo.IsChecked ?? false, chkShowParentInfo.IsChecked ?? false, chkShowServerTime.IsChecked ?? false));
+        ProtoSystem.Root.Send(DebugUI, new DebugUIIncludesMessage { IncludeSenderInfo = chkShowSenderInfo.IsChecked ?? false, IncludeParentInfo = chkShowParentInfo.IsChecked ?? false, IncludeServerReceivedTime = chkShowServerTime.IsChecked ?? false });
     }
 
     /// <summary>
@@ -464,10 +481,18 @@ public partial class MainWindow : Window
             if (!chkDebugEnable.IsChecked ?? false)
             {
                 // So we stop receiving messages
-                ProtoSystem.Root.Send(DebugServer, new DebugUnsubscribeMessage(DebugUI));
+                ProtoSystem.Root.Send(DebugServer, new DebugUnsubscribeMessage { Subscriber = DebugUI });
             }
             // Update display/filter according to changes
-            ProtoSystem.Root.Send(DebugUI, new DebugUISubUpdateMessage((DebugSeverity)drpDebugSeverity.SelectedItem, txtDebugContext.Text, txtDebugSummary.Text, txtDebugMessage.Text, txtDebugSenderClass.Text, txtDebugSenderName.Text, txtDebugParentName.Text));
+            ProtoSystem.Root.Send(DebugUI, new DebugUISubUpdateMessage {
+                Severity = (DebugSeverity)drpDebugSeverity.SelectedItem,
+                Context = txtDebugContext.Text,
+                Summary =txtDebugSummary.Text,
+                Message = txtDebugMessage.Text,
+                SenderClass = txtDebugSenderClass.Text,
+                SenderName = txtDebugSenderName.Text,
+                ParentName = txtDebugParentName.Text
+            });
         });
     }
 

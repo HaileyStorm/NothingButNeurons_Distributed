@@ -1,0 +1,15 @@
+syntax = "proto3";
+option csharp_namespace = "NothingButNeurons.Shared.Messages";
+
+import "Protos.proto";
+
+package io;
+
+message SpawnBrainMessage {
+  bytes NeuronData = 1;
+  bytes SynapseData = 2;
+}
+
+message SpawnBrainAckMessage {}
+
+message ActivateHiveMindMessage {}

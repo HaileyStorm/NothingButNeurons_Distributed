@@ -1,48 +1,8 @@
-﻿using Proto;
+﻿using Google.Protobuf.WellKnownTypes;
+using NothingButNeurons.Shared.Messages;
+using Proto;
 
 namespace NothingButNeurons.Brain.Regions.Neurons;
-
-/// <summary>
-/// Message representing a request to spawn a synapse.
-/// </summary>
-public record SpawnSynapseMessage(int Data) : Message;
-/// <summary>
-/// Message acknowledging the successful spawning of a synapse.
-/// </summary>
-public record SpawnSynapseAckMessage : Message;
-/// <summary>
-/// Message indicating that spawning a synapse has failed.
-/// </summary>
-public record SpawnSynapseFailedMessage(Message FailedMessage) : Message;
-/// <summary>
-/// Message returning the result of a spawned synapse as an Axon.
-/// </summary>
-public record SpawnSynapseReturnMessage(Axon Axon) : Message;
-/// <summary>
-/// Message to enable a neuron.
-/// </summary>
-public record EnableMessage : Message;
-/// <summary>
-/// Message to disable a neuron.
-/// </summary>
-public record DisableMessage : Message;
-/// <summary>
-/// Message used to signal axons with a value.
-/// </summary>
-public record SignalAxonsMessage(PID Sender, Axon[] Axons, double Val) : Message;
-/// <summary>
-/// Message used to signal a neuron with a value.
-/// </summary>
-public record SignalMessage(double Val) : Message;
-/// <summary>
-/// Message to trigger a tick on a neuron.
-/// </summary>
-public record TickMessage : Message;
-
-/// <summary>
-/// Message representing the return value and cost of a neuron function.
-/// </summary>
-public record NeuronFunctionReturn(double Val, double Cost) : Message;
 
 /// <summary>
 /// NeuronBase is an abstract base class representing a neuron in an artificial neural network.
@@ -182,24 +142,24 @@ internal abstract class NeuronBase : ActorBase
         {
             // Handle the unstable spawn synapse message and create a new SpawnSynapseReturnMessage with the created Axon.
             case SpawnSynapseMessage msg:
-                HandleUnstable(context, msg, (context, msg) => new SpawnSynapseReturnMessage(new Axon(new SynapseBitField(msg.Data))));
+                HandleUnstable(context, msg, (context, msg) => new SpawnSynapseReturnMessage { Axon = new Axon(new SynapseBitField(msg.Data)).ToMsgAxon() });
                 _processed = true;
                 break;
             // If an exception occurs during synapse spawning, notify the parent and decrement the AwaitingSynapses count.
             case UnstableHandlerException msg:
-                context.Send(ParentPID!, new SpawnSynapseFailedMessage(msg.FailedMessage));
+                context.Send(ParentPID!, new SpawnSynapseFailedMessage { FailedMessage = Any.Pack(msg.FailedMessage) });
                 AwaitingSynapses--;
                 CheckAxons();
                 _processed = true;
                 break;
             // Store the created Axon and decrement the AwaitingSynapses count.
             case SpawnSynapseReturnMessage msg:
-                Axons[AwaitingSynapses - 1] = msg.Axon;
+                Axons[AwaitingSynapses - 1] = new Axon(msg.Axon);
                 AwaitingSynapses--;
                 CheckAxons();
                 // Acknowledge the successful spawning of the synapse.
                 context.Send(ParentPID!, new SpawnSynapseAckMessage());
-                SendDebugMessage(DebugSeverity.Trace, "Spawn", $"Neuron {SelfPID!.Address}/{SelfPID!.Id} spawned a synapse/axon.", $"Synapse connection to Neuron with address {msg.Axon!.ToAddress.RegionPart}/{msg.Axon!.ToAddress.NeuronPart} has strength {msg.Axon.Strength}");
+                SendDebugMessage(DebugSeverity.Trace, "Spawn", $"Neuron {SelfPID!.Address}/{SelfPID!.Id} spawned a synapse/axon.", $"Synapse connection to Neuron with address {new Axon(msg.Axon!).ToAddress.RegionPart}/{new Axon(msg.Axon!).ToAddress.NeuronPart} has strength {msg.Axon.Strength}");
                 _processed = true;
                 break;
         }
@@ -236,6 +196,7 @@ internal abstract class NeuronBase : ActorBase
     ///</summary>
     protected Task Enabled(IContext context)
     {
+        NeuronFunctionReturn neuronFunctionReturn;
         switch (context.Message)
         {
             // The neuron is already enabled, log the redundant message.
@@ -251,9 +212,10 @@ internal abstract class NeuronBase : ActorBase
                 break;
             // Receive signal (Axon activation) and accumulate buffer.
             case SignalMessage signal:
+                neuronFunctionReturn = AccumulationFunction.Accumulate(SignalBuffer, signal.Val);
+                SignalBuffer = neuronFunctionReturn.Val;
                 // TODO: Cost
-                (SignalBuffer, _) = AccumulationFunction.Accumulate(SignalBuffer, signal.Val);
-                
+
                 // Limit how far down SignalBuffer can go
                 double f = PreActivationThreshold < 0 ? -2 : -1;
                 SignalBuffer = Math.Max(SignalBuffer, f * Math.Abs(PreActivationThreshold));
@@ -270,10 +232,12 @@ internal abstract class NeuronBase : ActorBase
                 {
                     //SendDebugMessage(DebugSeverity.Trace, "Tick", "SignalBuffer > PreActivationThreshold", "Activating.");
                     // Calculate neuron potential and reset signal buffer.
+                    neuronFunctionReturn = ActivationFunction.Activate(SignalBuffer, ActivationParameterA, ActivationParameterB);
+                    double potential = neuronFunctionReturn.Val;
                     // TODO: Cost
-                    (double potential, _) = ActivationFunction.Activate(SignalBuffer, ActivationParameterA, ActivationParameterB);
+                    neuronFunctionReturn = ResetFunction.Reset(SignalBuffer, potential, ActivationThreshold, Axons.Length);
+                    double reset = neuronFunctionReturn.Val;
                     // TODO: Cost
-                    (double reset, _) = ResetFunction.Reset(SignalBuffer, potential, ActivationThreshold, Axons.Length);
                     SignalBuffer = reset;
                     SendDebugMessage(DebugSeverity.Trace, "Tick", $"Neuron {SelfPID!.Address}/{SelfPID.Id} Activated & Reset", $"Potential = {potential}, and SignalBuffer reset to {reset}. Firing {Axons.Length} axons if > threshold ({Math.Abs(potential)} > {ActivationThreshold}).");
                     //Debug.WriteLine($"Neuron {SelfPID!.Address}/{SelfPID.Id} Activated & Reset", $"Potential = {potential}, and SignalBuffer reset to {reset}. Firing {Axons.Length} axons if > threshold ({Math.Abs(potential)} > {ActivationThreshold}).");
@@ -282,7 +246,9 @@ internal abstract class NeuronBase : ActorBase
                     {
                         SendDebugMessage(DebugSeverity.Trace, "Tick", "Potential > ActivationThreshold. Potential > ActivationThreshold ({Math.Abs(potential)} > {ActivationThreshold}). Firing {Axons.Length} axons with potential {potential}. Subsequent debugs have Signal context.");
                         // TODO: Cost, based on distances, using (once DistanceTo has been written): Axons.Sum(a => Address.DistanceTo(a.ToAddress))
-                        context.Send(ParentPID!, new SignalAxonsMessage(SelfPID!, Axons, potential));
+                        SignalAxonsMessage signalAxonsMessage = new SignalAxonsMessage { Sender = SelfPID!, Val = potential };
+                        signalAxonsMessage.Axons.AddRange(Axons.Select(axon => axon.ToMsgAxon()));
+                        context.Send(ParentPID!, signalAxonsMessage);
                     }
                 }
                 _processed = true;

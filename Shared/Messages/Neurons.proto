@@ -1,0 +1,195 @@
+syntax = "proto3";
+option csharp_namespace = "NothingButNeurons.Shared.Messages";
+
+import "google/protobuf/any.proto";
+import "Protos.proto";
+
+package neurons;
+
+enum AccumulationFunction {
+    AccumNone = 0;
+    Sum = 1;
+    Product = 2;
+}
+
+enum ActivationFunction {
+    ActNone = 0;
+    Identity = 1;
+    StepUp = 2;
+    StepMid = 3;
+    StepDown = 4;
+    Abs = 5;
+    Clamp = 6;
+    ReLu = 7;
+    NreLu = 8;
+    Sin = 9;
+    Tan = 10;
+    TanH = 11;
+    Elu = 12; // Uses parameterA
+    Exp = 13;
+    PreLu = 14; // Uses parameterA
+    Log = 15;
+    Mult = 16; // Uses parameterA
+    Add = 17; // Uses parameterA
+    Sig = 18;
+    SiLu = 19;
+    Pclamp = 20; // Uses parameterA and parameterB
+    ModL = 21; // Uses parameterA
+    ModR = 22; // Uses parameterA
+    SoftP = 23;
+    Selu = 24; // Uses parameterA and parameterB, with standard/default values 1.67326 and 1.0507
+    Lin = 25; // Uses parameterA and parameterB
+    LogB = 26; // Uses parameterA
+    Pow = 27; // Uses parameterA
+    Gauss = 28;
+    Quad = 29; // Uses parameterA and parameterB
+}
+
+enum ResetFunction {
+    Zero = 0;
+    Hold = 1;
+    ClampPotential = 2;
+    Clamp1 = 3;
+    PotentialClampBuffer = 4;
+    NegPotentialClampBuffer = 5;
+    HundredthsPotentialClampBuffer = 6;
+    TenthPotentialClampBuffer = 7;
+    HalfPotentialClampBuffer = 8;
+    DoublePotentialClampBuffer = 9;
+    FiveXpotentialClampBuffer = 10;
+    NegHundredthsPotentialClampBuffer = 11;
+    NegTenthPotentialClampBuffer = 12;
+    NegHalfPotentialClampBuffer = 13;
+    NegDoublePotentialClampBuffer = 14;
+    NegFiveXpotentialClampBuffer = 15;
+    InversePotentialClampBummfer = 16;
+    PotentialClamp1 = 17;
+    NegPotentialClamp1 = 18;
+    HundredthsPotentialClamp1 = 19;
+    TenthPotentialClamp1 = 20;
+    HalfPotentialClamp1 = 21;
+    DoublePotentialClamp1 = 22;
+    FiveXpotentialClamp1 = 23;
+    NegHundredthsPotentialClamp1 = 24;
+    NegTenthPotentialClamp1 = 25;
+    NegHalfPotentialClamp1 = 26;
+    NegDoublePotentialClamp1 = 27;
+    NegFiveXpotentialClamp1 = 28;
+    InversePotentialClamp1 = 29;
+    Potential = 30;
+    NegPotential = 31;
+    HundredthsPotential = 32;
+    TenthPotential = 33;
+    HalfPotential = 34;
+    DoublePotential = 35;
+    FiveXpotential = 36;
+    NegHundredthsPotential = 37;
+    NegTenthPotential = 38;
+    NegHalfPotential = 39;
+    NegDoublePotential = 40;
+    NegFiveXpotential = 41;
+    InversePotential = 42;
+    Half = 43;
+    Tenth = 44;
+    Hundredth = 45;
+    Negative = 46;
+    NegHalf = 47;
+    NegTenth = 48;
+    NegHundredth = 49;
+    DoubleClamp1 = 50;
+    FiveXclamp1 = 51;
+    NegDoubleClamp1 = 52;
+    NegFiveXclamp1 = 53;
+    Double = 54;
+    FiveX = 55;
+    NegDouble = 56;
+    NegFiveX = 57;
+    DivideAxonCt = 58;
+    InverseClamp1 = 59;
+    Inverse = 60;
+}
+
+message Message {
+}
+
+message UnstableHandlerException {
+    google.protobuf.Any FailedMessage = 1;
+}
+
+message SpawnRegionMessage {
+    uint32 Address = 1;
+    bytes NeuronData = 2;
+    bytes SynapseData = 3;
+}
+
+message SpawnRegionAckMessage {}
+
+message SpawnNeuronMessage {
+    int32 Address = 1;
+    AccumulationFunction AccumulationFunction = 2;
+    uint32 PreActivationThreshold = 3;
+    ActivationFunction ActivationFunction = 4;
+    uint32 ActivationParameterA = 5;
+    uint32 ActivationParameterB = 6;
+    uint32 ActivationThreshold = 7;
+    ResetFunction ResetFunction = 8;
+    repeated int32 Synapses = 9;
+}
+
+message SpawnNeuronReturnMessage {
+    int32 Address = 1;
+    AccumulationFunction AccumulationFunction = 2;
+    double PreActivationThreshold = 3;
+    ActivationFunction ActivationFunction = 4;
+    double ActivationParameterA = 5;
+    double ActivationParameterB = 6;
+    double ActivationThreshold = 7;
+    ResetFunction ResetFunction = 8;
+    repeated int32 Synapses = 9;
+}
+
+message SpawnNeuronFailedMessage {
+    google.protobuf.Any FailedMessage = 1;
+}
+
+message SpawnNeuronAckMessage {}
+
+message SpawnSynapseMessage {
+    int32 Data = 1;
+}
+
+message SpawnSynapseAckMessage {}
+
+message SpawnSynapseFailedMessage {
+    google.protobuf.Any FailedMessage = 1;
+}
+
+message SpawnSynapseReturnMessage {
+    MsgAxon Axon = 1;
+}
+
+message EnableMessage {}
+
+message DisableMessage {}
+
+message SignalAxonsMessage {
+    actor.PID Sender = 1;
+    repeated MsgAxon Axons = 2;
+    double Val = 3;
+}
+
+message SignalMessage {
+    double Val = 1;
+}
+
+message TickMessage {}
+
+message NeuronFunctionReturn {
+    double Val = 1;
+    double Cost = 2;
+}
+
+message MsgAxon {
+    int32 ToAddress = 1;
+    double Strength = 2;
+}

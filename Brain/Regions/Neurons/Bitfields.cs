@@ -270,4 +270,19 @@ public struct Axon
         ToAddress = toAddress;
         Strength = strength / 7d * (excitory ? 1d : -1d);
     }
+
+    public Axon(MsgAxon msgAxon)
+    {
+        ToAddress = new NeuronAddress(msgAxon.ToAddress);
+        Strength = msgAxon.Strength;
+    }
+
+    public MsgAxon ToMsgAxon()
+    {
+        return new MsgAxon
+        {
+            ToAddress = ToAddress.Address.Data,
+            Strength = Strength
+        };
+    }
 }

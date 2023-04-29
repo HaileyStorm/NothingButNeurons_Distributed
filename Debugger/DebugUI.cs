@@ -11,15 +11,6 @@ using System.Windows.Media;
 namespace NothingButNeurons.Debugger;
 
 /// <summary>
-/// Represents a message used to update the DebugUI subscription.
-/// </summary>
-public record DebugUISubUpdateMessage(DebugSeverity Severity = DebugSeverity.Trace, string Context = "", string Summary = "", string Message = "", string SenderClass = "", string SenderName = "", string ParentName = "") : Message;
-/// <summary>
-/// Represents a message used to include or exclude sender, parent, and server received time information in the DebugUI.
-/// </summary>
-public record DebugUIIncludesMessage(bool IncludeSenderInfo, bool IncludeParentInfo, bool IncludeServerReceivedTime) : Message;
-
-/// <summary>
 /// Provides a debug user interface for displaying debug messages in a RichTextBox or TextBox control.
 /// </summary>
 internal partial class DebugUI : ActorBase
@@ -155,9 +146,20 @@ internal partial class DebugUI : ActorBase
                         }
                     flushed:
                         // Send message (so other subscribers such as DebugFileWriter), but also add to AllReceived immediately. Otherwise, the message comes in later and we end up with a stack of flush messages at the end, instead of the  desired only having one flush message in the current list (with non-flushed items before and stuff since after). Accordingly, AutoFlush messages are not added to AllReceived when received, see above.
-                        DebugOutboundMessage flushMsg = new(DebugSeverity.Info, "AutoFlush", "Debug log auto-flushed.", $"{oCount - AllReceived.Count} lowest-severity/oldest logs removed.", this.GetType().ToString(), SelfPID == null ? "" : SelfPID.Id, SelfPID == null ? "" : SelfPID.Address, ParentPID == null ? "" : ParentPID.Id, ParentPID == null ? "" : ParentPID.Address, DateTimeOffset.Now.ToUnixTimeMilliseconds());
+                        DebugOutboundMessage flushMsg = new DebugOutboundMessage {
+                            Severity = DebugSeverity.Info,
+                            Context = "AutoFlush",
+                            Summary = "Debug log auto-flushed.",
+                            Message = $"{oCount - AllReceived.Count} lowest-severity/oldest logs removed.",
+                            SenderClass = this.GetType().ToString(),
+                            SenderName = SelfPID == null ? "" : SelfPID.Id,
+                            SenderSystemAddr = SelfPID == null ? "" : SelfPID.Address,
+                            ParentName = ParentPID == null ? "" : ParentPID.Id,
+                            ParentSystemAddr = ParentPID == null ? "" : ParentPID.Address,
+                            MessageSentTime = DateTimeOffset.Now.ToUnixTimeMilliseconds()
+                        };
                         SendDebugMessage(flushMsg);
-                        AllReceived.Add(new DebugInboundMessage(flushMsg, DateTimeOffset.Now.ToUnixTimeMilliseconds()));
+                        AllReceived.Add(flushMsg.AsInbound(DateTimeOffset.Now.ToUnixTimeMilliseconds()));
                     }
                     if (msg.Severity >= CurrentSeverity && CurrentContext.IsMatch(msg.Context) && CurrentSummary.IsMatch(msg.Summary) && CurrentMessage.IsMatch(msg.Message) && CurrentSenderClass.IsMatch(msg.SenderClass) && CurrentSenderName.IsMatch(msg.SenderName) && CurrentParentName.IsMatch(msg.ParentName))
                         UpdateRTB();

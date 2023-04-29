@@ -1,0 +1,74 @@
+syntax = "proto3";
+option csharp_namespace = "NothingButNeurons.Shared.Messages";
+
+import "Protos.proto";
+
+package debugger;
+
+enum DebugSeverity {
+  Trace = 0;
+  Info = 1;
+  Debug = 2;
+  Warning = 3;
+  Alert = 4;
+  Error = 5;
+  Critical = 6;
+  Test = 7;
+}
+
+message DebugUISubUpdateMessage {
+    DebugSeverity Severity = 1;
+    string Context = 2;
+    string Summary = 3;
+    string Message = 4;
+    string SenderClass = 5;
+    string SenderName = 6;
+    string ParentName = 7;
+}
+
+message DebugUIIncludesMessage {
+    bool IncludeSenderInfo = 1;
+    bool IncludeParentInfo = 2;
+    bool IncludeServerReceivedTime = 3;
+}
+
+message DebugFlushMessage {}
+
+message DebugFlushAllMessage {}
+
+message DebugOutboundMessage {
+  DebugSeverity Severity = 1;
+  string Context = 2;
+  string Summary = 3;
+  string Message = 4;
+  string SenderClass = 5;
+  string SenderName = 6;
+  string SenderSystemAddr = 7;
+  string ParentName = 8;
+  string ParentSystemAddr = 9;
+  int64 MessageSentTime = 10;
+}
+
+message DebugInboundMessage {
+  DebugSeverity Severity = 1;
+  string Context = 2;
+  string Summary = 3;
+  string Message = 4;
+  string SenderClass = 5;
+  string SenderName = 6;
+  string SenderSystemAddr = 7;
+  string ParentName = 8;
+  string ParentSystemAddr = 9;
+  int64 MessageSentTime = 10;
+  int64 ServerReceivedTime = 11;
+}
+
+message DebugSubscribeMessage {
+  actor.PID Subscriber = 1;
+  DebugSeverity Severity = 2;
+  string Context = 3;
+}
+
+message DebugUnsubscribeMessage {
+  actor.PID Subscriber = 1;
+}

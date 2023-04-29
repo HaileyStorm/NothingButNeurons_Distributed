@@ -1,0 +1,6 @@
+protoc -I=$SRC_DIR --csharp_out=$DST_DIR $SRC_DIR/name.proto
+
+E.g. (powershell):
+.\protoc.exe -I="." --csharp_out=./ProtocGen ./Debugger.proto
+
+Once everything's working, should be able to set build actions to do it automatically during build (and remove Protos.Proto from Messages folder - leave in Shared root folder).
