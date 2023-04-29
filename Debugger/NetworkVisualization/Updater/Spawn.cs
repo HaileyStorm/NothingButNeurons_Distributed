@@ -23,7 +23,7 @@ internal partial class Updater : ActorBase
     private int connectionTimeout;
     private bool hasInteriorRegions = false;
 
-    public Updater(Canvas networkVisualizationCanvas, int tickInterval)
+    public Updater(PID debugServerPID, Canvas networkVisualizationCanvas, int tickInterval) : base(debugServerPID)
     {
         _networkVisualizationCanvas = networkVisualizationCanvas;
         _rng = new Random();

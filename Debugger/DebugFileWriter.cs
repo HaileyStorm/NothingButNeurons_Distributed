@@ -15,7 +15,7 @@ internal class DebugFileWriter : ActorBase
     /// Initializes a new instance of the DebugFileWriter class.
     /// </summary>
     /// <param name="fileName">The name of the log file. Default is "log.txt".</param>
-    public DebugFileWriter(string fileName = "log.txt")
+    public DebugFileWriter(PID debugServerPID, string fileName = "log.txt") : base(debugServerPID)
     {
         FileName = fileName;
         try

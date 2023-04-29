@@ -18,7 +18,7 @@ public abstract class OutputCoordinatorBase : ActorBaseWithBroadcaster
     /// <summary>
     /// Initializes a new instance of the <see cref="OutputCoordinatorBase"/> class.
     /// </summary>
-    public OutputCoordinatorBase()
+    public OutputCoordinatorBase(PID debugServerPID) : base(debugServerPID)
     {
     }
 

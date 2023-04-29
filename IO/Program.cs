@@ -24,7 +24,8 @@ namespace NothingButNeurons.IO
             ProtoSystem = new ActorSystem().WithRemote(remoteConfig);
             ProtoSystem.Remote().StartAsync();
 
-            HiveMind = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new HiveMind()), "HiveMind");
+            PID debugServerPID = PID.FromAddress("127.0.0.1:8001", "DebugServer");
+            HiveMind = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new HiveMind(debugServerPID)), "HiveMind");
             //Debug.WriteLine($"\n\n\nHIVEMIND PID FROM IO: {HiveMind}\n\n\n");
 
             Console.ReadLine();

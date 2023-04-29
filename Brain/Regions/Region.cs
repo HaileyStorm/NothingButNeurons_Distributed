@@ -30,7 +30,7 @@ internal class Region : ActorBaseWithBroadcaster
     /// </summary>
     /// <param name="address">The RegionAddress of the region.</param>
     /// <param name="neuronCt">The initial number of neurons to be spawned.</param>
-    public Region(RegionAddress address, int neuronCt)
+    public Region(PID debugServerPID, RegionAddress address, int neuronCt) : base(debugServerPID)
     {
         Address = address;
         // If this is an InputRegion or OutputRegion, these values will be overwritten
@@ -96,15 +96,15 @@ internal class Region : ActorBaseWithBroadcaster
                 PID pid;
                 if (IsInputRegion)
                 {
-                    pid = context.SpawnNamed(Props.FromProducer(() => new InputNeuron(new NeuronAddress(msg.Address), msg.Synapses.Count, msg.AccumulationFunction, msg.PreActivationThreshold, msg.ActivationFunction, msg.ActivationParameterA, msg.ActivationParameterB, msg.ActivationThreshold, msg.ResetFunction)), new NeuronAddress(msg.Address).NeuronPart.ToString());
+                    pid = context.SpawnNamed(Props.FromProducer(() => new InputNeuron(DebugServerPID, new NeuronAddress(msg.Address), msg.Synapses.Count, msg.AccumulationFunction, msg.PreActivationThreshold, msg.ActivationFunction, msg.ActivationParameterA, msg.ActivationParameterB, msg.ActivationThreshold, msg.ResetFunction)), new NeuronAddress(msg.Address).NeuronPart.ToString());
                 }
                 else if (IsOutputRegion)
                 {
-                    pid = context.SpawnNamed(Props.FromProducer(() => new OutputNeuron(new NeuronAddress(msg.Address), msg.Synapses.Count, msg.AccumulationFunction, msg.PreActivationThreshold, msg.ActivationFunction, msg.ActivationParameterA, msg.ActivationParameterB, msg.ActivationThreshold, msg.ResetFunction)), new NeuronAddress(msg.Address).NeuronPart.ToString());
+                    pid = context.SpawnNamed(Props.FromProducer(() => new OutputNeuron(DebugServerPID, new NeuronAddress(msg.Address), msg.Synapses.Count, msg.AccumulationFunction, msg.PreActivationThreshold, msg.ActivationFunction, msg.ActivationParameterA, msg.ActivationParameterB, msg.ActivationThreshold, msg.ResetFunction)), new NeuronAddress(msg.Address).NeuronPart.ToString());
                 }
                 else
                 {
-                    pid = context.SpawnNamed(Props.FromProducer(() => new InteriorNeuron(new NeuronAddress(msg.Address), msg.Synapses.Count, msg.AccumulationFunction, msg.PreActivationThreshold, msg.ActivationFunction, msg.ActivationParameterA, msg.ActivationParameterB, msg.ActivationThreshold, msg.ResetFunction)), new NeuronAddress(msg.Address).NeuronPart.ToString());
+                    pid = context.SpawnNamed(Props.FromProducer(() => new InteriorNeuron(DebugServerPID, new NeuronAddress(msg.Address), msg.Synapses.Count, msg.AccumulationFunction, msg.PreActivationThreshold, msg.ActivationFunction, msg.ActivationParameterA, msg.ActivationParameterB, msg.ActivationThreshold, msg.ResetFunction)), new NeuronAddress(msg.Address).NeuronPart.ToString());
                 }
 
                 Neurons[new NeuronAddress(msg.Address)] = pid;

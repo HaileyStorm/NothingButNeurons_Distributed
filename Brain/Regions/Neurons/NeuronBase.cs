@@ -83,7 +83,7 @@ internal abstract class NeuronBase : ActorBase
     /// <param name="activationParameterB">The second parameter used in the activation function.</param>
     /// <param name="activationThreshold">The activation threshold value for the neuron.</param>
     /// <param name="resetFunction">The reset function applied to the neuron.</param>
-    protected NeuronBase(NeuronAddress address, int synapseCt, AccumulationFunction accumulationFunction, double preActivationThreshold, ActivationFunction activationFunction, double activationParameterA, double activationParameterB, double activationThreshold, ResetFunction resetFunction)
+    protected NeuronBase(PID debugServerPID, NeuronAddress address, int synapseCt, AccumulationFunction accumulationFunction, double preActivationThreshold, ActivationFunction activationFunction, double activationParameterA, double activationParameterB, double activationThreshold, ResetFunction resetFunction) : base(debugServerPID)
     {
         Address = address;
         AwaitingSynapses = synapseCt;

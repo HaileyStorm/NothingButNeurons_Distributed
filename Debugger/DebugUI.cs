@@ -45,7 +45,7 @@ internal partial class DebugUI : ActorBase
     /// Initializes a new instance of the DebugUI class with a TextBox control.
     /// </summary>
     /// <param name="debugTextBox">The TextBox control to display debug messages.</param>
-    public DebugUI(TextBox debugTextBox)
+    public DebugUI(PID debugServerPID, TextBox debugTextBox) : base(debugServerPID)
     {
         DebugTextBox = debugTextBox;
     }
@@ -56,7 +56,7 @@ internal partial class DebugUI : ActorBase
     /// <param name="includeSenderInfo">Whether to include sender information in the displayed messages.</param>
     /// <param name="includeParentInfo">Whether to include parent information in the displayed messages.</param>
     /// <param name="includeServerReceivedTime">Whether to include the server received time in the displayed messages.</param>
-    public DebugUI(RichTextBox debugRichTextBox, bool includeSenderInfo = true, bool includeParentInfo = false, bool includeServerReceivedTime = false)
+    public DebugUI(PID debugServerPID, RichTextBox debugRichTextBox, bool includeSenderInfo = true, bool includeParentInfo = false, bool includeServerReceivedTime = false) : base(debugServerPID)
     {
         // Initialization of DebugRichTextBox and related properties.
         DebugRichTextBox = debugRichTextBox;

@@ -68,13 +68,17 @@ public partial class MainWindow : Window
             Thread.Sleep(100);
         }
 
+        //HiveMind = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new HiveMind()), "HiveMind");
+        HiveMind = PID.FromAddress("127.0.0.1:8000", "HiveMind");
+        //Debug.WriteLine($"\n\n\nHIVEMIND PID FROM DEBUGGER: {HiveMind}\n\n\n");
+
         DebugServer = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DebugServer()), "DebugServer");
-        DebugUI = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DebugUI(rtbDebug)), "DebugUI");
+        DebugUI = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DebugUI(DebugServer, rtbDebug)), "DebugUI");
         UpdateDebugUISubscription();
-        DebugFileWriter = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DebugFileWriter()), "DebugFileWriter");
+        DebugFileWriter = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DebugFileWriter(DebugServer)), "DebugFileWriter");
         SendDebugMessage(DebugSeverity.Trace, "Startup", "ActorSystem, DebugServer, DebugFileWriter and DebugUI created.");
 
-        NetworkVisualizationUpdator = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new Debugger.NetworkVisualization.Updater(networkVisualizationCanvas, tickTime)), "NetworkVisualizationUpdator");
+        NetworkVisualizationUpdator = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new Debugger.NetworkVisualization.Updater(DebugServer, networkVisualizationCanvas, tickTime)), "NetworkVisualizationUpdator");
 
         /*var watch = new Stopwatch();
         var rnd = new Random();
@@ -88,10 +92,6 @@ public partial class MainWindow : Window
             watch.Stop();
             SendDebugMessage(DebugSeverity.Test, "ResetFunction Test", $"{func}\t{watch.ElapsedMilliseconds}");
         }*/
-
-        //HiveMind = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new HiveMind()), "HiveMind");
-        HiveMind = PID.FromAddress("127.0.0.1:8000", "HiveMind");
-        //Debug.WriteLine($"\n\n\nHIVEMIND PID FROM DEBUGGER: {HiveMind}\n\n\n");
 
         List<int> neurons = new()
         {
@@ -345,13 +345,14 @@ public partial class MainWindow : Window
             string binary = Convert.ToString(b, 2).PadLeft(8, '0');
             Debug.WriteLine(binary);
         }*/
+        Thread.Sleep(500);
         ProtoSystem.Root.Send(HiveMind, new SpawnBrainMessage { NeuronData = ByteString.CopyFrom(neuronData), SynapseData = ByteString.CopyFrom(synapseData) });
+        Thread.Sleep(1500);
         ProtoSystem.Root.Send(HiveMind, new ActivateHiveMindMessage());
 
         Scheduler scheduler = new(ProtoSystem.Root);
         scheduler.SendRepeatedly(TimeSpan.FromMilliseconds(tickTime), HiveMind, new TickMessage());
 
-        Thread.Sleep(2000);
         System.Timers.Timer inputNeuronTimer = new(100);
         inputNeuronTimer.Elapsed += (s, e) =>
         {

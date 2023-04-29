@@ -41,7 +41,7 @@ public class Brain : ActorBaseWithBroadcaster
     /// Initializes a new instance of the Brain class.
     /// </summary>
     /// <param name="regionCount">The number of regions this Brain will manage.</param>
-    public Brain(int regionCount)
+    public Brain(PID debugServerPID, int regionCount) : base(debugServerPID)
     {
         Regions = new();
         AwaitingRegions = regionCount;
@@ -94,19 +94,19 @@ public class Brain : ActorBaseWithBroadcaster
                 // Input
                 if (new RegionAddress((byte)msg.Address).Address < 6)
                 {
-                    pid = context.SpawnNamed(Props.FromProducer(() => new InputRegion(regionAddress, InputCoordinator!, neuronCt)), regionAddress.Address.ToString());
+                    pid = context.SpawnNamed(Props.FromProducer(() => new InputRegion(DebugServerPID, regionAddress, InputCoordinator!, neuronCt)), regionAddress.Address.ToString());
                     isInputRegion = true;
                 }
                 // Output
                 else if (regionAddress.Address > 12)
                 {
-                    pid = context.SpawnNamed(Props.FromProducer(() => new OutputRegion(new RegionAddress((byte)msg.Address), OutputCoordinator!, neuronCt)), regionAddress.Address.ToString());
+                    pid = context.SpawnNamed(Props.FromProducer(() => new OutputRegion(DebugServerPID, new RegionAddress((byte)msg.Address), OutputCoordinator!, neuronCt)), regionAddress.Address.ToString());
                     isOutputRegion = true;
                 }
                 // Interior
                 else
                 {
-                    pid = context.SpawnNamed(Props.FromProducer(() => new Region(regionAddress, neuronCt)), regionAddress.Address.ToString());
+                    pid = context.SpawnNamed(Props.FromProducer(() => new Region(DebugServerPID, regionAddress, neuronCt)), regionAddress.Address.ToString());
                 }
                 
                 Regions[new RegionAddress((byte)msg.Address)] = pid;

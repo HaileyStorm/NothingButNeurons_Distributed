@@ -10,7 +10,7 @@ internal class InputRegion : Region
 {
     // Initializes the InputRegion with a given address, input coordinator PID, and neuron count.
     // Sets IsInputRegion to true and IsInteriorRegion to false.
-    public InputRegion(RegionAddress address, PID inputCoordinator, int neuronCt) : base(address, neuronCt)
+    public InputRegion(PID debugServerPID, RegionAddress address, PID inputCoordinator, int neuronCt) : base(debugServerPID, address, neuronCt)
     {
         InputCoordinator = inputCoordinator;
         IsInputRegion = true;

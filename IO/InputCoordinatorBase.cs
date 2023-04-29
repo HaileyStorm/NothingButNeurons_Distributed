@@ -19,7 +19,7 @@ public abstract class InputCoordinatorBase : ActorBaseWithBroadcaster
     /// <summary>
     /// Initializes a new instance of the <see cref="InputCoordinatorBase"/> class.
     /// </summary>
-    public InputCoordinatorBase()
+    public InputCoordinatorBase(PID debugServerPID) : base(debugServerPID)
     {
 
     }

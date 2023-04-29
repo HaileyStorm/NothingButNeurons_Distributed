@@ -11,7 +11,7 @@ namespace NothingButNeurons.Brain.Regions.Neurons
         /// <summary>
         /// Initializes a new instance of the <see cref="OutputNeuron"/> class.
         /// </summary>
-        public OutputNeuron(NeuronAddress address, int synapseCt, AccumulationFunction accumulationFunction = AccumulationFunction.Sum, double preActivationThreshold = 0d, ActivationFunction activationFunction = ActivationFunction.TanH, double activationParameterA = 0d, double activationParameterB = 0d, double activationThreshold = 0d, ResetFunction resetFunction = ResetFunction.Zero) : base(address, synapseCt, accumulationFunction, preActivationThreshold, activationFunction, activationParameterA, activationParameterB, activationThreshold, resetFunction)
+        public OutputNeuron(PID debugServerPID, NeuronAddress address, int synapseCt, AccumulationFunction accumulationFunction = AccumulationFunction.Sum, double preActivationThreshold = 0d, ActivationFunction activationFunction = ActivationFunction.TanH, double activationParameterA = 0d, double activationParameterB = 0d, double activationThreshold = 0d, ResetFunction resetFunction = ResetFunction.Zero) : base(debugServerPID, address, synapseCt, accumulationFunction, preActivationThreshold, activationFunction, activationParameterA, activationParameterB, activationThreshold, resetFunction)
         {
             //Debug.WriteLine($"Enabling Output Neuron {address.RegionPart}/{address.NeuronPart}");
             _behavior.Become(Enabled);

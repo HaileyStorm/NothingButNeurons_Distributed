@@ -13,7 +13,7 @@ internal class DebugServer : ActorBase
     // Dictionary of subscribers and their subscription settings
     private Dictionary<PID, DebugSubscribeMessage> Subscribers;
 
-    public DebugServer()
+    public DebugServer() : base(new PID())
     {
         Subscribers = new Dictionary<PID, DebugSubscribeMessage>();
     }

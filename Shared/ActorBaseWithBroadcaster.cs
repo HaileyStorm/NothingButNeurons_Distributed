@@ -11,6 +11,9 @@ namespace NothingButNeurons.Shared;
 public abstract class ActorBaseWithBroadcaster : ActorBase
 {
     private PID? RouterPID;
+
+    protected ActorBaseWithBroadcaster(PID debugServerPID) : base(debugServerPID) { }
+
     /// <summary>
     /// Gets or sets the base context for the actor.
     /// </summary>
