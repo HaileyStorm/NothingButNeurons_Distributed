@@ -13,3 +13,5 @@ message SpawnBrainMessage {
 message SpawnBrainAckMessage {}
 
 message ActivateHiveMindMessage {}
+
+message TickMessage {}

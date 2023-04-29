@@ -182,8 +182,6 @@ message SignalMessage {
     double Val = 1;
 }
 
-message TickMessage {}
-
 message NeuronFunctionReturn {
     double Val = 1;
     double Cost = 2;
