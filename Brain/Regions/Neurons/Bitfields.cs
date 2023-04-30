@@ -285,4 +285,9 @@ public struct Axon
             Strength = Strength
         };
     }
+
+    public SynapseBitField ToSynapseBitField(NeuronAddress fromAddress)
+    {
+        return new SynapseBitField(fromAddress, ToAddress, (byte)NeuronBase.DoubleToBits(Strength));
+    }
 }

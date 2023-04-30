@@ -259,6 +259,24 @@ internal abstract class NeuronBase : ActorBase
     }
     #endregion Behaviours
 
+    private (int[] neuron, int[] synapses) GetBinaryData()
+    {
+        int[] neuron = new int[2] {
+            new NeuronPart1BitField(Address.RegionPart, Address.NeuronPart, AccumulationFunction, (byte)DoubleToBits(PreActivationThreshold, 31), ActivationFunction, (byte)DoubleToBits(ActivationParameterA, 63, -3d ,3d)).Data.Data,
+            new NeuronPart2BitField(32, 5, ResetFunction.Zero).Data.Data
+        };
+
+        int[] synapses = new int[Axons.Length];
+        int i = 0;
+        foreach (Axon axon in Axons)
+        {
+            synapses[i] = axon.ToSynapseBitField(Address).Data.Data.ReverseBytes();
+            i++;
+        }
+
+        return (neuron, synapses);
+    }
+
     /// <summary>
     /// Converts Neuron/SynapseBitField stored values (binary, representing integers, e.g. a value between 0 and 15 for a BitVector32.Section taking 4 bits) into doubles (e.g. for Axon strengths, neuron thresholds, activation function parameters).
     /// Values are concentrated toward the mid-range.

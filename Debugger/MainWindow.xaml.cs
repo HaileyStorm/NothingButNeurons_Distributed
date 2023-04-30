@@ -15,6 +15,9 @@ using System.Windows.Controls;
 using Proto.Remote;
 using Proto.Remote.GrpcNet;
 using Google.Protobuf;
+using Grpc.Net.Client;
+using System.IO.Compression;
+using Grpc.Net.Compression;
 
 namespace NothingButNeurons.Debugger;
 
@@ -60,6 +63,13 @@ public partial class MainWindow : Window
         var remoteConfig = GrpcNetRemoteConfig
             .BindToLocalhost(8001)
             .WithProtoMessages(DebuggerReflection.Descriptor, NeuronsReflection.Descriptor, IOReflection.Descriptor)
+            /*.WithChannelOptions(new GrpcChannelOptions
+            {
+                CompressionProviders = new[]
+                        {
+                            new GzipCompressionProvider(CompressionLevel.Fastest)
+                        }
+            })*/
             .WithRemoteDiagnostics(true);
         ProtoSystem = new ActorSystem().WithRemote(remoteConfig);
         ProtoSystem.Remote().StartAsync();

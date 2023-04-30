@@ -5,6 +5,9 @@ global using System.Diagnostics;
 using Proto;
 using Proto.Remote;
 using Proto.Remote.GrpcNet;
+using Grpc.Net.Client;
+using System.IO.Compression;
+using Grpc.Net.Compression;
 
 namespace NothingButNeurons.IO
 {
@@ -21,6 +24,13 @@ namespace NothingButNeurons.IO
             var remoteConfig = GrpcNetRemoteConfig
                 .BindToLocalhost(8000)
                 .WithProtoMessages(DebuggerReflection.Descriptor, NeuronsReflection.Descriptor, IOReflection.Descriptor)
+                /*.WithChannelOptions(new GrpcChannelOptions
+                    {
+                        CompressionProviders = new[]
+                        {
+                            new GzipCompressionProvider(CompressionLevel.Fastest)
+                        }
+                    })*/
                 .WithRemoteDiagnostics(true);
             ProtoSystem = new ActorSystem().WithRemote(remoteConfig);
             ProtoSystem.Remote().StartAsync();
