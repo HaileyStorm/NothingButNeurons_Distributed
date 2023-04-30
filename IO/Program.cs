@@ -14,14 +14,26 @@ namespace NothingButNeurons.IO
     internal class Program
     {
         static ActorSystem ProtoSystem;
+        static int Port;
+        static int DebugServerPort;
         static PID HiveMind;
 
         static void Main(string[] args)
         {
-            CombinedWriteLine("NothingButNeurons.IO program starting...");
+            if (args.Length >= 2)
+            {
+                Port = int.Parse(args[0]);
+                DebugServerPort = int.Parse(args[1]);
+            } else
+            {
+                Port = 8000;
+                DebugServerPort = 8001;
+            }
+            
+            CombinedWriteLine($"NothingButNeurons.IO program starting on port {Port}, with DebugServer on port {DebugServerPort}...");
 
             var remoteConfig = GrpcNetRemoteConfig
-                .BindToLocalhost(8000)
+                .BindToLocalhost(Port)
                 .WithProtoMessages(DebuggerReflection.Descriptor, NeuronsReflection.Descriptor, IOReflection.Descriptor)
                 /*.WithChannelOptions(new GrpcChannelOptions
                     {
@@ -38,7 +50,7 @@ namespace NothingButNeurons.IO
                 Thread.Sleep(100);
             }
 
-            PID debugServerPID = PID.FromAddress("127.0.0.1:8001", "DebugServer");
+            PID debugServerPID = PID.FromAddress($"127.0.0.1:{DebugServerPort}", "DebugServer");
             HiveMind = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new HiveMind(debugServerPID)), "HiveMind");
 
             CombinedWriteLine("NothingButNeurons.IO program ready.");

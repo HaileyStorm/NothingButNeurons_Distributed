@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Brain", "Brain\Brain.csproj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Debugger", "Debugger\Debugger.csproj", "{C1C00DD0-6F2D-43E4-85A6-AB0E99F85188}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO", "IO\IO.csproj", "{4B6631B4-6B7A-4C49-9728-8DC512575209}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IO", "IO\IO.csproj", "{4B6631B4-6B7A-4C49-9728-8DC512575209}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orchestrator", "Orchestrator\Orchestrator.csproj", "{F2E95136-9477-4D5B-981A-9012EAF0D17F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{4B6631B4-6B7A-4C49-9728-8DC512575209}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4B6631B4-6B7A-4C49-9728-8DC512575209}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4B6631B4-6B7A-4C49-9728-8DC512575209}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2E95136-9477-4D5B-981A-9012EAF0D17F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2E95136-9477-4D5B-981A-9012EAF0D17F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2E95136-9477-4D5B-981A-9012EAF0D17F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2E95136-9477-4D5B-981A-9012EAF0D17F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
