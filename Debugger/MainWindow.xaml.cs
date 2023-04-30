@@ -28,7 +28,6 @@ public partial class MainWindow : Window
 {
     // Declare fields for ActorSystem and actor PIDs
     ActorSystem ProtoSystem;
-    PID TestActor;
     PID DebugServer;
     PID DebugFileWriter;
     PID DebugUI;
@@ -78,18 +77,15 @@ public partial class MainWindow : Window
             Thread.Sleep(100);
         }
 
-        //HiveMind = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new HiveMind()), "HiveMind");
         HiveMind = PID.FromAddress("127.0.0.1:8000", "HiveMind");
-        //Debug.WriteLine($"\n\n\nHIVEMIND PID FROM DEBUGGER: {HiveMind}\n\n\n");
 
         DebugServer = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DebugServer()), "DebugServer");
-        //Debug.WriteLine($"\n\n\nDEBUG SERVER PID FROM DEBUGGER: {DebugServer}\n\n\n");
         DebugUI = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DebugUI(DebugServer, rtbDebug)), "DebugUI");
         UpdateDebugUISubscription();
         DebugFileWriter = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DebugFileWriter(DebugServer)), "DebugFileWriter");
         SendDebugMessage(DebugSeverity.Trace, "Startup", "ActorSystem, DebugServer, DebugFileWriter and DebugUI created.");
 
-        NetworkVisualizationUpdator = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new Debugger.NetworkVisualization.Updater(DebugServer, networkVisualizationCanvas, tickTime)), "NetworkVisualizationUpdator");
+        NetworkVisualizationUpdator = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new NetworkVisualization.Updater(DebugServer, networkVisualizationCanvas, tickTime)), "NetworkVisualizationUpdator");
 
         /*var watch = new Stopwatch();
         var rnd = new Random();
@@ -356,9 +352,10 @@ public partial class MainWindow : Window
             string binary = Convert.ToString(b, 2).PadLeft(8, '0');
             Debug.WriteLine(binary);
         }*/
-        Thread.Sleep(500);
+
         ProtoSystem.Root.Send(HiveMind, new SpawnBrainMessage { NeuronData = ByteString.CopyFrom(neuronData), SynapseData = ByteString.CopyFrom(synapseData) });
-        Thread.Sleep(1500);
+        // TODO: Instead of sleeping, use SpawnBrainAck (will have to send SpawnBrainMessage from an actor, as it sends the act to the sender of the spawn)
+        Thread.Sleep(1000);
         ProtoSystem.Root.Send(HiveMind, new ActivateHiveMindMessage());
 
         Scheduler scheduler = new(ProtoSystem.Root);

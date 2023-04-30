@@ -40,9 +40,7 @@ namespace NothingButNeurons.IO
             }
 
             PID debugServerPID = PID.FromAddress("127.0.0.1:8001", "DebugServer");
-            //Debug.WriteLine($"\n\n\nDEBUG SERVER PID FROM IO: {debugServerPID}\n\n\n");
             HiveMind = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new HiveMind(debugServerPID)), "HiveMind");
-            //Debug.WriteLine($"\n\n\nHIVEMIND PID FROM IO: {HiveMind}\n\n\n");
 
             Debug.WriteLine("NothingButNeurons.IO program ready.");
             Console.WriteLine("NothingButNeurons.IO program ready.");
