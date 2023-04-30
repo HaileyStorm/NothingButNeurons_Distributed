@@ -10,7 +10,9 @@ message SpawnBrainMessage {
   bytes SynapseData = 2;
 }
 
-message SpawnBrainAckMessage {}
+message SpawnBrainAckMessage {
+  actor.PID BrainPID = 1;
+}
 
 message ActivateHiveMindMessage {}
 

@@ -355,7 +355,7 @@ public partial class MainWindow : Window
 
         ProtoSystem.Root.Send(HiveMind, new SpawnBrainMessage { NeuronData = ByteString.CopyFrom(neuronData), SynapseData = ByteString.CopyFrom(synapseData) });
         // TODO: Instead of sleeping, use SpawnBrainAck (will have to send SpawnBrainMessage from an actor, as it sends the act to the sender of the spawn)
-        Thread.Sleep(1000);
+        Thread.Sleep(1200);
         ProtoSystem.Root.Send(HiveMind, new ActivateHiveMindMessage());
 
         Scheduler scheduler = new(ProtoSystem.Root);
