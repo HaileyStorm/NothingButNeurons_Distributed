@@ -64,7 +64,7 @@ internal partial class Updater : ActorBase
                     if (!_regions.ContainsKey(regionPid))
                     {
                         RegionInfo region = new RegionInfo(regionPid, regionType, regionAddress, neuronCount);
-                        Debug.WriteLine($"Visualization - Region: {regionPid}");
+                        //SendDebugMessage(DebugSeverity.Test, "Visualization", $"Region spawn: {regionPid}");
                         _regions[regionPid] = region;
                     }
                     else
@@ -85,7 +85,7 @@ internal partial class Updater : ActorBase
                     int synapseCount = int.Parse(messageParts[7]);
 
                     NeuronInfo neuron = new NeuronInfo(neuronPid, neuronAddress, new Point(0, 0));
-                    Debug.WriteLine($"Visualization - Neuron: {neuronPid}");
+                    //SendDebugMessage(DebugSeverity.Test, "Visualization", $"Neuron spawn: {neuronPid}");
                     _neurons[neuronPid] = neuron;
                     // We received a spawn neuron debug before its spawn region debug
                     if (!_regions.ContainsKey(regionPid))
@@ -130,7 +130,7 @@ internal partial class Updater : ActorBase
                         .SelectMany(r => r.Neurons)
                         .FirstOrDefault(n => n.Address == targetNeuronAddress);
 
-                    Debug.WriteLine($"Visualization - Synapse between {sourceNeuronPid} and {(targetNeuron == null ? "null" : targetNeuron.Id)}");
+                    //SendDebugMessage(DebugSeverity.Test, "Visualization", $"Synapse between {sourceNeuronPid} and {(targetNeuron == null ? "null" : targetNeuron.Id)} spawn");
 
                     ConnectionInfo connection = new ConnectionInfo(sourceNeuronPid, targetNeuron, connectionStrength, connectionTimeout, SetConnectionPathColor);
 
@@ -171,7 +171,7 @@ internal partial class Updater : ActorBase
                     Task.Run(async () =>
                     {
                         await Task.Delay(TimeSpan.FromSeconds(1));
-                        Debug.WriteLine("Visualization - Brain active.");
+                        //SendDebugMessage(DebugSeverity.Test, "Visualization", "Brain active.");
                         DrawRegionsAndNeurons();
                     });
                 }
@@ -184,7 +184,7 @@ internal partial class Updater : ActorBase
                 string fromPid = msg.Message.Split(' ')[3];
                 double signalStrength = double.Parse(msg.Message.Split(' ')[14]);
 
-                //Debug.WriteLine($"Visualization - Updating synapse {fromPid}-{toPid} with strength {signalStrength}");
+                //SendDebugMessage(DebugSeverity.Warning, "Visualization", $"Updating synapse {fromPid}-{toPid} with strength {signalStrength}");
                 UpdateConnection($"{fromPid}-{toPid}", signalStrength);
 
                 processed = true;
@@ -193,7 +193,7 @@ internal partial class Updater : ActorBase
             {
                 string neuronPid = msg.Summary.Split(" ")[1];
                 double signalBuffer = double.Parse(msg.Message.Split(' ')[2]);
-                Debug.WriteLine($"Visualization - Updating neuron {neuronPid} signalBuffer to {signalBuffer}");
+                //SendDebugMessage(DebugSeverity.Alert, "Visualization", $"Updating neuron {neuronPid} signalBuffer to {signalBuffer}");
                 UpdateNeuron(neuronPid, signalBuffer);
 
                 processed = true;
@@ -202,7 +202,7 @@ internal partial class Updater : ActorBase
             {
                 string neuronPid = msg.Summary.Split(" ")[1];
                 double signalBuffer = double.Parse(msg.Message.Split(' ')[7].TrimEnd('.'));
-                Debug.WriteLine($"Visualization - Updating neuron {neuronPid} signalBuffer to {signalBuffer} (reset)");
+                //SendDebugMessage(DebugSeverity.Alert, "Visualization", $"Updating neuron {neuronPid} signalBuffer to {signalBuffer} (reset)");
                 UpdateNeuron(neuronPid, signalBuffer);
 
                 processed = true;
