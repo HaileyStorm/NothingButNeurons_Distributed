@@ -18,8 +18,7 @@ namespace NothingButNeurons.IO
 
         static void Main(string[] args)
         {
-            Debug.WriteLine("NothingButNeurons.IO program starting...");
-            Console.WriteLine("NothingButNeurons.IO program starting...");
+            CombinedWriteLine("NothingButNeurons.IO program starting...");
 
             var remoteConfig = GrpcNetRemoteConfig
                 .BindToLocalhost(8000)
@@ -42,13 +41,17 @@ namespace NothingButNeurons.IO
             PID debugServerPID = PID.FromAddress("127.0.0.1:8001", "DebugServer");
             HiveMind = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new HiveMind(debugServerPID)), "HiveMind");
 
-            Debug.WriteLine("NothingButNeurons.IO program ready.");
-            Console.WriteLine("NothingButNeurons.IO program ready.");
+            CombinedWriteLine("NothingButNeurons.IO program ready.");
 
             Console.ReadLine();
-            Debug.WriteLine("NothingButNeurons.IO program shutting down...");
-            Console.WriteLine("NothingButNeurons.IO program shutting down...");
+            CombinedWriteLine("NothingButNeurons.IO program shutting down...");
             ProtoSystem.Remote().ShutdownAsync().GetAwaiter().GetResult();
+        }
+
+        static void CombinedWriteLine(string line)
+        {
+            Debug.WriteLine(line);
+            Console.WriteLine(line);
         }
     }
 }
