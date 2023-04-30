@@ -1,6 +1,9 @@
-﻿using System;
+﻿global using NothingButNeurons.Shared;
+global using NothingButNeurons.Shared.Messages;
+global using NothingButNeurons.CCSL;
+global using System.Diagnostics;
+using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
