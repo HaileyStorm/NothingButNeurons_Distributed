@@ -57,9 +57,9 @@ internal class ServiceLauncher
             case "DebugLogViewer":
                 //TODO: IO/HiveMind port is temporary, does not belong here.
                 arguments = $"{service.Port} {DebugServerPort} {IOPort}";
-                Debug.WriteLine($"\nDebugLogViewer arguments: {arguments}");
                 break;
             case "Visualizer":
+                arguments = $"{service.Port} {DebugServerPort}";
                 break;
             case "Designer":
                 //Will need IOPort

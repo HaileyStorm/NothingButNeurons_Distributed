@@ -17,3 +17,7 @@ message SpawnBrainAckMessage {
 message ActivateHiveMindMessage {}
 
 message TickMessage {}
+
+message PingMessage {}
+
+message PongMessage {}

@@ -20,18 +20,19 @@ namespace NothingButNeurons.Orchestrator;
 public partial class MainWindow : Window
 {
     internal static MainWindow Instance { get; private set; }
+    internal const int ServiceMonitorPort = 9999;
     
     internal ServiceLauncher ServiceLauncher { get; private set; }
     internal ServiceMonitor ServiceMonitor { get; private set; }
 
     public ObservableCollection<Service> Services { get; set; } = new ObservableCollection<Service>
     {
-        new Service { Name = "IO / HiveMind", ProjectName="IO", IsWPF=false, Port = 8000, StatusColor = Brushes.Gray },
-        new Service { Name = "Debug Server", ProjectName="DebugServer", IsWPF=false, Port = 8001, StatusColor = Brushes.Gray },
-        new Service { Name = "Debug File Writer", ProjectName="DebugFileWriter", IsWPF=false, Port = 8002, StatusColor = Brushes.Gray },
-        new Service { Name = "Debug Log Viewer", ProjectName="DebugLogViewer", IsWPF=true, Port = 8003, StatusColor = Brushes.Gray },
-        new Service { Name = "Visualizer", ProjectName="Visualizer", IsWPF=true, Port = 8004, StatusColor = Brushes.Gray },
-        new Service { Name = "Designer", ProjectName="Designer", IsWPF=true, Port = 8005, StatusColor = Brushes.Gray }
+        new Service { Name = "IO / HiveMind", ProjectName="IO", ActorName="HiveMind", IsWPF=false, Port = 8000, StatusColor = Brushes.Gray },
+        new Service { Name = "Debug Server", ProjectName="DebugServer", ActorName="DebugServer", IsWPF=false, Port = 8001, StatusColor = Brushes.Gray },
+        new Service { Name = "Debug File Writer", ProjectName="DebugFileWriter", ActorName="DebugFileWriter", IsWPF=false, Port = 8002, StatusColor = Brushes.Gray },
+        new Service { Name = "Debug Log Viewer", ProjectName="DebugLogViewer", ActorName="DebugUI", IsWPF=true, Port = 8003, StatusColor = Brushes.Gray },
+        new Service { Name = "Visualizer", ProjectName="Visualizer", ActorName="NetworkVisualizationUpdater", IsWPF=true, Port = 8004, StatusColor = Brushes.Gray },
+        new Service { Name = "Designer", ProjectName="Designer", ActorName="DesignerUI", IsWPF=true, Port = 8005, StatusColor = Brushes.Gray }
     };
 
     public MainWindow()
@@ -124,6 +125,13 @@ public class Service : INotifyPropertyChanged
     {
         get { return _projectName; }
         set { _projectName = value; OnPropertyChanged(); }
+    }
+
+    private string _actorName;
+    public string ActorName
+    {
+        get { return _actorName; }
+        set { _actorName = value; OnPropertyChanged(); }
     }
 
     private bool _isWPF;

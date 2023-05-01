@@ -11,13 +11,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Debugger", "Debugger\Debugg
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IO", "IO\IO.csproj", "{4B6631B4-6B7A-4C49-9728-8DC512575209}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orchestrator", "Orchestrator\Orchestrator.csproj", "{F2E95136-9477-4D5B-981A-9012EAF0D17F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orchestrator", "Orchestrator\Orchestrator.csproj", "{F2E95136-9477-4D5B-981A-9012EAF0D17F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DebugServer", "DebugServer\DebugServer.csproj", "{6A4B2682-EA57-4376-B827-62755D7F7EB4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DebugServer", "DebugServer\DebugServer.csproj", "{6A4B2682-EA57-4376-B827-62755D7F7EB4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DebugFileWriter", "DebugFileWriter\DebugFileWriter.csproj", "{2442A8C9-9E00-4502-A4B3-01BEEF326D79}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DebugFileWriter", "DebugFileWriter\DebugFileWriter.csproj", "{2442A8C9-9E00-4502-A4B3-01BEEF326D79}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DebugLogViewer", "DebugLogViewer\DebugLogViewer.csproj", "{D9E47968-094F-4870-95BA-09C4A2793919}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DebugLogViewer", "DebugLogViewer\DebugLogViewer.csproj", "{D9E47968-094F-4870-95BA-09C4A2793919}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visualizer", "Visualizer\Visualizer.csproj", "{E505A57D-6037-45DA-944A-30A75A3CE9AE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +59,10 @@ Global
 		{D9E47968-094F-4870-95BA-09C4A2793919}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9E47968-094F-4870-95BA-09C4A2793919}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D9E47968-094F-4870-95BA-09C4A2793919}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E505A57D-6037-45DA-944A-30A75A3CE9AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E505A57D-6037-45DA-944A-30A75A3CE9AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E505A57D-6037-45DA-944A-30A75A3CE9AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E505A57D-6037-45DA-944A-30A75A3CE9AE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

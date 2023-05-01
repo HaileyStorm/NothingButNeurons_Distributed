@@ -72,8 +72,6 @@ public partial class MainWindow : Window
             HiveMindPort = 8000;
         }
 
-        var random = new System.Random();
-
         var remoteConfig = GrpcNetRemoteConfig
             .BindToLocalhost(Port)
             .WithProtoMessages(DebuggerReflection.Descriptor, NeuronsReflection.Descriptor, IOReflection.Descriptor)
@@ -100,6 +98,8 @@ public partial class MainWindow : Window
         // *****************
         // TODO: Move to Designer. All the way til inputNeuronTimer.Start()
         // *****************
+        var random = new System.Random();
+
         List<int> neurons = new()
         {
             new NeuronPart1BitField(1, 789, AccumulationFunction.Sum, 16, ActivationFunction.TanH, 30).Data.Data,

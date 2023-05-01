@@ -80,6 +80,11 @@ public abstract class ActorBase : IActor
                 ReceiveMessage(context);
                 break;
 
+            // Process the Ping message, from Orchestrator's ServiceMonitor
+            case PingMessage _:
+                context.Respond(new PongMessage());
+                break;
+
             // Process other messages
             default:
                 ReceiveMessage(context);

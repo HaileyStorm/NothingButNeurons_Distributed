@@ -30,7 +30,7 @@ public partial class MainWindow : Window
     PID DebugServer;
     PID DebugFileWriter;
     PID DebugUI;
-    PID NetworkVisualizationUpdator;
+    PID NetworkVisualizationUpdater;
     PID HiveMind;
 
     // Declare a timer for handling debug context typing
@@ -84,7 +84,7 @@ public partial class MainWindow : Window
         DebugFileWriter = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DebugFileWriter(DebugServer)), "DebugFileWriter");
         SendDebugMessage(DebugSeverity.Trace, "Startup", "ActorSystem, DebugServer, DebugFileWriter and DebugUI created.");
 
-        NetworkVisualizationUpdator = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new NetworkVisualization.Updater(DebugServer, networkVisualizationCanvas, tickTime)), "NetworkVisualizationUpdator");
+        NetworkVisualizationUpdater = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new NetworkVisualization.Updater(DebugServer, networkVisualizationCanvas, tickTime)), "NetworkVisualizationUpdater");
 
         /*var watch = new Stopwatch();
         var rnd = new Random();
