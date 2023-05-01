@@ -94,17 +94,18 @@ internal class Region : ActorBaseWithBroadcaster
             // Adds the neuron to the Neurons dictionary and the router
             case SpawnNeuronReturnMessage msg:
                 PID pid;
+                NeuronData neuronData = new NeuronData(new NeuronAddress(msg.Address), msg.AccumulationFunction, msg.PreActivationThreshold, msg.ActivationFunction, msg.ActivationParameterA, msg.ActivationParameterB, msg.ActivationThreshold, msg.ResetFunction);
                 if (IsInputRegion)
                 {
-                    pid = context.SpawnNamed(Props.FromProducer(() => new InputNeuron(DebugServerPID, new NeuronAddress(msg.Address), msg.Synapses.Count, msg.AccumulationFunction, msg.PreActivationThreshold, msg.ActivationFunction, msg.ActivationParameterA, msg.ActivationParameterB, msg.ActivationThreshold, msg.ResetFunction)), new NeuronAddress(msg.Address).NeuronPart.ToString());
+                    pid = context.SpawnNamed(Props.FromProducer(() => new InputNeuron(DebugServerPID, msg.Synapses.Count, neuronData)), new NeuronAddress(msg.Address).NeuronPart.ToString());
                 }
                 else if (IsOutputRegion)
                 {
-                    pid = context.SpawnNamed(Props.FromProducer(() => new OutputNeuron(DebugServerPID, new NeuronAddress(msg.Address), msg.Synapses.Count, msg.AccumulationFunction, msg.PreActivationThreshold, msg.ActivationFunction, msg.ActivationParameterA, msg.ActivationParameterB, msg.ActivationThreshold, msg.ResetFunction)), new NeuronAddress(msg.Address).NeuronPart.ToString());
+                    pid = context.SpawnNamed(Props.FromProducer(() => new OutputNeuron(DebugServerPID, msg.Synapses.Count, neuronData)), new NeuronAddress(msg.Address).NeuronPart.ToString());
                 }
                 else
                 {
-                    pid = context.SpawnNamed(Props.FromProducer(() => new InteriorNeuron(DebugServerPID, new NeuronAddress(msg.Address), msg.Synapses.Count, msg.AccumulationFunction, msg.PreActivationThreshold, msg.ActivationFunction, msg.ActivationParameterA, msg.ActivationParameterB, msg.ActivationThreshold, msg.ResetFunction)), new NeuronAddress(msg.Address).NeuronPart.ToString());
+                    pid = context.SpawnNamed(Props.FromProducer(() => new InteriorNeuron(DebugServerPID, msg.Synapses.Count, neuronData)), new NeuronAddress(msg.Address).NeuronPart.ToString());
                 }
 
                 Neurons[new NeuronAddress(msg.Address)] = pid;

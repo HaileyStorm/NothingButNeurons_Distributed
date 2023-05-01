@@ -237,17 +237,18 @@ public partial class MainWindow : Window
         inputNeuronTimer.Elapsed += (s, e) =>
         {
             if (random.Next(0, 15) == 0)
-                ProtoSystem.Root.Send(new PID("127.0.0.1:8000", "HiveMind/Brain$1/3/100"), new SignalMessage { Val = random.NextDouble() * 2d - 1d });
-            if (random.Next(0, 15) == 0)
                 ProtoSystem.Root.Send(new PID("127.0.0.1:8000", "HiveMind/Brain$1/1/789"), new SignalMessage { Val = random.NextDouble() * 2d - 1d });
-            if (random.Next(0, 15) == 0)
+            if (random.Next(0, 15) == 1)
                 ProtoSystem.Root.Send(new PID("127.0.0.1:8000", "HiveMind/Brain$1/2/600"), new SignalMessage { Val = random.NextDouble() * 2d - 1d });
-            if (random.Next(0, 15) == 0)
-                ProtoSystem.Root.Send(new PID("127.0.0.1:8000", "HiveMind/Brain$1/4/800"), new SignalMessage { Val = random.NextDouble() * 2d - 1d });
-            if (random.Next(0, 15) == 0)
-                ProtoSystem.Root.Send(new PID("127.0.0.1:8000", "HiveMind/Brain$1/5/150"), new SignalMessage { Val = random.NextDouble() * 2d - 1d });
-            if (random.Next(0, 15) == 0)
+            if (random.Next(0, 15) == 2)
+                ProtoSystem.Root.Send(new PID("127.0.0.1:8000", "HiveMind/Brain$1/3/100"), new SignalMessage { Val = random.NextDouble() * 2d - 1d });
+            if (random.Next(0, 15) == 3)
                 ProtoSystem.Root.Send(new PID("127.0.0.1:8000", "HiveMind/Brain$1/3/444"), new SignalMessage { Val = random.NextDouble() * 2d - 1d });
+            if (random.Next(0, 15) == 4)
+                ProtoSystem.Root.Send(new PID("127.0.0.1:8000", "HiveMind/Brain$1/4/800"), new SignalMessage { Val = random.NextDouble() * 2d - 1d });
+            if (random.Next(0, 15) == 5)
+                ProtoSystem.Root.Send(new PID("127.0.0.1:8000", "HiveMind/Brain$1/5/150"), new SignalMessage { Val = random.NextDouble() * 2d - 1d });
+            
         };
         inputNeuronTimer.Start();
     }

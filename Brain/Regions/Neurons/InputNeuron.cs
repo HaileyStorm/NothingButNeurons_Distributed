@@ -11,7 +11,7 @@ internal class InputNeuron : NeuronBase
     /// <summary>
     /// Initializes a new instance of the <see cref="InputNeuron"/> class.
     /// </summary>
-    public InputNeuron(PID debugServerPID, NeuronAddress address, int synapseCt, AccumulationFunction accumulationFunction = AccumulationFunction.Sum, double preActivationThreshold = 0d, ActivationFunction activationFunction = ActivationFunction.TanH, double activationParameterA = 0d, double activationParameterB = 0d, double activationThreshold = 0d, ResetFunction resetFunction = ResetFunction.Zero) : base(debugServerPID, address, synapseCt, accumulationFunction, preActivationThreshold, activationFunction, activationParameterA, activationParameterB, activationThreshold, resetFunction)
+    public InputNeuron(PID debugServerPID, int synapseCt, NeuronData neuronData) : base(debugServerPID, synapseCt, neuronData)
     {
     }
 

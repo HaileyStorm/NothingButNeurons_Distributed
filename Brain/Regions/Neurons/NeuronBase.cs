@@ -83,18 +83,19 @@ internal abstract class NeuronBase : ActorBase
     /// <param name="activationParameterB">The second parameter used in the activation function.</param>
     /// <param name="activationThreshold">The activation threshold value for the neuron.</param>
     /// <param name="resetFunction">The reset function applied to the neuron.</param>
-    protected NeuronBase(PID debugServerPID, NeuronAddress address, int synapseCt, AccumulationFunction accumulationFunction, double preActivationThreshold, ActivationFunction activationFunction, double activationParameterA, double activationParameterB, double activationThreshold, ResetFunction resetFunction) : base(debugServerPID)
+    protected NeuronBase(PID debugServerPID, int synapseCt, NeuronData neuronData) : base(debugServerPID)
     {
-        Address = address;
+        Address = neuronData.Address;
         AwaitingSynapses = synapseCt;
         Axons = new Axon[synapseCt];
         SignalBuffer = 0d;
-        AccumulationFunction = accumulationFunction;
-        PreActivationThreshold = preActivationThreshold; 
-        ActivationFunction = activationFunction;
-        ActivationParameterA = activationParameterA;
-        ActivationParameterB = activationParameterB;
-        ResetFunction = resetFunction;
+        AccumulationFunction = neuronData.AccumulationFunction;
+        PreActivationThreshold = neuronData.PreActivationThreshold; 
+        ActivationFunction = neuronData.ActivationFunction;
+        ActivationParameterA = neuronData.ActivationParameterA;
+        ActivationParameterB = neuronData.ActivationParameterB;
+        ActivationThreshold = neuronData.ActivationThreshold;
+        ResetFunction = neuronData.ResetFunction;
 
         if (AwaitingSynapses > 0)
         {
@@ -263,7 +264,7 @@ internal abstract class NeuronBase : ActorBase
     {
         int[] neuron = new int[2] {
             new NeuronPart1BitField(Address.RegionPart, Address.NeuronPart, AccumulationFunction, (byte)DoubleToBits(PreActivationThreshold, 31), ActivationFunction, (byte)DoubleToBits(ActivationParameterA, 63, -3d ,3d)).Data.Data,
-            new NeuronPart2BitField(32, 5, ResetFunction.Zero).Data.Data
+            new NeuronPart2BitField((byte)DoubleToBits(ActivationParameterB, 63, -3d, 3d), (byte)DoubleToBits(ActivationThreshold, 15, 0d, 1d), ResetFunction).Data.Data
         };
 
         int[] synapses = new int[Axons.Length];

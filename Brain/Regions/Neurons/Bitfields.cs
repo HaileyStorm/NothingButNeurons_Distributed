@@ -19,7 +19,7 @@ internal static class NeuronPart1BitVectorSections
 }
 
 // Internal class containing sections for NeuronPart2BitField's BitVector32
-internal static class NeuronPart2BitVectorSetions
+internal static class NeuronPart2BitVectorSections
 {
     // Sections for ResetFunction, ActivationThreshold, and ActivationParameterB
     // Note: Only using 16 bits.
@@ -103,18 +103,18 @@ public readonly struct NeuronPart2BitField
     // Properties and constructors for NeuronPart2BitField
 
     public BitVector32 Data { get; init; }
-    public readonly ResetFunction ResetFunction { get { return (ResetFunction)Data[NeuronPart2BitVectorSetions.ResetFunction]; } }
-    public readonly byte ActivationThreshold { get { return (byte)Data[NeuronPart2BitVectorSetions.ActivationThreshold]; } }
-    public readonly byte ActivationParameterB { get { return (byte)Data[NeuronPart2BitVectorSetions.ActivationParameterB]; } }
+    public readonly ResetFunction ResetFunction { get { return (ResetFunction)Data[NeuronPart2BitVectorSections.ResetFunction]; } }
+    public readonly byte ActivationThreshold { get { return (byte)Data[NeuronPart2BitVectorSections.ActivationThreshold]; } }
+    public readonly byte ActivationParameterB { get { return (byte)Data[NeuronPart2BitVectorSections.ActivationParameterB]; } }
 
     public NeuronPart2BitField(BitVector32 data) { Data = data; }
     public NeuronPart2BitField(int data) { Data = new BitVector32(data.ReverseBytes()); }
     public NeuronPart2BitField(byte activationParameterB, byte activationThreshold, ResetFunction resetFunction)
     {
         BitVector32 data = new();
-        data[NeuronPart2BitVectorSetions.ResetFunction] = (byte)resetFunction;
-        data[NeuronPart2BitVectorSetions.ActivationThreshold] = activationThreshold;
-        data[NeuronPart2BitVectorSetions.ActivationParameterB] = (byte)activationParameterB;
+        data[NeuronPart2BitVectorSections.ResetFunction] = (byte)resetFunction;
+        data[NeuronPart2BitVectorSections.ActivationThreshold] = activationThreshold;
+        data[NeuronPart2BitVectorSections.ActivationParameterB] = (byte)activationParameterB;
 
         Data = data;
     }
