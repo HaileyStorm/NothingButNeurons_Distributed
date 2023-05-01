@@ -25,5 +25,6 @@ internal class ServiceMonitor
     private void Monitor(object sender, ElapsedEventArgs e)
     {
         //TODO: Ping...
+        //service.StatusColor = Brushes.Green;
     }
 }

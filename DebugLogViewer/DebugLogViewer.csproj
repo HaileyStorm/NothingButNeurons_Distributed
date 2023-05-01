@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>NothingButNeurons.$(MSBuildProjectName)</AssemblyName>
+    <RootNamespace>NothingButNeurons.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Proto.Actor" Version="1.1.0" />
+    <PackageReference Include="Proto.OpenTracing" Version="0.27.0" />
+    <PackageReference Include="Proto.Persistence.Sqlite" Version="1.1.0" />
+    <PackageReference Include="Proto.Remote" Version="1.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Brain\Brain.csproj" />
+    <ProjectReference Include="..\Shared\Shared.csproj" />
+  </ItemGroup>
+
+</Project>

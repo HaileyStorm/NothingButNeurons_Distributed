@@ -15,15 +15,12 @@ internal class ServiceLauncher
     private const string netVersion = "net7.0";
     private const string netVersionWin = $"{netVersion}-windows";
     
-    private ObservableCollection<Service> Services;
     private string BasePath;
     private string WPFBinPath;
     private string ConsoleBinPath;
 
     internal ServiceLauncher(bool isDebug)
     {
-        Services = MainWindow.Instance.Services;
-
         BasePath = Path.GetDirectoryName(
                     Path.GetDirectoryName(
                         Path.GetDirectoryName(
@@ -43,7 +40,8 @@ internal class ServiceLauncher
 
     internal void Launch(Service service)
     {
-        int DebugServerPort = GetPort("DebugServer");
+        int DebugServerPort = MainWindow.Instance.GetPort("DebugServer");
+        int IOPort = MainWindow.Instance.GetPort("IO");
 
         string arguments = "";
         switch (service.ProjectName) {
@@ -51,14 +49,20 @@ internal class ServiceLauncher
                 arguments = $"{service.Port} {DebugServerPort}";
                 break;
             case "DebugServer":
+                arguments = $"{service.Port}";
                 break;
             case "DebugFileWriter":
+                arguments = $"{service.Port} {DebugServerPort}";
                 break;
             case "DebugLogViewer":
+                //TODO: IO/HiveMind port is temporary, does not belong here.
+                arguments = $"{service.Port} {DebugServerPort} {IOPort}";
+                Debug.WriteLine($"\nDebugLogViewer arguments: {arguments}");
                 break;
             case "Visualizer":
                 break;
             case "Designer":
+                //Will need IOPort
                 break;
             default:
                 throw new ArgumentException("Service project name unexpected, unable to configure/launch.");
@@ -67,12 +71,15 @@ internal class ServiceLauncher
         try
         {
             // Create a new ProcessStartInfo object with the executable path
-            ProcessStartInfo startInfo = new ProcessStartInfo(Path.Combine(BasePath, service.ProjectName, service.IsWPF ? WPFBinPath : ConsoleBinPath, $"NothingButNeurons.{service.ProjectName}.exe"))
+            string servicePath = Path.Combine(BasePath, service.ProjectName, service.IsWPF ? WPFBinPath : ConsoleBinPath, $"NothingButNeurons.{service.ProjectName}.exe");
+            Debug.WriteLine($"\nLaunching service: {servicePath} {arguments}\n");
+            ProcessStartInfo startInfo = new ProcessStartInfo(servicePath)
             {
-                Arguments = arguments
+                Arguments = service.IsWPF ? $"\"{arguments}\"" : arguments
             };
 
-            // Start the process
+            // Start the process.
+            // Note: don't try to monitor this process, or update status light to anything other than green here - just let ServiceMonitor handle that.
             Process.Start(startInfo);
 
             service.StatusColor = Brushes.Green;
@@ -82,27 +89,27 @@ internal class ServiceLauncher
             Debug.WriteLine($"Error launching service {service.Name}: {ex.Message}");
             service.StatusColor = Brushes.Red;
         }
+    }
 
-
-
-        // Read the current port value from the input box
-        int currentPort = service.Port;
-
-        // Example service launching code
-        // Replace with the actual code to launch and monitor the service
-        if (service.StatusColor != Brushes.Green)
+    internal void Kill(Service service)
+    {
+        try
         {
-            service.StatusColor = Brushes.Green;
-            // Launch the service using the current port number
-        }
-    }
+            // Get the name of the executable without the .exe extension
+            string processName = $"NothingButNeurons.{service.ProjectName}";
 
-    internal int GetPort(Service service)
-    {
-        return service.Port;
-    }
-    internal int GetPort(string ProjectName)
-    {
-        return Services.Where(s => s.ProjectName == ProjectName).First().Port;
+            // Find all running instances of the specified executable
+            Process[] processes = Process.GetProcessesByName(processName);
+
+            // Kill each instance of the process
+            foreach (Process process in processes)
+            {
+                process.Kill();
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error killing service {service.Name}: {ex.Message}");
+        }
     }
 }

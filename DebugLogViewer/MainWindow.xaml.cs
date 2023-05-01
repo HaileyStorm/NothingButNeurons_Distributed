@@ -18,24 +18,26 @@ using Grpc.Net.Client;
 using System.IO.Compression;
 using Grpc.Net.Compression;
 
-namespace NothingButNeurons.Debugger;
+namespace NothingButNeurons.DebugLogViewer;
 
 /// <summary>
 /// MainWindow class managing the user interface and initializing the ActorSystem.
 /// </summary>
 public partial class MainWindow : Window
 {
-    // Declare fields for ActorSystem and actor PIDs
     ActorSystem ProtoSystem;
     PID DebugServer;
-    PID DebugFileWriter;
     PID DebugUI;
-    PID NetworkVisualizationUpdator;
     PID HiveMind;
 
     // Declare a timer for handling debug context typing
     private System.Timers.Timer DebugTypingTimer;
     private const int DebugContextTypingTimeout = 500;
+    //Proto.Remote ports
+    private int Port;
+    private int DebugServerPort;
+    //TODO: Temporary, does not belong here.
+    private int HiveMindPort;
 
     /// <summary>
     /// Initializes MainWindow components, sets up DebugSeverity dropdown items, and calls InitializeActorSystem.
@@ -50,16 +52,30 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-    /// Initializes the Proto.Actor system, creates actors, sets up neurons/synapses, sends activation messages, and schedules periodic tick and signal messages.
+    /// Initializes the Proto.Actor system.
     /// </summary>
     private void InitializeActorSystem()
     {
-        int tickTime = 300;
+        // Get command-line arguments
+        string[] args = Environment.GetCommandLineArgs();
+        if (args.Length >= 3) // will be 2
+        {
+            Port = int.Parse(args[0]);
+            DebugServerPort = int.Parse(args[1]);
+            //TODO: Temporary, does not belong here.
+            HiveMindPort = int.Parse(args[2]);
+        }
+        else
+        {
+            Port = 8003;
+            DebugServerPort = 8001;
+            HiveMindPort = 8000;
+        }
 
         var random = new System.Random();
 
         var remoteConfig = GrpcNetRemoteConfig
-            .BindToLocalhost(8001)
+            .BindToLocalhost(Port)
             .WithProtoMessages(DebuggerReflection.Descriptor, NeuronsReflection.Descriptor, IOReflection.Descriptor)
             /*.WithChannelOptions(new GrpcChannelOptions
             {
@@ -76,29 +92,14 @@ public partial class MainWindow : Window
             Thread.Sleep(100);
         }
 
-        HiveMind = PID.FromAddress("127.0.0.1:8000", "HiveMind");
-
-        DebugServer = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DebugServer()), "DebugServer");
+        DebugServer = PID.FromAddress($"127.0.0.1:{DebugServerPort}", "DebugServer");
         DebugUI = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DebugUI(DebugServer, rtbDebug)), "DebugUI");
         UpdateDebugUISubscription();
-        DebugFileWriter = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DebugFileWriter(DebugServer)), "DebugFileWriter");
-        SendDebugMessage(DebugSeverity.Trace, "Startup", "ActorSystem, DebugServer, DebugFileWriter and DebugUI created.");
 
-        NetworkVisualizationUpdator = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new NetworkVisualization.Updater(DebugServer, networkVisualizationCanvas, tickTime)), "NetworkVisualizationUpdator");
 
-        /*var watch = new Stopwatch();
-        var rnd = new Random();
-        foreach (ResetFunction func in ((ResetFunction[])Enum.GetValues(typeof(ResetFunction))).OrderBy(x => rnd.Next()))
-        {
-            watch.Restart();
-            for (int i = 0; i < 2500; i++)
-            {
-                func.Reset(0.2d, 0.4d, 0.6d, 20);
-            }
-            watch.Stop();
-            SendDebugMessage(DebugSeverity.Test, "ResetFunction Test", $"{func}\t{watch.ElapsedMilliseconds}");
-        }*/
-
+        // *****************
+        // TODO: Move to Designer. All the way til inputNeuronTimer.Start()
+        // *****************
         List<int> neurons = new()
         {
             new NeuronPart1BitField(1, 789, AccumulationFunction.Sum, 16, ActivationFunction.TanH, 30).Data.Data,
@@ -106,136 +107,6 @@ public partial class MainWindow : Window
 
             new NeuronPart1BitField(2, 600, AccumulationFunction.Product, 20, ActivationFunction.TanH, 40).Data.Data,
             new NeuronPart2BitField(32, 5, ResetFunction.Zero).Data.Data,
-
-
-
-            /*new NeuronPart1BitField(3, 0, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 1, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 2, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 3, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 4, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 5, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 6, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 7, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 8, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 9, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-
-            new NeuronPart1BitField(3, 10, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 11, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 12, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 13, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 14, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 15, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 16, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 17, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 18, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 19, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-
-            new NeuronPart1BitField(3, 20, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 21, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 22, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 23, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 24, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 25, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 26, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 27, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 28, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 29, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-
-            new NeuronPart1BitField(3, 30, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 31, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 32, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 33, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 34, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 35, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 36, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 37, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 38, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 39, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-
-            new NeuronPart1BitField(3, 40, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 41, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 42, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 43, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 44, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 45, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 46, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 47, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 48, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 49, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-
-            new NeuronPart1BitField(3, 50, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 51, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 52, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 53, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 54, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 55, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 56, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 57, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 58, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-            new NeuronPart1BitField(3, 59, AccumulationFunction.Sum, 14, ActivationFunction.TanH, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,*/
-
-
 
             new NeuronPart1BitField(3, 100, AccumulationFunction.Sum, 15, ActivationFunction.TanH, 32).Data.Data,
             new NeuronPart2BitField(32, 3, ResetFunction.Clamp1).Data.Data,
@@ -352,11 +223,13 @@ public partial class MainWindow : Window
             Debug.WriteLine(binary);
         }*/
 
+        HiveMind = PID.FromAddress($"127.0.0.1:{HiveMindPort}", "HiveMind");
         ProtoSystem.Root.Send(HiveMind, new SpawnBrainMessage { NeuronData = ByteString.CopyFrom(neuronData), SynapseData = ByteString.CopyFrom(synapseData) });
         // TODO: Instead of sleeping, use SpawnBrainAck (will have to send SpawnBrainMessage from an actor, as it sends the act to the sender of the spawn)
         Thread.Sleep(1200);
         ProtoSystem.Root.Send(HiveMind, new ActivateHiveMindMessage());
 
+        int tickTime = 300;
         Scheduler scheduler = new(ProtoSystem.Root);
         scheduler.SendRepeatedly(TimeSpan.FromMilliseconds(tickTime), HiveMind, new TickMessage());
 
@@ -368,13 +241,13 @@ public partial class MainWindow : Window
             if (random.Next(0, 15) == 0)
                 ProtoSystem.Root.Send(new PID("127.0.0.1:8000", "HiveMind/Brain$1/1/789"), new SignalMessage { Val = random.NextDouble() * 2d - 1d });
             if (random.Next(0, 15) == 0)
-                ProtoSystem.Root.Send(new PID("127.0.0.1:8000", "HiveMind/Brain$1/2/600"), new SignalMessage{ Val = random.NextDouble() * 2d - 1d });
+                ProtoSystem.Root.Send(new PID("127.0.0.1:8000", "HiveMind/Brain$1/2/600"), new SignalMessage { Val = random.NextDouble() * 2d - 1d });
             if (random.Next(0, 15) == 0)
-                ProtoSystem.Root.Send(new PID("127.0.0.1:8000", "HiveMind/Brain$1/4/800"), new SignalMessage{ Val = random.NextDouble() * 2d - 1d });
+                ProtoSystem.Root.Send(new PID("127.0.0.1:8000", "HiveMind/Brain$1/4/800"), new SignalMessage { Val = random.NextDouble() * 2d - 1d });
             if (random.Next(0, 15) == 0)
-                ProtoSystem.Root.Send(new PID("127.0.0.1:8000", "HiveMind/Brain$1/5/150"), new SignalMessage{ Val = random.NextDouble() * 2d - 1d });
+                ProtoSystem.Root.Send(new PID("127.0.0.1:8000", "HiveMind/Brain$1/5/150"), new SignalMessage { Val = random.NextDouble() * 2d - 1d });
             if (random.Next(0, 15) == 0)
-                ProtoSystem.Root.Send(new PID("127.0.0.1:8000", "HiveMind/Brain$1/3/444"), new SignalMessage{ Val = random.NextDouble() * 2d - 1d });
+                ProtoSystem.Root.Send(new PID("127.0.0.1:8000", "HiveMind/Brain$1/3/444"), new SignalMessage { Val = random.NextDouble() * 2d - 1d });
         };
         inputNeuronTimer.Start();
     }
@@ -421,7 +294,8 @@ public partial class MainWindow : Window
     /// <param name="message">Content of the debug message.</param>
     private void SendDebugMessage(DebugSeverity severity = DebugSeverity.Trace, string context = "", string summary = "", string message = "")
     {
-        ProtoSystem.Root.Send(DebugServer, new DebugOutboundMessage {
+        ProtoSystem.Root.Send(DebugServer, new DebugOutboundMessage
+        {
             Severity = severity,
             Context = context,
             Summary = summary,
@@ -431,7 +305,8 @@ public partial class MainWindow : Window
             SenderSystemAddr = "",
             ParentName = "",
             ParentSystemAddr = "",
-            MessageSentTime = DateTimeOffset.Now.ToUnixTimeMilliseconds() });
+            MessageSentTime = DateTimeOffset.Now.ToUnixTimeMilliseconds()
+        });
     }
 
     private void chkDebugEnable_Checked(object sender, RoutedEventArgs e)
@@ -492,10 +367,11 @@ public partial class MainWindow : Window
                 ProtoSystem.Root.Send(DebugServer, new DebugUnsubscribeMessage { Subscriber = DebugUI });
             }
             // Update display/filter according to changes
-            ProtoSystem.Root.Send(DebugUI, new DebugUISubUpdateMessage {
+            ProtoSystem.Root.Send(DebugUI, new DebugUISubUpdateMessage
+            {
                 Severity = (DebugSeverity)drpDebugSeverity.SelectedItem,
                 Context = txtDebugContext.Text,
-                Summary =txtDebugSummary.Text,
+                Summary = txtDebugSummary.Text,
                 Message = txtDebugMessage.Text,
                 SenderClass = txtDebugSenderClass.Text,
                 SenderName = txtDebugSenderName.Text,
@@ -508,12 +384,4 @@ public partial class MainWindow : Window
     {
         ProtoSystem.Root.Send(DebugUI, new DebugFlushMessage());
     }
-
-    private void btnFlushLogFile_Click(object sender, RoutedEventArgs e)
-    {
-        if (DebugFileWriter is null) return;
-        ProtoSystem.Root.Send(DebugFileWriter, new DebugFlushMessage());
-    }
 }
-
-
