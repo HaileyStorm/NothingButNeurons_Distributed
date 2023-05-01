@@ -45,6 +45,8 @@ public partial class MainWindow : Window
         string[] args = Environment.GetCommandLineArgs();
         if (args.Length >= 2)
         {
+            // In this app, the first argument is a dll
+            args = args[1].Split(' ');
             Port = int.Parse(args[0]);
             DebugServerPort = int.Parse(args[1]);
         }
