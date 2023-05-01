@@ -185,7 +185,7 @@ public readonly struct SynapseBitField
 /// <summary>
 /// Provides extension methods for SynapseBitField.
 /// </summary>
-internal static class SynapseExtensions
+public static class SynapseExtensions
 {
     /// <summary>
     /// Converts a collection of SynapseBitField objects into an array of Axon objects.
@@ -195,6 +195,19 @@ internal static class SynapseExtensions
     internal static Axon[] ToAxons(this IEnumerable<SynapseBitField> synapses)
     {
         return synapses.Select(s => new Axon(s)).ToArray();
+    }
+
+    public static byte[] ToByteArray(this IEnumerable<SynapseBitField> synapses)
+    {
+        // TODO: First sort the synapses
+
+        List<int> ints = new List<int>();
+        foreach (SynapseBitField synapse in synapses)
+        {
+            ints.Add(synapse.Data.Data.ReverseBytes());
+        }
+
+        return ints.AsEnumerable().SelectMany(BitConverter.GetBytes).ToArray();
     }
 }
 
@@ -264,11 +277,6 @@ public struct Axon
     {
         ToAddress = toAddress;
         Strength = strength;
-    }
-    public Axon(NeuronAddress toAddress, byte strength, bool excitory)
-    {
-        ToAddress = toAddress;
-        Strength = strength / 7d * (excitory ? 1d : -1d);
     }
 
     public Axon(MsgAxon msgAxon)

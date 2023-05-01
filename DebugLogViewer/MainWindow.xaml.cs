@@ -103,7 +103,7 @@ public partial class MainWindow : Window
         List<NeuronData> neurons = new()
         {
             new(new NeuronAddress(1, 789), AccumulationFunction.Sum, 0d, ActivationFunction.TanH, -0.09408328947811073d, 0d, 0.3102968627042596d, ResetFunction.Hold),
-            new(new NeuronAddress(2, 600), AccumulationFunction.Product, 0.21092151536762183d, ActivationFunction.TanH, 0.5810408471041231d, 0d, 0.3756515834738581d, ResetFunction.Zero),
+            new(new NeuronAddress(2, 600), AccumulationFunction.Product, -0.15816826832005448d, ActivationFunction.TanH, 0.5810408471041231d, 0d, 0.3756515834738581d, ResetFunction.Zero),
             new(new NeuronAddress(3, 100), AccumulationFunction.Sum, 0d, ActivationFunction.TanH, 0d, 0d, 0.23604621666228753d, ResetFunction.Clamp1),
             new(new NeuronAddress(3, 444), AccumulationFunction.Sum, -0.06435270007257976d, ActivationFunction.Identity, 2.2217183878210376d, 0d, 0d, ResetFunction.Zero),
             new(new NeuronAddress(4, 800), AccumulationFunction.Sum, -0.7751348713404214d, ActivationFunction.TanH, 0.22254413860750688d, 0d, 0.4308581751064845d, ResetFunction.Zero),
@@ -127,49 +127,48 @@ public partial class MainWindow : Window
              Debug.WriteLine(binary);
          }*/
 
-        //Debug.WriteLine($"\nActivation thresholds: {NeuronBase.BitsToDouble(4, 15, 0d, 1d)},{NeuronBase.BitsToDouble(5, 15, 0d, 1d)},{NeuronBase.BitsToDouble(3, 15, 0d, 1d)},{NeuronBase.BitsToDouble(0, 15, 0d, 1d)},{NeuronBase.BitsToDouble(6, 15, 0d, 1d)},{NeuronBase.BitsToDouble(2, 15, 0d, 1d)},{NeuronBase.BitsToDouble(9, 15, 0d, 1d)},{NeuronBase.BitsToDouble(8, 15, 0d, 1d)},{NeuronBase.BitsToDouble(1, 15, 0d, 1d)},{NeuronBase.BitsToDouble(7, 15, 0d, 1d)},{NeuronBase.BitsToDouble(12, 15, 0d, 1d)},{NeuronBase.BitsToDouble(11, 15, 0d, 1d)},{NeuronBase.BitsToDouble(0, 15, 0d, 1d)},{NeuronBase.BitsToDouble(8, 15, 0d, 1d)},{NeuronBase.BitsToDouble(7, 15, 0d, 1d)},{NeuronBase.BitsToDouble(5, 15, 0d, 1d)},\n");
-        byte[] synapseData = new List<int>
+        byte[] synapseData = new List<SynapseData>()
         {
-            new SynapseBitField(1, 789, 9, 200, 13).Data.Data.ReverseBytes(),
-            new SynapseBitField(1, 789, 15, 929, 0).Data.Data.ReverseBytes(),
+            new SynapseData(new NeuronAddress(1, 789), new NeuronAddress(9, 200), 0.6868607769664858d),
+            new SynapseData(new NeuronAddress(1, 789), new NeuronAddress(15, 929), -1d),
 
-            new SynapseBitField(2, 600, 7, 250, 14).Data.Data.ReverseBytes(),
-            new SynapseBitField(2, 600, 13, 980, 2).Data.Data.ReverseBytes(),
+            new SynapseData(new NeuronAddress(2, 600), new NeuronAddress(7, 250), 0.8470472479811115d),
+            new SynapseData(new NeuronAddress(2, 600), new NeuronAddress(13, 980), -0.6868607769664858d),
 
-            new SynapseBitField(3, 100, 9, 200, 4).Data.Data.ReverseBytes(),
-            new SynapseBitField(3, 100, 10, 20, 12).Data.Data.ReverseBytes(),
-            new SynapseBitField(3, 100, 15, 929, 15).Data.Data.ReverseBytes(),
+            new SynapseData(new NeuronAddress(3, 100), new NeuronAddress(9, 200), -0.3794062745914808d),
+            new SynapseData(new NeuronAddress(3, 100), new NeuronAddress(10, 20), 0.5279075666754249d),
+            new SynapseData(new NeuronAddress(3, 100), new NeuronAddress(15, 929), 1d),
 
-            new SynapseBitField(3, 444, 12, 333, 2).Data.Data.ReverseBytes(),
-            new SynapseBitField(3, 444, 13, 356, 11).Data.Data.ReverseBytes(),
-            new SynapseBitField(3, 444, 15, 929, 5).Data.Data.ReverseBytes(),
+            new SynapseData(new NeuronAddress(3, 444), new NeuronAddress(12, 333), -0.6868607769664858d),
+            new SynapseData(new NeuronAddress(3, 444), new NeuronAddress(13, 356), 0.3794062745914806d),
+            new SynapseData(new NeuronAddress(3, 444), new NeuronAddress(15, 929), -0.24869683305228385d),
 
-            new SynapseBitField(4, 800, 7, 512, 5).Data.Data.ReverseBytes(),
-            new SynapseBitField(4, 800, 13, 980, 13).Data.Data.ReverseBytes(),
+            new SynapseData(new NeuronAddress(4, 800), new NeuronAddress(7, 512), 0.6868607769664858d),
+            new SynapseData(new NeuronAddress(4, 800), new NeuronAddress(13, 980), -0.8470472479811114d),
 
-            new SynapseBitField(5, 150, 7, 555, 1).Data.Data.ReverseBytes(),
-            new SynapseBitField(5, 150, 12, 333, 10).Data.Data.ReverseBytes(),
+            new SynapseData(new NeuronAddress(5, 150), new NeuronAddress(7, 555), 0.24869683305228385d),
+            new SynapseData(new NeuronAddress(5, 150), new NeuronAddress(12, 333), -0.8470472479811114d),
 
-            new SynapseBitField(7, 250, 11, 123, 1).Data.Data.ReverseBytes(),
+            new SynapseData(new NeuronAddress(7, 250), new NeuronAddress(11, 123), -0.5279075666754249d),
 
-            new SynapseBitField(7, 512, 11, 123, 3).Data.Data.ReverseBytes(),
-            new SynapseBitField(7, 512, 13, 356, 12).Data.Data.ReverseBytes(),
+            new SynapseData(new NeuronAddress(7, 512), new NeuronAddress(11, 123), 0.5279075666754249d),
+            new SynapseData(new NeuronAddress(7, 512), new NeuronAddress(13, 356), 1d),
 
-            new SynapseBitField(7, 555, 11, 123, 15).Data.Data.ReverseBytes(),
+            new SynapseData(new NeuronAddress(7, 555), new NeuronAddress(11, 123), -1d),
 
-            new SynapseBitField(9, 200, 7, 555, 0).Data.Data.ReverseBytes(),
-            new SynapseBitField(9, 200, 10, 20, 6).Data.Data.ReverseBytes(),
-            new SynapseBitField(9, 200, 13, 980, 4).Data.Data.ReverseBytes(),
+            new SynapseData(new NeuronAddress(9, 200), new NeuronAddress(7, 555), -0.138283649787031d),
+            new SynapseData(new NeuronAddress(9, 200), new NeuronAddress(10, 20), -0.3794062745914808d),
+            new SynapseData(new NeuronAddress(9, 200), new NeuronAddress(13, 980), -0.5279075666754249d),
 
-            new SynapseBitField(10, 20, 10, 20, 3).Data.Data.ReverseBytes(),
-            new SynapseBitField(10, 20, 15, 929, 1).Data.Data.ReverseBytes(),
+            new SynapseData(new NeuronAddress(10, 20), new NeuronAddress(10, 20), -0.8470472479811114),
+            new SynapseData(new NeuronAddress(10, 20), new NeuronAddress(15, 929), -0.3794062745914808),
 
-            new SynapseBitField(11, 123, 7, 512, 4).Data.Data.ReverseBytes(),
-            new SynapseBitField(11, 123, 10, 20, 10).Data.Data.ReverseBytes(),
+            new SynapseData(new NeuronAddress(11, 123), new NeuronAddress(7, 512), 0.24869683305228385),
+            new SynapseData(new NeuronAddress(11, 123), new NeuronAddress(10, 20), 0.24869683305228385),
 
-            new SynapseBitField(12, 333, 7, 250, 10).Data.Data.ReverseBytes(),
-            new SynapseBitField(12, 333, 7, 555, 5).Data.Data.ReverseBytes(),
-        }.AsEnumerable().SelectMany(BitConverter.GetBytes).ToArray();
+            new SynapseData(new NeuronAddress(12, 333), new NeuronAddress(7, 250), -0.24869683305228385),
+            new SynapseData(new NeuronAddress(12, 333), new NeuronAddress(7, 555), 0.6868607769664858d),
+        }.ToByteArray();
         /*Debug.WriteLine("Created synapseData: ");
         foreach (byte b in synapseData)
         {

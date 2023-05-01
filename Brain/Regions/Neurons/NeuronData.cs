@@ -20,14 +20,14 @@ public struct NeuronData
 
     public NeuronData(NeuronAddress address, AccumulationFunction accumulationFunction, double preActivationThreshold, ActivationFunction activationFunction, double activationParameterA, double activationParameterB, double activationThreshold, ResetFunction resetFunction)
     {
-        this.Address = address;
-        this.AccumulationFunction = accumulationFunction;
-        this.PreActivationThreshold = preActivationThreshold;
-        this.ActivationFunction = activationFunction;
-        this.ActivationParameterA = activationParameterA;
-        this.ActivationParameterB = activationParameterB;
-        this.ActivationThreshold = activationThreshold;
-        this.ResetFunction = resetFunction;
+        Address = address;
+        AccumulationFunction = accumulationFunction;
+        PreActivationThreshold = preActivationThreshold;
+        ActivationFunction = activationFunction;
+        ActivationParameterA = activationParameterA;
+        ActivationParameterB = activationParameterB;
+        ActivationThreshold = activationThreshold;
+        ResetFunction = resetFunction;
     }
 
     public (NeuronPart1BitField part1, NeuronPart2BitField part2) ToBitFields()
@@ -49,8 +49,10 @@ public struct NeuronData
 
 public static class NeuronDataExtensions
 {
-    public static byte[] ToByteArray(this List<NeuronData> neuronData)
+    public static byte[] ToByteArray(this IEnumerable<NeuronData> neuronData)
     {
+        // TODO: First sort the neurons
+
         List<int> neurons = new();
 
         foreach (NeuronData neuron in neuronData)
