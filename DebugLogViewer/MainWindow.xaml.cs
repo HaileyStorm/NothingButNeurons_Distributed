@@ -233,7 +233,7 @@ public partial class MainWindow : Window
         Scheduler scheduler = new(ProtoSystem.Root);
         scheduler.SendRepeatedly(TimeSpan.FromMilliseconds(tickTime), HiveMind, new TickMessage());
 
-        System.Timers.Timer inputNeuronTimer = new(100);
+        System.Timers.Timer inputNeuronTimer = new(70);
         inputNeuronTimer.Elapsed += (s, e) =>
         {
             if (random.Next(0, 15) == 0)
