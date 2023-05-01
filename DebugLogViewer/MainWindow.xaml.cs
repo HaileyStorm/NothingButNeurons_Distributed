@@ -100,80 +100,34 @@ public partial class MainWindow : Window
         // *****************
         var random = new System.Random();
 
-        List<int> neurons = new()
+        List<NeuronData> neurons = new()
         {
-            new NeuronPart1BitField(1, 789, AccumulationFunction.Sum, 16, ActivationFunction.TanH, 30).Data.Data,
-            new NeuronPart2BitField(32, 4, ResetFunction.Hold).Data.Data,
-
-            new NeuronPart1BitField(2, 600, AccumulationFunction.Product, 20, ActivationFunction.TanH, 40).Data.Data,
-            new NeuronPart2BitField(32, 5, ResetFunction.Zero).Data.Data,
-
-            new NeuronPart1BitField(3, 100, AccumulationFunction.Sum, 15, ActivationFunction.TanH, 32).Data.Data,
-            new NeuronPart2BitField(32, 3, ResetFunction.Clamp1).Data.Data,
-
-            new NeuronPart1BitField(3, 444, AccumulationFunction.Sum, 14, ActivationFunction.Identity, 56).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-
-            new NeuronPart1BitField(4, 800, AccumulationFunction.Sum, 3, ActivationFunction.TanH, 35).Data.Data,
-            new NeuronPart2BitField(32, 6, ResetFunction.Zero).Data.Data,
-
-            new NeuronPart1BitField(5, 150, AccumulationFunction.Sum, 17, ActivationFunction.TanH, 43).Data.Data,
-            new NeuronPart2BitField(32, 2, ResetFunction.Inverse).Data.Data,
-
-            new NeuronPart1BitField(7, 250, AccumulationFunction.Product, 12, ActivationFunction.Gauss, 24).Data.Data,
-            new NeuronPart2BitField(32, 9, ResetFunction.Zero).Data.Data,
-
-            new NeuronPart1BitField(7, 512, AccumulationFunction.Sum, 4, ActivationFunction.TanH, 22).Data.Data,
-            new NeuronPart2BitField(32, 8, ResetFunction.Clamp1).Data.Data,
-
-            new NeuronPart1BitField(7, 555, AccumulationFunction.Sum, 21, ActivationFunction.Clamp, 61).Data.Data,
-            new NeuronPart2BitField(32, 1, ResetFunction.Zero).Data.Data,
-
-            new NeuronPart1BitField(9, 200, AccumulationFunction.Sum, 10, ActivationFunction.SoftP, 11).Data.Data,
-            new NeuronPart2BitField(32, 7, ResetFunction.Zero).Data.Data,
-
-            new NeuronPart1BitField(10, 20, AccumulationFunction.Sum, 5, ActivationFunction.TanH, 50).Data.Data,
-            new NeuronPart2BitField(32, 12, ResetFunction.Half).Data.Data,
-
-            new NeuronPart1BitField(11, 123, AccumulationFunction.Product, 7, ActivationFunction.ReLu, 60).Data.Data,
-            new NeuronPart2BitField(32, 11, ResetFunction.Hold).Data.Data,
-
-            new NeuronPart1BitField(12, 333, AccumulationFunction.Sum, 9, ActivationFunction.TanH, 29).Data.Data,
-            new NeuronPart2BitField(32, 0, ResetFunction.Zero).Data.Data,
-
-            new NeuronPart1BitField(13, 356, AccumulationFunction.Sum, 4, ActivationFunction.TanH, 45).Data.Data,
-            new NeuronPart2BitField(32, 8, ResetFunction.Zero).Data.Data,
-
-            new NeuronPart1BitField(13, 980, AccumulationFunction.Sum, 2, ActivationFunction.SiLu, 52).Data.Data,
-            new NeuronPart2BitField(32, 7, ResetFunction.Zero).Data.Data,
-
-            new NeuronPart1BitField(15, 929, AccumulationFunction.Sum, 11, ActivationFunction.TanH, 11).Data.Data,
-            new NeuronPart2BitField(32, 5, ResetFunction.Zero).Data.Data,
+            new(new NeuronAddress(1, 789), AccumulationFunction.Sum, 0d, ActivationFunction.TanH, -0.09408328947811073d, 0d, 0.3102968627042596d, ResetFunction.Hold),
+            new(new NeuronAddress(2, 600), AccumulationFunction.Product, 0.21092151536762183d, ActivationFunction.TanH, 0.5810408471041231d, 0d, 0.3756515834738581d, ResetFunction.Zero),
+            new(new NeuronAddress(3, 100), AccumulationFunction.Sum, 0d, ActivationFunction.TanH, 0d, 0d, 0.23604621666228753d, ResetFunction.Clamp1),
+            new(new NeuronAddress(3, 444), AccumulationFunction.Sum, -0.06435270007257976d, ActivationFunction.Identity, 2.2217183878210376d, 0d, 0d, ResetFunction.Zero),
+            new(new NeuronAddress(4, 800), AccumulationFunction.Sum, -0.7751348713404214d, ActivationFunction.TanH, 0.22254413860750688d, 0d, 0.4308581751064845d, ResetFunction.Zero),
+            new(new NeuronAddress(5, 150), AccumulationFunction.Sum, 0.06435270007257965d, ActivationFunction.TanH, 0.8339034132770404d, 0d, 0.15656961151675708d, ResetFunction.Inverse),
+            new(new NeuronAddress(7, 250), AccumulationFunction.Product, -0.15816826832005448d, ActivationFunction.Gauss, -0.5036150896731022, 0d, 0.5691418248935155d, ResetFunction.Zero),
+            new(new NeuronAddress(7, 512), AccumulationFunction.Sum, -0.6972573007778182d, ActivationFunction.TanH, -0.6618229161312104d, 0d, 0.5220185133018942d, ResetFunction.Clamp1),
+            new(new NeuronAddress(7, 555), AccumulationFunction.Sum, 0.2683961526980623d, ActivationFunction.Clamp, 2.785568175044677d, 0d, 0.07647637600944429d, ResetFunction.Zero),
+            new(new NeuronAddress(9, 200), AccumulationFunction.Sum, -0.2683961526980625d, ActivationFunction.SoftP, -1.7631583456920181d, 0d, 0.47798148669810575d, ResetFunction.Zero),
+            new(new NeuronAddress(10, 20), AccumulationFunction.Sum, -0.6195143149204596d, ActivationFunction.TanH, 1.539525432336215d, 0d, 0.7639537833377125d, ResetFunction.Half),
+            new(new NeuronAddress(11, 123), AccumulationFunction.Product, -0.4687066603212533d, ActivationFunction.ReLu, 2.6754208091457112d, 0d, 0.6897031372957403d, ResetFunction.Hold),
+            new(new NeuronAddress(12, 333), AccumulationFunction.Sum, -0.3307299830628878d, ActivationFunction.TanH, -0.15767329484039294d, 0d, 0d, ResetFunction.Zero),
+            new(new NeuronAddress(13, 356), AccumulationFunction.Sum, -0.6972573007778182d, ActivationFunction.TanH, 1.0200662315024553d, 0d, 0.5220185133018942d, ResetFunction.Zero),
+            new(new NeuronAddress(13, 980), AccumulationFunction.Sum, -0.8521343495571289d, ActivationFunction.SiLu, 1.763158345692018d, 0d, 0.47798148669810575d, ResetFunction.Zero),
+            new(new NeuronAddress(15, 929), AccumulationFunction.Sum, -0.21092151536762183d, ActivationFunction.TanH, -1.7631583456920181d, 0d, 0.3756515834738581d, ResetFunction.Zero),
         };
-        byte[] neuronData = new byte[neurons.Count * 3];
-        int resultIndex = 0;
-        byte[] currentIntBytes;
-        for (int i = 0; i < neurons.Count; i++)
-        {
-            int currentInt = neurons[i];
-            int bytesToTake = i % 2 == 0 ? 4 : 2;
-            if (bytesToTake == 4)
-            {
-                currentIntBytes = BitConverter.GetBytes(currentInt).Reverse().ToArray();
-            }
-            else
-            {
-                currentIntBytes = BitConverter.GetBytes((short)currentInt).Reverse().ToArray();
-            }
-            Array.Copy(currentIntBytes, 0, neuronData, resultIndex, bytesToTake);
-            resultIndex += bytesToTake;
-        }
+        byte[] neuronData = neurons.ToByteArray();
         /* Debug.WriteLine("Created neuronData: ");
          foreach (byte b in neuronData)
          {
              string binary = Convert.ToString(b, 2).PadLeft(8, '0');
              Debug.WriteLine(binary);
          }*/
+
+        //Debug.WriteLine($"\nActivation thresholds: {NeuronBase.BitsToDouble(4, 15, 0d, 1d)},{NeuronBase.BitsToDouble(5, 15, 0d, 1d)},{NeuronBase.BitsToDouble(3, 15, 0d, 1d)},{NeuronBase.BitsToDouble(0, 15, 0d, 1d)},{NeuronBase.BitsToDouble(6, 15, 0d, 1d)},{NeuronBase.BitsToDouble(2, 15, 0d, 1d)},{NeuronBase.BitsToDouble(9, 15, 0d, 1d)},{NeuronBase.BitsToDouble(8, 15, 0d, 1d)},{NeuronBase.BitsToDouble(1, 15, 0d, 1d)},{NeuronBase.BitsToDouble(7, 15, 0d, 1d)},{NeuronBase.BitsToDouble(12, 15, 0d, 1d)},{NeuronBase.BitsToDouble(11, 15, 0d, 1d)},{NeuronBase.BitsToDouble(0, 15, 0d, 1d)},{NeuronBase.BitsToDouble(8, 15, 0d, 1d)},{NeuronBase.BitsToDouble(7, 15, 0d, 1d)},{NeuronBase.BitsToDouble(5, 15, 0d, 1d)},\n");
         byte[] synapseData = new List<int>
         {
             new SynapseBitField(1, 789, 9, 200, 13).Data.Data.ReverseBytes(),

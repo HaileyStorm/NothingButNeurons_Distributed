@@ -7,7 +7,7 @@ namespace NothingButNeurons.Brain.Regions.Neurons;
 /// <summary>
 /// NeuronBase is an abstract base class representing a neuron in an artificial neural network.
 /// </summary>
-internal abstract class NeuronBase : ActorBase
+public abstract class NeuronBase : ActorBase
 {
     #region Properties
     /// <summary>

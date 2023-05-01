@@ -46,3 +46,39 @@ public struct NeuronData
         return (part1, part2);
     }
 }
+
+public static class NeuronDataExtensions
+{
+    public static byte[] ToByteArray(this List<NeuronData> neuronData)
+    {
+        List<int> neurons = new();
+
+        foreach (NeuronData neuron in neuronData)
+        {
+            (NeuronPart1BitField part1, NeuronPart2BitField part2) = neuron.ToBitFields();
+            neurons.Add(part1.Data.Data);
+            neurons.Add(part2.Data.Data);
+        }
+
+        byte[] neuronBytes = new byte[neurons.Count * 3];
+        int resultIndex = 0;
+        byte[] currentIntBytes;
+        for (int i = 0; i < neurons.Count; i++)
+        {
+            int currentInt = neurons[i];
+            int bytesToTake = i % 2 == 0 ? 4 : 2;
+            if (bytesToTake == 4)
+            {
+                currentIntBytes = BitConverter.GetBytes(currentInt).Reverse().ToArray();
+            }
+            else
+            {
+                currentIntBytes = BitConverter.GetBytes((short)currentInt).Reverse().ToArray();
+            }
+            Array.Copy(currentIntBytes, 0, neuronBytes, resultIndex, bytesToTake);
+            resultIndex += bytesToTake;
+        }
+
+        return neuronBytes;
+    }
+}
