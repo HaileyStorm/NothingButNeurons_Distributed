@@ -102,22 +102,23 @@ public partial class MainWindow : Window
 
         List<NeuronData> neurons = new()
         {
+            // Intentionally out of order to test the sorting in ToByteArray()
+            new(new NeuronAddress(15, 929), AccumulationFunction.Sum, -0.21092151536762183d, ActivationFunction.TanH, -1.7631583456920181d, 0d, 0.3756515834738581d, ResetFunction.Zero),
             new(new NeuronAddress(1, 789), AccumulationFunction.Sum, 0d, ActivationFunction.TanH, -0.09408328947811073d, 0d, 0.3102968627042596d, ResetFunction.Hold),
+            new(new NeuronAddress(7, 512), AccumulationFunction.Sum, -0.6972573007778182d, ActivationFunction.TanH, -0.6618229161312104d, 0d, 0.5220185133018942d, ResetFunction.Clamp1),
             new(new NeuronAddress(2, 600), AccumulationFunction.Product, -0.15816826832005448d, ActivationFunction.TanH, 0.5810408471041231d, 0d, 0.3756515834738581d, ResetFunction.Zero),
             new(new NeuronAddress(3, 100), AccumulationFunction.Sum, 0d, ActivationFunction.TanH, 0d, 0d, 0.23604621666228753d, ResetFunction.Clamp1),
+            new(new NeuronAddress(10, 20), AccumulationFunction.Sum, -0.6195143149204596d, ActivationFunction.TanH, 1.539525432336215d, 0d, 0.7639537833377125d, ResetFunction.Half),
             new(new NeuronAddress(3, 444), AccumulationFunction.Sum, -0.06435270007257976d, ActivationFunction.Identity, 2.2217183878210376d, 0d, 0d, ResetFunction.Zero),
             new(new NeuronAddress(4, 800), AccumulationFunction.Sum, -0.7751348713404214d, ActivationFunction.TanH, 0.22254413860750688d, 0d, 0.4308581751064845d, ResetFunction.Zero),
+            new(new NeuronAddress(13, 980), AccumulationFunction.Sum, -0.8521343495571289d, ActivationFunction.SiLu, 1.763158345692018d, 0d, 0.47798148669810575d, ResetFunction.Zero),
             new(new NeuronAddress(5, 150), AccumulationFunction.Sum, 0.06435270007257965d, ActivationFunction.TanH, 0.8339034132770404d, 0d, 0.15656961151675708d, ResetFunction.Inverse),
             new(new NeuronAddress(7, 250), AccumulationFunction.Product, -0.15816826832005448d, ActivationFunction.Gauss, -0.5036150896731022, 0d, 0.5691418248935155d, ResetFunction.Zero),
-            new(new NeuronAddress(7, 512), AccumulationFunction.Sum, -0.6972573007778182d, ActivationFunction.TanH, -0.6618229161312104d, 0d, 0.5220185133018942d, ResetFunction.Clamp1),
             new(new NeuronAddress(7, 555), AccumulationFunction.Sum, 0.2683961526980623d, ActivationFunction.Clamp, 2.785568175044677d, 0d, 0.07647637600944429d, ResetFunction.Zero),
             new(new NeuronAddress(9, 200), AccumulationFunction.Sum, -0.2683961526980625d, ActivationFunction.SoftP, -1.7631583456920181d, 0d, 0.47798148669810575d, ResetFunction.Zero),
-            new(new NeuronAddress(10, 20), AccumulationFunction.Sum, -0.6195143149204596d, ActivationFunction.TanH, 1.539525432336215d, 0d, 0.7639537833377125d, ResetFunction.Half),
             new(new NeuronAddress(11, 123), AccumulationFunction.Product, -0.4687066603212533d, ActivationFunction.ReLu, 2.6754208091457112d, 0d, 0.6897031372957403d, ResetFunction.Hold),
             new(new NeuronAddress(12, 333), AccumulationFunction.Sum, -0.3307299830628878d, ActivationFunction.TanH, -0.15767329484039294d, 0d, 0d, ResetFunction.Zero),
             new(new NeuronAddress(13, 356), AccumulationFunction.Sum, -0.6972573007778182d, ActivationFunction.TanH, 1.0200662315024553d, 0d, 0.5220185133018942d, ResetFunction.Zero),
-            new(new NeuronAddress(13, 980), AccumulationFunction.Sum, -0.8521343495571289d, ActivationFunction.SiLu, 1.763158345692018d, 0d, 0.47798148669810575d, ResetFunction.Zero),
-            new(new NeuronAddress(15, 929), AccumulationFunction.Sum, -0.21092151536762183d, ActivationFunction.TanH, -1.7631583456920181d, 0d, 0.3756515834738581d, ResetFunction.Zero),
         };
         byte[] neuronData = neurons.ToByteArray();
         /* Debug.WriteLine("Created neuronData: ");
@@ -129,45 +130,34 @@ public partial class MainWindow : Window
 
         byte[] synapseData = new List<SynapseData>()
         {
+            // Intentionally out of order to test the sorting in ToByteArray()
+            new SynapseData(new NeuronAddress(11, 123), new NeuronAddress(7, 512), 0.24869683305228385),
             new SynapseData(new NeuronAddress(1, 789), new NeuronAddress(9, 200), 0.6868607769664858d),
-            new SynapseData(new NeuronAddress(1, 789), new NeuronAddress(15, 929), -1d),
-
             new SynapseData(new NeuronAddress(2, 600), new NeuronAddress(7, 250), 0.8470472479811115d),
             new SynapseData(new NeuronAddress(2, 600), new NeuronAddress(13, 980), -0.6868607769664858d),
-
-            new SynapseData(new NeuronAddress(3, 100), new NeuronAddress(9, 200), -0.3794062745914808d),
-            new SynapseData(new NeuronAddress(3, 100), new NeuronAddress(10, 20), 0.5279075666754249d),
             new SynapseData(new NeuronAddress(3, 100), new NeuronAddress(15, 929), 1d),
-
             new SynapseData(new NeuronAddress(3, 444), new NeuronAddress(12, 333), -0.6868607769664858d),
             new SynapseData(new NeuronAddress(3, 444), new NeuronAddress(13, 356), 0.3794062745914806d),
+            new SynapseData(new NeuronAddress(1, 789), new NeuronAddress(15, 929), -1d),
             new SynapseData(new NeuronAddress(3, 444), new NeuronAddress(15, 929), -0.24869683305228385d),
-
             new SynapseData(new NeuronAddress(4, 800), new NeuronAddress(7, 512), 0.6868607769664858d),
             new SynapseData(new NeuronAddress(4, 800), new NeuronAddress(13, 980), -0.8470472479811114d),
-
             new SynapseData(new NeuronAddress(5, 150), new NeuronAddress(7, 555), 0.24869683305228385d),
             new SynapseData(new NeuronAddress(5, 150), new NeuronAddress(12, 333), -0.8470472479811114d),
-
+            new SynapseData(new NeuronAddress(3, 100), new NeuronAddress(9, 200), -0.3794062745914808d),
+            new SynapseData(new NeuronAddress(3, 100), new NeuronAddress(10, 20), 0.5279075666754249d),
             new SynapseData(new NeuronAddress(7, 250), new NeuronAddress(11, 123), -0.5279075666754249d),
-
-            new SynapseData(new NeuronAddress(7, 512), new NeuronAddress(11, 123), 0.5279075666754249d),
-            new SynapseData(new NeuronAddress(7, 512), new NeuronAddress(13, 356), 1d),
-
-            new SynapseData(new NeuronAddress(7, 555), new NeuronAddress(11, 123), -1d),
-
-            new SynapseData(new NeuronAddress(9, 200), new NeuronAddress(7, 555), -0.138283649787031d),
             new SynapseData(new NeuronAddress(9, 200), new NeuronAddress(10, 20), -0.3794062745914808d),
+            new SynapseData(new NeuronAddress(7, 512), new NeuronAddress(11, 123), 0.5279075666754249d),
+            new SynapseData(new NeuronAddress(9, 200), new NeuronAddress(7, 555), -0.138283649787031d),
+            new SynapseData(new NeuronAddress(7, 512), new NeuronAddress(13, 356), 1d),
+            new SynapseData(new NeuronAddress(7, 555), new NeuronAddress(11, 123), -1d),
             new SynapseData(new NeuronAddress(9, 200), new NeuronAddress(13, 980), -0.5279075666754249d),
-
             new SynapseData(new NeuronAddress(10, 20), new NeuronAddress(10, 20), -0.8470472479811114),
-            new SynapseData(new NeuronAddress(10, 20), new NeuronAddress(15, 929), -0.3794062745914808),
-
-            new SynapseData(new NeuronAddress(11, 123), new NeuronAddress(7, 512), 0.24869683305228385),
-            new SynapseData(new NeuronAddress(11, 123), new NeuronAddress(10, 20), 0.24869683305228385),
-
-            new SynapseData(new NeuronAddress(12, 333), new NeuronAddress(7, 250), -0.24869683305228385),
             new SynapseData(new NeuronAddress(12, 333), new NeuronAddress(7, 555), 0.6868607769664858d),
+            new SynapseData(new NeuronAddress(10, 20), new NeuronAddress(15, 929), -0.3794062745914808),
+            new SynapseData(new NeuronAddress(11, 123), new NeuronAddress(10, 20), 0.24869683305228385),
+            new SynapseData(new NeuronAddress(12, 333), new NeuronAddress(7, 250), -0.24869683305228385),
         }.ToByteArray();
         /*Debug.WriteLine("Created synapseData: ");
         foreach (byte b in synapseData)

@@ -199,15 +199,36 @@ public static class SynapseExtensions
 
     public static byte[] ToByteArray(this IEnumerable<SynapseBitField> synapses)
     {
-        // TODO: First sort the synapses
+        List<SynapseBitField> synapseList = synapses.ToList();
+        synapseList.Sort(new SynapseBitFieldComparer());
 
         List<int> ints = new List<int>();
-        foreach (SynapseBitField synapse in synapses)
+        foreach (SynapseBitField synapse in synapseList)
         {
             ints.Add(synapse.Data.Data.ReverseBytes());
         }
 
         return ints.AsEnumerable().SelectMany(BitConverter.GetBytes).ToArray();
+    }
+
+    public class SynapseBitFieldComparer : IComparer<SynapseBitField>
+    {
+        public int Compare(SynapseBitField x, SynapseBitField y)
+        {
+            int result = x.FromRegionPart.CompareTo(y.FromRegionPart);
+            if (result != 0)
+                return result;
+
+            result = x.FromNeuronPart.CompareTo(y.FromNeuronPart);
+            if (result != 0)
+                return result;
+
+            result = x.ToRegionPart.CompareTo(y.ToRegionPart);
+            if (result != 0)
+                return result;
+
+            return x.ToNeuronPart.CompareTo(y.ToNeuronPart);
+        }
     }
 }
 

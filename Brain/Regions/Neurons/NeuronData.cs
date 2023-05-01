@@ -51,11 +51,12 @@ public static class NeuronDataExtensions
 {
     public static byte[] ToByteArray(this IEnumerable<NeuronData> neuronData)
     {
-        // TODO: First sort the neurons
+        List<NeuronData> neuronList = neuronData.ToList();
+        neuronList.Sort(new NeuronDataComparer());
 
         List<int> neurons = new();
 
-        foreach (NeuronData neuron in neuronData)
+        foreach (NeuronData neuron in neuronList)
         {
             (NeuronPart1BitField part1, NeuronPart2BitField part2) = neuron.ToBitFields();
             neurons.Add(part1.Data.Data);
@@ -82,5 +83,17 @@ public static class NeuronDataExtensions
         }
 
         return neuronBytes;
+    }
+
+    public class NeuronDataComparer : IComparer<NeuronData>
+    {
+        public int Compare(NeuronData x, NeuronData y)
+        {
+            int result = x.Address.RegionPart.CompareTo(y.Address.RegionPart);
+            if (result != 0)
+                return result;
+
+            return x.Address.NeuronPart.CompareTo(y.Address.NeuronPart);
+        }
     }
 }
