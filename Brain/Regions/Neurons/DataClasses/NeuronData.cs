@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NothingButNeurons.Brain.Regions.Neurons;
+namespace NothingButNeurons.Brain.Regions.Neurons.DataClasses;
 
 public struct NeuronData
 {

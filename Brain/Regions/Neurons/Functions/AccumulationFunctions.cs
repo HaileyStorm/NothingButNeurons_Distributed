@@ -1,4 +1,4 @@
-﻿namespace NothingButNeurons.Brain.Regions.Neurons;
+﻿namespace NothingButNeurons.Brain.Regions.Neurons.Functions;
 
 /// <summary>
 /// Provides extension methods for the AccumulationFunction enum.
@@ -21,7 +21,7 @@ internal static class AccumulationFunctionExtensions
             case AccumulationFunction.Sum:
                 return new NeuronFunctionReturn { Val = buffer + val, Cost = 1.5d };
             case AccumulationFunction.Product:
-                return new NeuronFunctionReturn{ Val = buffer * val, Cost = 1.5d };
+                return new NeuronFunctionReturn { Val = buffer * val, Cost = 1.5d };
             default:
                 throw new NotImplementedException("Unknown AccumulationFunction.");
         }

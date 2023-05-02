@@ -3,8 +3,8 @@ global using NothingButNeurons.Shared.Messages;
 global using NothingButNeurons.CCSL;
 global using System.Diagnostics;
 using NothingButNeurons.Brain.Regions;
-using NothingButNeurons.Brain.Regions.Neurons;
 using Proto;
+using NothingButNeurons.Brain.Regions.Neurons.DataClasses;
 
 namespace NothingButNeurons.Brain;
 

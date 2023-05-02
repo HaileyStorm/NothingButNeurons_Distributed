@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using NothingButNeurons.Brain.Regions.Neurons;
+using NothingButNeurons.Brain.Regions.Neurons.DataClasses;
 using Proto;
 
 namespace NothingButNeurons.Brain.Regions;

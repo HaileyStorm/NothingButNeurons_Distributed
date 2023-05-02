@@ -1,4 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
+using NothingButNeurons.Brain.Regions.Neurons.DataClasses;
+using NothingButNeurons.Brain.Regions.Neurons.Functions;
 using NothingButNeurons.Shared.Messages;
 using Proto;
 
