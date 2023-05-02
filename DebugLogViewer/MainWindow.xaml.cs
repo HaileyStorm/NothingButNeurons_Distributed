@@ -17,6 +17,7 @@ using Google.Protobuf;
 using Grpc.Net.Client;
 using System.IO.Compression;
 using Grpc.Net.Compression;
+using System.Net;
 
 namespace NothingButNeurons.DebugLogViewer;
 
@@ -58,18 +59,23 @@ public partial class MainWindow : Window
     {
         // Get command-line arguments
         string[] args = Environment.GetCommandLineArgs();
-        if (args.Length >= 3) // will be 2
+        Console.WriteLine($"\nCommand line args: {string.Join(',', args)}");
+        if (args.Length >= 2) // will be 2 (no HiveMind, no dll, spaces parsed automatically)
         {
+            // In this app, the first argument is a dll
+            args = args[1].Split(' ');
             Port = int.Parse(args[0]);
             DebugServerPort = int.Parse(args[1]);
             //TODO: Temporary, does not belong here.
             HiveMindPort = int.Parse(args[2]);
+            Console.WriteLine($"Parsed ports: {Port}, {DebugServerPort}, {HiveMindPort}");
         }
         else
         {
             Port = 8003;
             DebugServerPort = 8001;
             HiveMindPort = 8000;
+            Console.WriteLine($"Default ports: {Port}, {DebugServerPort}, {HiveMindPort}");
         }
 
         var remoteConfig = GrpcNetRemoteConfig
@@ -100,7 +106,7 @@ public partial class MainWindow : Window
         // *****************
         var random = new System.Random();
 
-        List<NeuronData> neurons = new()
+        /*List<NeuronData> neurons = new()
         {
             // Intentionally out of order to test the sorting in ToByteArray()
             new(new NeuronAddress(15, 929), AccumulationFunction.Sum, -0.21092151536762183d, ActivationFunction.TanH, -1.7631583456920181d, 0d, 0.3756515834738581d, ResetFunction.Zero),
@@ -120,7 +126,7 @@ public partial class MainWindow : Window
             new(new NeuronAddress(12, 333), AccumulationFunction.Sum, -0.3307299830628878d, ActivationFunction.TanH, -0.15767329484039294d, 0d, 0d, ResetFunction.Zero),
             new(new NeuronAddress(13, 356), AccumulationFunction.Sum, -0.6972573007778182d, ActivationFunction.TanH, 1.0200662315024553d, 0d, 0.5220185133018942d, ResetFunction.Zero),
         };
-        byte[] neuronData = neurons.ToByteArray();
+        byte[] neuronData = neurons.ToByteArray();*/
         /* Debug.WriteLine("Created neuronData: ");
          foreach (byte b in neuronData)
          {
@@ -128,7 +134,7 @@ public partial class MainWindow : Window
              Debug.WriteLine(binary);
          }*/
 
-        byte[] synapseData = new List<SynapseData>()
+        /*byte[] synapseData = new List<SynapseData>()
         {
             // Intentionally out of order to test the sorting in ToByteArray()
             new SynapseData(new NeuronAddress(11, 123), new NeuronAddress(7, 512), 0.24869683305228385),
@@ -158,13 +164,16 @@ public partial class MainWindow : Window
             new SynapseData(new NeuronAddress(10, 20), new NeuronAddress(15, 929), -0.3794062745914808),
             new SynapseData(new NeuronAddress(11, 123), new NeuronAddress(10, 20), 0.24869683305228385),
             new SynapseData(new NeuronAddress(12, 333), new NeuronAddress(7, 250), -0.24869683305228385),
-        }.ToByteArray();
+        }.ToByteArray();*/
         /*Debug.WriteLine("Created synapseData: ");
         foreach (byte b in synapseData)
         {
             string binary = Convert.ToString(b, 2).PadLeft(8, '0');
             Debug.WriteLine(binary);
         }*/
+
+        (byte[] neuronData, byte[] synapseData) = Shared.Serialization.Brain.ReadDataFromFile("OGtest.nbn");
+        //Shared.Serialization.Brain.WriteDataToFile("OGtest.nbn", neuronData, synapseData);
 
         HiveMind = PID.FromAddress($"127.0.0.1:{HiveMindPort}", "HiveMind");
         ProtoSystem.Root.Send(HiveMind, new SpawnBrainMessage { NeuronData = ByteString.CopyFrom(neuronData), SynapseData = ByteString.CopyFrom(synapseData) });
