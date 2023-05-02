@@ -62,7 +62,7 @@ internal class ServiceLauncher
                 arguments = $"{service.Port} {DebugServerPort}";
                 break;
             case "Designer":
-                //Will need IOPort
+                arguments = $"{service.Port} {IOPort}";
                 break;
             default:
                 throw new ArgumentException("Service project name unexpected, unable to configure/launch.");

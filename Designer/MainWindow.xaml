@@ -1,0 +1,259 @@
+﻿<Window x:Class="NothingButNeurons.Designer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:designer="clr-namespace:NothingButNeurons.Designer"
+        mc:Ignorable="d"
+        Title="Designer" Height="785" Width="800">
+    <Grid Margin="5,5">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <!-- Brain Generation Column -->
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Load Brain from File -->
+            <Label Grid.Row="0" Content="Load Brain from File" HorizontalAlignment="Center" FontWeight="Bold" FontSize="14"/>
+            <Button Grid.Row="1" Content="Browse" Click="LoadBrainFromFile_Click" HorizontalAlignment="Left"/>
+
+            <Separator Grid.Row="2" Margin="0,10,0,10"/>
+
+            <!-- Create Random Brain -->
+            <Label Grid.Row="3" Content="Create Random Brain" HorizontalAlignment="Center" FontWeight="Bold" FontSize="14"/>
+
+            <!-- Regions -->
+            <Label Grid.Row="4" Content="Regions" HorizontalAlignment="Left" FontWeight="Bold"/>
+            <Grid Grid.Row="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Label Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="0" Content="Neurons Per" HorizontalAlignment="Center"/>
+                <Label Grid.Column="2" Grid.Row="1" Content="Min" HorizontalAlignment="Center"/>
+                <Label Grid.Column="3" Grid.Row="1" Content="Max" HorizontalAlignment="Center"/>
+
+                <TextBox Grid.Column="0" Grid.Row="2" Width="50"/>
+                <Label Grid.Column="1" Grid.Row="2" Content="Input" HorizontalAlignment="Left"/>
+                <TextBox Grid.Column="2" Grid.Row="2" Width="50"/>
+                <TextBox Grid.Column="3" Grid.Row="2" Width="50"/>
+
+                <TextBox Grid.Column="0" Grid.Row="3" Width="50"/>
+                <Label Grid.Column="1" Grid.Row="3" Content="Interior" HorizontalAlignment="Left"/>
+                <TextBox Grid.Column="2" Grid.Row="3" Width="50"/>
+                <TextBox Grid.Column="3" Grid.Row="3" Width="50"/>
+
+                <TextBox Grid.Column="0" Grid.Row="4" Width="50"/>
+                <Label Grid.Column="1" Grid.Row="4" Content="Output" HorizontalAlignment="Left"/>
+                <TextBox Grid.Column="2" Grid.Row="4" Width="50"/>
+                <TextBox Grid.Column="3" Grid.Row="4" Width="50"/>
+            </Grid>
+
+            <!-- Neurons -->
+            <Label Grid.Row="6" Content="Neurons" HorizontalAlignment="Left" FontWeight="Bold"/>
+            <Grid Grid.Row="7">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Label Grid.Column="1" Grid.Row="0" Content="Min" HorizontalAlignment="Center"/>
+                <Label Grid.Column="2" Grid.Row="0" Content="Max" HorizontalAlignment="Center"/>
+
+                <Label Grid.Column="0" Grid.Row="1" Content="Accumulation Function" HorizontalAlignment="Left"/>
+                <ComboBox Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" x:Name="AccumulationFunctionDropdown" ItemsSource="{Binding AccumulationFunctions}" Margin="0,0,0,26" Grid.RowSpan="2"  SelectedIndex="0"/>
+
+                <Label Grid.Column="0" Grid.Row="2" Content="Pre-Activation Threshold" HorizontalAlignment="Left"/>
+                <TextBox Grid.Column="1" Grid.Row="2" Width="50"/>
+                <TextBox Grid.Column="2" Grid.Row="2" Width="50"/>
+
+                <Label Grid.Column="0" Grid.Row="3" Content="Activation Function" HorizontalAlignment="Left"/>
+                <ComboBox Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="3" x:Name="ActivationFunctionDropdown" ItemsSource="{Binding ActivationFunctions}"  SelectedIndex="0"/>
+
+                <Label Grid.Column="0" Grid.Row="4" Content="Activation Parameter A" HorizontalAlignment="Left"/>
+                <TextBox Grid.Column="1" Grid.Row="4" Width="50"/>
+                <TextBox Grid.Column="2" Grid.Row="4" Width="50"/>
+
+                <Label Grid.Column="0" Grid.Row="5" Content="Activation Parameter B" HorizontalAlignment="Left"/>
+                <TextBox Grid.Column="1" Grid.Row="5" Width="50"/>
+                <TextBox Grid.Column="2" Grid.Row="5" Width="50"/>
+
+                <Label Grid.Column="0" Grid.Row="6" Content="Activation Threshold" HorizontalAlignment="Left"/>
+                <TextBox Grid.Column="1" Grid.Row="6" Width="50"/>
+                <TextBox Grid.Column="2" Grid.Row="6" Width="50"/>
+
+                <Label Grid.Column="0" Grid.Row="7" Content="Reset Function" HorizontalAlignment="Left"/>
+                <ComboBox Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="7" x:Name="ResetFunctionDropdown" ItemsSource="{Binding ResetFunctions}"  SelectedIndex="0"/>
+            </Grid>
+
+            <!-- Synapses -->
+            <Label Grid.Row="8" Content="Synapses" HorizontalAlignment="Left" FontWeight="Bold"/>
+            <Grid Grid.Row="9">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Label Grid.Column="1" Grid.Row="0" Grid.ColumnSpan="2" Content="Count" HorizontalAlignment="Center"/>
+                <Label Grid.Column="3" Grid.Row="0" Grid.ColumnSpan="2" Content="Strength" HorizontalAlignment="Center"/>
+                <Label Grid.Column="1" Grid.Row="1" Content="Min" HorizontalAlignment="Center"/>
+                <Label Grid.Column="2" Grid.Row="1" Content="Max" HorizontalAlignment="Center"/>
+                <Label Grid.Column="3" Grid.Row="1" Content="Min" HorizontalAlignment="Center"/>
+                <Label Grid.Column="4" Grid.Row="1" Content="Max" HorizontalAlignment="Center"/>
+
+                <Label Grid.Column="0" Grid.Row="2" Content="Input" HorizontalAlignment="Left"/>
+                <TextBox Grid.Column="1" Grid.Row="2" Width="50"/>
+                <TextBox Grid.Column="2" Grid.Row="2" Width="50"/>
+                <TextBox Grid.Column="3" Grid.Row="2" Width="50"/>
+                <TextBox Grid.Column="4" Grid.Row="2" Width="50"/>
+
+                <Label Grid.Column="0" Grid.Row="3" Content="Interior" HorizontalAlignment="Left"/>
+                <TextBox Grid.Column="1" Grid.Row="3" Width="50"/>
+                <TextBox Grid.Column="2" Grid.Row="3" Width="50"/>
+                <TextBox Grid.Column="3" Grid.Row="3" Width="50"/>
+                <TextBox Grid.Column="4" Grid.Row="3" Width="50"/>
+            </Grid>
+
+            <Button Grid.Row="10" Content="Generate / Save" Click="GenerateSave_Click" HorizontalAlignment="Left"/>
+
+            <!-- Spawn -->
+            <Separator Grid.Row="11" Margin="0,10,0,10" Height="1"/>
+
+            <Label Grid.Row="12" Content="Spawn Loaded Brain" HorizontalAlignment="Center" FontWeight="Bold" FontSize="14"/>
+            <Grid Grid.Row="13">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Label Grid.Column="1" Grid.Row="0" Content="File" HorizontalAlignment="Center"/>
+                <Label Grid.Column="2" Grid.Row="0" Content="Gen" HorizontalAlignment="Center"/>
+                <Label Grid.Column="0" Grid.Row="1" Content="Brain loaded for:" HorizontalAlignment="Left"/>
+
+                <Ellipse Grid.Column="1" Grid.Row="1" Width="20" Height="20" Fill="Gray" x:Name="FileLoadedLight"/>
+                <Ellipse Grid.Column="2" Grid.Row="1" Width="20" Height="20" Fill="Gray" x:Name="GenLoadedLight"/>
+            </Grid>
+
+            <Grid Grid.Row="14" VerticalAlignment="Bottom">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" Content="Spawn" Click="Spawn_Click" />
+                <Ellipse Grid.Column="1" Width="20" Height="20" Fill="Gray" x:Name="SpawnLight"/>
+            </Grid>
+
+        </Grid>
+
+        <!-- Brain Input Simulation Column -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Label Grid.Row="0" Content="Randomized Test Inputs" HorizontalAlignment="Center" FontWeight="Bold" FontSize="14"/>
+
+            <StackPanel Grid.Row="1" Orientation="Horizontal">
+                <Label Content="Select Brain" HorizontalAlignment="Left"/>
+                <ComboBox x:Name="SelectBrainDropdown" />
+                <Button x:Name="RefreshButton" Content="Refresh" Click="Refresh_Click" />
+            </StackPanel>
+
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Label Grid.Column="1" Grid.Row="0" Content="Min" HorizontalAlignment="Center"/>
+                <Label Grid.Column="2" Grid.Row="0" Content="Max" HorizontalAlignment="Center"/>
+
+                <Label Grid.Column="0" Grid.Row="1" Content="Signal Value" HorizontalAlignment="Left"/>
+                <TextBox Grid.Column="1" Grid.Row="1" Width="50"/>
+                <TextBox Grid.Column="2" Grid.Row="1" Width="50"/>
+
+                <Label Grid.Column="0" Grid.Row="2" Content="Signal Period (ms)" HorizontalAlignment="Left"/>
+                <TextBox Grid.Column="1" Grid.Row="2" Width="50"/>
+                <TextBox Grid.Column="2" Grid.Row="2" Width="50"/>
+            </Grid>
+
+            <Grid Grid.Row="4" VerticalAlignment="Bottom">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" x:Name="StartStopButton" Content="Start" Click="StartStop_Click" />
+                <Ellipse Grid.Column="1" Width="20" Height="20" Fill="Gray" x:Name="StartStopLight"/>
+            </Grid>
+        </Grid>
+    </Grid>
+
+</Window>
+                

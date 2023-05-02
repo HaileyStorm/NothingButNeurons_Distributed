@@ -32,7 +32,7 @@ public partial class MainWindow : Window
         new Service { Name = "Debug File Writer", ProjectName="DebugFileWriter", ActorName="DebugFileWriter", IsWPF=false, Port = 8002, StatusColor = Brushes.Gray },
         new Service { Name = "Debug Log Viewer", ProjectName="DebugLogViewer", ActorName="DebugUI", IsWPF=true, Port = 8003, StatusColor = Brushes.Gray },
         new Service { Name = "Visualizer", ProjectName="Visualizer", ActorName="NetworkVisualizationUpdater", IsWPF=true, Port = 8004, StatusColor = Brushes.Gray },
-        new Service { Name = "Designer", ProjectName="Designer", ActorName="DesignerUI", IsWPF=true, Port = 8005, StatusColor = Brushes.Gray }
+        new Service { Name = "Designer", ProjectName="Designer", ActorName="DesignerHelper", IsWPF=true, Port = 8005, StatusColor = Brushes.Gray }
     };
 
     public MainWindow()

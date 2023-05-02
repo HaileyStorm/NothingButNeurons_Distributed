@@ -28,9 +28,9 @@ public abstract class ActorBase : IActor
     private IContext? BaseContext { get; set; }
     protected virtual PID? SelfPID { get; set; }
     protected virtual PID? ParentPID { get; set; }
-    protected virtual PID DebugServerPID { get; set; }
+    protected virtual PID? DebugServerPID { get; set; }
 
-    protected ActorBase(PID debugServerPID)
+    protected ActorBase(PID? debugServerPID)
     {
         DebugServerPID = debugServerPID;
     }
