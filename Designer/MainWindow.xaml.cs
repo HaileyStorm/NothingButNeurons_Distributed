@@ -60,28 +60,12 @@ namespace NothingButNeurons.Designer
             }
             else
             {
-                Port = 8005;
-                HiveMindPort = 8000;
+                Port = Shared.Consts.DefaultPorts.DESIGNER;
+                HiveMindPort = Shared.Consts.DefaultPorts.IO;
                 Console.WriteLine($"Default ports: {Port}, {HiveMindPort}");
             }
 
-            var remoteConfig = GrpcNetRemoteConfig
-            .BindToLocalhost(Port)
-            .WithProtoMessages(DebuggerReflection.Descriptor, NeuronsReflection.Descriptor, IOReflection.Descriptor)
-            /*.WithChannelOptions(new GrpcChannelOptions
-            {
-                CompressionProviders = new[]
-                        {
-                            new GzipCompressionProvider(CompressionLevel.Fastest)
-                        }
-            })*/
-            .WithRemoteDiagnostics(true);
-            ProtoSystem = new ActorSystem().WithRemote(remoteConfig);
-            ProtoSystem.Remote().StartAsync();
-            while (!ProtoSystem.Remote().Started)
-            {
-                Thread.Sleep(100);
-            }
+            ProtoSystem = Nodes.GetActorSystem(Port);
 
             ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DesignerHelper()), "DesignerHelper");
         }

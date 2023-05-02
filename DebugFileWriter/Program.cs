@@ -25,29 +25,13 @@ internal class Program
         }
         else
         {
-            Port = 8002;
-            DebugServerPort = 8001;
+            Port = Shared.Consts.DefaultPorts.DEBUG_FILE_WRITER;
+            DebugServerPort = Shared.Consts.DefaultPorts.DEBUG_SERVER;
         }
 
         CombinedWriteLine($"NothingButNeurons.DebugFileWriter program starting on port {Port}, with DebugServer on port {DebugServerPort}...");
 
-        var remoteConfig = GrpcNetRemoteConfig
-                .BindToLocalhost(Port)
-                .WithProtoMessages(DebuggerReflection.Descriptor, NeuronsReflection.Descriptor, IOReflection.Descriptor)
-                /*.WithChannelOptions(new GrpcChannelOptions
-                    {
-                        CompressionProviders = new[]
-                        {
-                            new GzipCompressionProvider(CompressionLevel.Fastest)
-                        }
-                    })*/
-                .WithRemoteDiagnostics(true);
-        ProtoSystem = new ActorSystem().WithRemote(remoteConfig);
-        ProtoSystem.Remote().StartAsync();
-        while (!ProtoSystem.Remote().Started)
-        {
-            Thread.Sleep(100);
-        }
+        ProtoSystem = Nodes.GetActorSystem(Port);
 
         PID debugServerPID = PID.FromAddress($"127.0.0.1:{DebugServerPort}", "DebugServer");
         DebugFileWriter = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DebugFileWriter(debugServerPID)), "DebugFileWriter");

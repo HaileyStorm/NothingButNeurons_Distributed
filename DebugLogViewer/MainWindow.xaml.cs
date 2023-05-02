@@ -20,7 +20,6 @@ public partial class MainWindow : Window
     ActorSystem ProtoSystem;
     PID DebugServer;
     PID DebugUI;
-    PID HiveMind;
 
     // Declare a timer for handling debug context typing
     private System.Timers.Timer DebugTypingTimer;
@@ -28,8 +27,6 @@ public partial class MainWindow : Window
     //Proto.Remote ports
     private int Port;
     private int DebugServerPort;
-    //TODO: Temporary, does not belong here.
-    private int HiveMindPort;
 
     /// <summary>
     /// Initializes MainWindow components, sets up DebugSeverity dropdown items, and calls InitializeActorSystem.
@@ -61,29 +58,12 @@ public partial class MainWindow : Window
         }
         else
         {
-            Port = 8003;
-            DebugServerPort = 8001;
-            HiveMindPort = 8000;
+            Port = Shared.Consts.DefaultPorts.DEBUG_LOG_VIEWER;
+            DebugServerPort = Shared.Consts.DefaultPorts.DEBUG_SERVER;
             Console.WriteLine($"Default ports: {Port}, {DebugServerPort}");
         }
 
-        var remoteConfig = GrpcNetRemoteConfig
-            .BindToLocalhost(Port)
-            .WithProtoMessages(DebuggerReflection.Descriptor, NeuronsReflection.Descriptor, IOReflection.Descriptor)
-            /*.WithChannelOptions(new GrpcChannelOptions
-            {
-                CompressionProviders = new[]
-                        {
-                            new GzipCompressionProvider(CompressionLevel.Fastest)
-                        }
-            })*/
-            .WithRemoteDiagnostics(true);
-        ProtoSystem = new ActorSystem().WithRemote(remoteConfig);
-        ProtoSystem.Remote().StartAsync();
-        while (!ProtoSystem.Remote().Started)
-        {
-            Thread.Sleep(100);
-        }
+        ProtoSystem = Nodes.GetActorSystem(Port);
 
         DebugServer = PID.FromAddress($"127.0.0.1:{DebugServerPort}", "DebugServer");
         DebugUI = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DebugUI(DebugServer, rtbDebug)), "DebugUI");

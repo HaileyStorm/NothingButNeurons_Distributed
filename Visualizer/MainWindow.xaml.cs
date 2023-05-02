@@ -52,27 +52,11 @@ public partial class MainWindow : Window
         }
         else
         {
-            Port = 8004;
-            DebugServerPort = 8001;
+            Port = Shared.Consts.DefaultPorts.VISUALIZER;
+            DebugServerPort = Shared.Consts.DefaultPorts.DEBUG_SERVER;
         }
 
-        var remoteConfig = GrpcNetRemoteConfig
-                .BindToLocalhost(Port)
-                .WithProtoMessages(DebuggerReflection.Descriptor, NeuronsReflection.Descriptor, IOReflection.Descriptor)
-                /*.WithChannelOptions(new GrpcChannelOptions
-                    {
-                        CompressionProviders = new[]
-                        {
-                            new GzipCompressionProvider(CompressionLevel.Fastest)
-                        }
-                    })*/
-                .WithRemoteDiagnostics(true);
-        ProtoSystem = new ActorSystem().WithRemote(remoteConfig);
-        ProtoSystem.Remote().StartAsync();
-        while (!ProtoSystem.Remote().Started)
-        {
-            Thread.Sleep(100);
-        }
+        ProtoSystem = Nodes.GetActorSystem(Port);
 
         PID debugServerPID = PID.FromAddress($"127.0.0.1:{DebugServerPort}", "DebugServer");
         NetworkVisualizationUpdater = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new NetworkVisualization.Updater(debugServerPID, networkVisualizationCanvas, tickTime)), "NetworkVisualizationUpdater");

@@ -20,19 +20,19 @@ namespace NothingButNeurons.Orchestrator;
 public partial class MainWindow : Window
 {
     internal static MainWindow Instance { get; private set; }
-    internal const int ServiceMonitorPort = 9999;
+    internal const int ServiceMonitorPort = Shared.Consts.DefaultPorts.ORCHESTRATOR_MONITOR;
     
     internal ServiceLauncher ServiceLauncher { get; private set; }
     internal ServiceMonitor ServiceMonitor { get; private set; }
 
     public ObservableCollection<Service> Services { get; set; } = new ObservableCollection<Service>
     {
-        new Service { Name = "IO / HiveMind", ProjectName="IO", ActorName="HiveMind", IsWPF=false, Port = 8000, StatusColor = Brushes.Gray },
-        new Service { Name = "Debug Server", ProjectName="DebugServer", ActorName="DebugServer", IsWPF=false, Port = 8001, StatusColor = Brushes.Gray },
-        new Service { Name = "Debug File Writer", ProjectName="DebugFileWriter", ActorName="DebugFileWriter", IsWPF=false, Port = 8002, StatusColor = Brushes.Gray },
-        new Service { Name = "Debug Log Viewer", ProjectName="DebugLogViewer", ActorName="DebugUI", IsWPF=true, Port = 8003, StatusColor = Brushes.Gray },
-        new Service { Name = "Visualizer", ProjectName="Visualizer", ActorName="NetworkVisualizationUpdater", IsWPF=true, Port = 8004, StatusColor = Brushes.Gray },
-        new Service { Name = "Designer", ProjectName="Designer", ActorName="DesignerHelper", IsWPF=true, Port = 8005, StatusColor = Brushes.Gray }
+        new Service { Name = "IO / HiveMind", ProjectName="IO", ActorName="HiveMind", IsWPF=false, Port = Shared.Consts.DefaultPorts.IO, StatusColor = Brushes.Gray },
+        new Service { Name = "Debug Server", ProjectName="DebugServer", ActorName="DebugServer", IsWPF=false, Port = Shared.Consts.DefaultPorts.DEBUG_SERVER, StatusColor = Brushes.Gray },
+        new Service { Name = "Debug File Writer", ProjectName="DebugFileWriter", ActorName="DebugFileWriter", IsWPF=false, Port = Shared.Consts.DefaultPorts.DEBUG_FILE_WRITER, StatusColor = Brushes.Gray },
+        new Service { Name = "Debug Log Viewer", ProjectName="DebugLogViewer", ActorName="DebugUI", IsWPF=true, Port = Shared.Consts.DefaultPorts.DEBUG_LOG_VIEWER, StatusColor = Brushes.Gray },
+        new Service { Name = "Visualizer", ProjectName="Visualizer", ActorName="NetworkVisualizationUpdater", IsWPF=true, Port = Shared.Consts.DefaultPorts.VISUALIZER, StatusColor = Brushes.Gray },
+        new Service { Name = "Designer", ProjectName="Designer", ActorName="DesignerHelper", IsWPF=true, Port = Shared.Consts.DefaultPorts.DESIGNER, StatusColor = Brushes.Gray }
     };
 
     public MainWindow()

@@ -26,29 +26,13 @@ namespace NothingButNeurons.IO
                 DebugServerPort = int.Parse(args[1]);
             } else
             {
-                Port = 8000;
-                DebugServerPort = 8001;
+                Port = Shared.Consts.DefaultPorts.IO;
+                DebugServerPort = Shared.Consts.DefaultPorts.DEBUG_SERVER;
             }
             
             CombinedWriteLine($"NothingButNeurons.IO program starting on port {Port}, with DebugServer on port {DebugServerPort}...");
 
-            var remoteConfig = GrpcNetRemoteConfig
-                .BindToLocalhost(Port)
-                .WithProtoMessages(DebuggerReflection.Descriptor, NeuronsReflection.Descriptor, IOReflection.Descriptor)
-                /*.WithChannelOptions(new GrpcChannelOptions
-                    {
-                        CompressionProviders = new[]
-                        {
-                            new GzipCompressionProvider(CompressionLevel.Fastest)
-                        }
-                    })*/
-                .WithRemoteDiagnostics(true);
-            ProtoSystem = new ActorSystem().WithRemote(remoteConfig);
-            ProtoSystem.Remote().StartAsync();
-            while (!ProtoSystem.Remote().Started)
-            {
-                Thread.Sleep(100);
-            }
+            ProtoSystem = Nodes.GetActorSystem(Port);
 
             PID debugServerPID = PID.FromAddress($"127.0.0.1:{DebugServerPort}", "DebugServer");
             HiveMind = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new HiveMind(debugServerPID)), "HiveMind");

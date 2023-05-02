@@ -24,23 +24,7 @@ internal class ServiceMonitor
     {
         Services = MainWindow.Instance.Services;
 
-        var remoteConfig = GrpcNetRemoteConfig
-                .BindToLocalhost(MainWindow.ServiceMonitorPort)
-                .WithProtoMessages(DebuggerReflection.Descriptor, NeuronsReflection.Descriptor, IOReflection.Descriptor)
-                /*.WithChannelOptions(new GrpcChannelOptions
-                    {
-                        CompressionProviders = new[]
-                        {
-                            new GzipCompressionProvider(CompressionLevel.Fastest)
-                        }
-                    })*/
-                .WithRemoteDiagnostics(true);
-        ProtoSystem = new ActorSystem().WithRemote(remoteConfig);
-        ProtoSystem.Remote().StartAsync();
-        while (!ProtoSystem.Remote().Started)
-        {
-            Thread.Sleep(100);
-        }
+        ProtoSystem = Nodes.GetActorSystem(MainWindow.ServiceMonitorPort);
 
         _timer = new System.Timers.Timer(1000);
         _timer.Elapsed += Monitor;
