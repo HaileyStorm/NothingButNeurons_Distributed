@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NothingButNeurons.Brain.Regions.Neurons.DataClasses;
+namespace NothingButNeurons.Brain.Neurons.DataClasses;
 
 /// <summary>
 /// Represents a NeuronAddress with a neuron part and a region part.

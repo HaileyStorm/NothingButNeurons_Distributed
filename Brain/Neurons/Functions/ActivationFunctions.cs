@@ -1,4 +1,4 @@
-﻿namespace NothingButNeurons.Brain.Regions.Neurons.Functions;
+﻿namespace NothingButNeurons.Brain.Neurons.Functions;
 
 /// <summary>
 /// Provides extension methods for the ActivationFunction enum.

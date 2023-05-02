@@ -1,6 +1,6 @@
 ﻿using System.Collections.Specialized;
 
-namespace NothingButNeurons.Brain.Regions.Neurons.DataClasses;
+namespace NothingButNeurons.Brain.Neurons.DataClasses;
 
 // Internal class containing sections for NeuronPart1BitField's BitVector32
 internal static class NeuronPart1BitVectorSections

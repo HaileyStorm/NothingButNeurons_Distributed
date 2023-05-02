@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NothingButNeurons.Brain.Regions.Neurons.DataClasses;
+namespace NothingButNeurons.Brain.Neurons.DataClasses;
 
 // Internal class containing sections for SynapseBitField's BitVector32
 internal static class SynapseBitVectorSections

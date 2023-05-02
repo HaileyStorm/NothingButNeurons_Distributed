@@ -4,7 +4,7 @@ global using NothingButNeurons.CCSL;
 global using System.Diagnostics;
 using NothingButNeurons.Brain.Regions;
 using Proto;
-using NothingButNeurons.Brain.Regions.Neurons.DataClasses;
+using NothingButNeurons.Brain.Neurons.DataClasses;
 
 namespace NothingButNeurons.Brain;
 

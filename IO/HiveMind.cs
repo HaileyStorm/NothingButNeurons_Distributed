@@ -1,6 +1,4 @@
-﻿using NothingButNeurons.Brain;
-using Proto;
-using NothingButNeurons.Brain.Regions.Neurons;
+﻿using Proto;
 using Google.Protobuf;
 
 namespace NothingButNeurons.IO;

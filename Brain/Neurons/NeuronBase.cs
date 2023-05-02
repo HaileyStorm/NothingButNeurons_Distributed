@@ -1,10 +1,10 @@
 ﻿using Google.Protobuf.WellKnownTypes;
-using NothingButNeurons.Brain.Regions.Neurons.DataClasses;
-using NothingButNeurons.Brain.Regions.Neurons.Functions;
+using NothingButNeurons.Brain.Neurons.DataClasses;
+using NothingButNeurons.Brain.Neurons.Functions;
 using NothingButNeurons.Shared.Messages;
 using Proto;
 
-namespace NothingButNeurons.Brain.Regions.Neurons;
+namespace NothingButNeurons.Brain.Neurons;
 
 /// <summary>
 /// NeuronBase is an abstract base class representing a neuron in an artificial neural network.
@@ -92,7 +92,7 @@ public abstract class NeuronBase : ActorBase
         Axons = new Axon[synapseCt];
         SignalBuffer = 0d;
         AccumulationFunction = neuronData.AccumulationFunction;
-        PreActivationThreshold = neuronData.PreActivationThreshold; 
+        PreActivationThreshold = neuronData.PreActivationThreshold;
         ActivationFunction = neuronData.ActivationFunction;
         ActivationParameterA = neuronData.ActivationParameterA;
         ActivationParameterB = neuronData.ActivationParameterB;
@@ -102,7 +102,8 @@ public abstract class NeuronBase : ActorBase
         if (AwaitingSynapses > 0)
         {
             _behavior = new Behavior(Spawn);
-        } else
+        }
+        else
         {
             _behavior = new Behavior(Disabled);
         }
@@ -222,7 +223,7 @@ public abstract class NeuronBase : ActorBase
                 // Limit how far down SignalBuffer can go
                 double f = PreActivationThreshold < 0 ? -2 : -1;
                 SignalBuffer = Math.Max(SignalBuffer, f * Math.Abs(PreActivationThreshold));
-                
+
                 SendDebugMessage(DebugSeverity.Trace, "Signal", $"Neuron {SelfPID!.Address}/{SelfPID.Id} processed Signal ({signal.Val})", $"New SignalBuffer: {SignalBuffer}");
                 //Debug.WriteLine($"Neuron {SelfPID!.Address}/{SelfPID.Id} processed Signal ({signal.Val}). New SignalBuffer: {SignalBuffer}");
                 _processed = true;

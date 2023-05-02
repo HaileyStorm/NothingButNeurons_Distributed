@@ -1,7 +1,7 @@
-﻿using NothingButNeurons.Brain.Regions.Neurons.DataClasses;
+﻿using NothingButNeurons.Brain.Neurons.DataClasses;
 using Proto;
 
-namespace NothingButNeurons.Brain.Regions.Neurons;
+namespace NothingButNeurons.Brain.Neurons;
 
 /// <summary>
 /// Represents an input neuron in the neural network.

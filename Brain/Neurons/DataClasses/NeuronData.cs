@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NothingButNeurons.Brain.Neurons;
 
-namespace NothingButNeurons.Brain.Regions.Neurons.DataClasses;
+namespace NothingButNeurons.Brain.Neurons.DataClasses;
 
 public struct NeuronData
 {
