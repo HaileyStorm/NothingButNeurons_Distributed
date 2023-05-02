@@ -27,12 +27,16 @@ public partial class MainWindow : Window
 
     public ObservableCollection<Service> Services { get; set; } = new ObservableCollection<Service>
     {
-        new Service { Name = "IO / HiveMind", ProjectName="IO", ActorName="HiveMind", IsWPF=false, Port = Shared.Consts.DefaultPorts.IO, StatusColor = Brushes.Gray },
-        new Service { Name = "Debug Server", ProjectName="DebugServer", ActorName="DebugServer", IsWPF=false, Port = Shared.Consts.DefaultPorts.DEBUG_SERVER, StatusColor = Brushes.Gray },
-        new Service { Name = "Debug File Writer", ProjectName="DebugFileWriter", ActorName="DebugFileWriter", IsWPF=false, Port = Shared.Consts.DefaultPorts.DEBUG_FILE_WRITER, StatusColor = Brushes.Gray },
-        new Service { Name = "Debug Log Viewer", ProjectName="DebugLogViewer", ActorName="DebugUI", IsWPF=true, Port = Shared.Consts.DefaultPorts.DEBUG_LOG_VIEWER, StatusColor = Brushes.Gray },
-        new Service { Name = "Visualizer", ProjectName="Visualizer", ActorName="NetworkVisualizationUpdater", IsWPF=true, Port = Shared.Consts.DefaultPorts.VISUALIZER, StatusColor = Brushes.Gray },
-        new Service { Name = "Designer", ProjectName="Designer", ActorName="DesignerHelper", IsWPF=true, Port = Shared.Consts.DefaultPorts.DESIGNER, StatusColor = Brushes.Gray }
+        // IO will not require DebugServer, but realistically does right now
+        new Service { Name = "IO / HiveMind", ProjectName="IO", ActorName="HiveMind", PreReqProjects = new string[] { "DebugServer" }, IsWPF=false, Port = Shared.Consts.DefaultPorts.IO, StatusColor = Brushes.Gray },
+        new Service { Name = "Debug Server", ProjectName="DebugServer", ActorName="DebugServer", PreReqProjects = Array.Empty<string>(), IsWPF=false, Port = Shared.Consts.DefaultPorts.DEBUG_SERVER, StatusColor = Brushes.Gray },
+        new Service { Name = "Debug File Writer", ProjectName="DebugFileWriter", ActorName="DebugFileWriter", PreReqProjects = new string[] { "DebugServer" }, IsWPF=false, Port = Shared.Consts.DefaultPorts.DEBUG_FILE_WRITER, StatusColor = Brushes.Gray },
+        new Service { Name = "Debug Log Viewer", ProjectName="DebugLogViewer", ActorName="DebugUI", PreReqProjects = new string[] { "DebugServer" }, IsWPF=true, Port = Shared.Consts.DefaultPorts.DEBUG_LOG_VIEWER, StatusColor = Brushes.Gray },
+        // Currently there's nothing to visualize unless a brain is spawned and random inputs are sent, which happens via Designer - but a) that's not how things will be, b) Visualizer can be open before or after Designer, so long as it's own before the Designer Spawn button is clicked
+        // Technically IO isn't required either...
+        new Service { Name = "Visualizer", ProjectName="Visualizer", ActorName="NetworkVisualizationUpdater", PreReqProjects = new string[] { "DebugServer", "IO" }, IsWPF=true, Port = Shared.Consts.DefaultPorts.VISUALIZER, StatusColor = Brushes.Gray },
+        // Visualizer must be open before Spawn clicked in Designer now if want Visualizer to catch it, but in order to create Brains or send randomized input Designer does not require Visualizer, so it's not on the prereq list
+        new Service { Name = "Designer", ProjectName="Designer", ActorName="DesignerHelper", PreReqProjects = new string[] { "IO" }, IsWPF=true, Port = Shared.Consts.DefaultPorts.DESIGNER, StatusColor = Brushes.Gray }
     };
 
     public MainWindow()
@@ -134,6 +138,13 @@ public class Service : INotifyPropertyChanged
         set { _actorName = value; OnPropertyChanged(); }
     }
 
+    private string[] _preReqProjects;
+    public string[] PreReqProjects
+    {
+        get { return _preReqProjects; }
+        set { _preReqProjects = value; OnPropertyChanged(); }
+    }
+
     private bool _isWPF;
     public bool IsWPF
     {
@@ -153,5 +164,12 @@ public class Service : INotifyPropertyChanged
     {
         get { return _statusColor; }
         set { _statusColor = value; OnPropertyChanged(); }
+    }
+
+    private bool _enabled = false;
+    public bool Enabled
+    {
+        get { return _enabled; }
+        set { _enabled = value; OnPropertyChanged(); }
     }
 }

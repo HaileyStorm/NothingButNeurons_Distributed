@@ -55,8 +55,7 @@ internal class ServiceLauncher
                 arguments = $"{service.Port} {DebugServerPort}";
                 break;
             case "DebugLogViewer":
-                //TODO: IO/HiveMind port is temporary, does not belong here.
-                arguments = $"{service.Port} {DebugServerPort} {IOPort}";
+                arguments = $"{service.Port} {DebugServerPort}";
                 break;
             case "Visualizer":
                 arguments = $"{service.Port} {DebugServerPort}";
