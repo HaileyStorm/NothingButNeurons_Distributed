@@ -15,6 +15,7 @@ using Proto.Remote;
 using Microsoft.Win32;
 using System.IO;
 using Proto.Timers;
+using System.Collections.Generic;
 
 namespace NothingButNeurons.Designer
 {
@@ -175,11 +176,13 @@ namespace NothingButNeurons.Designer
 
         private void SetFileLight(bool isActive)
         {
+            if (isActive) SpawnButton.IsEnabled = true;
             FileLoadedLight.Fill = isActive ? Brushes.Green : Brushes.Gray;
         }
 
         private void SetGenLight(bool isActive)
         {
+            if (isActive) SpawnButton.IsEnabled = true;
             GenLoadedLight.Fill = isActive ? Brushes.Green : Brushes.Gray;
         }
 
@@ -213,26 +216,45 @@ namespace NothingButNeurons.Designer
 
         private void StartStop_Click(object sender, RoutedEventArgs e)
         {
+            string[] neuronPIDs = new string[]
+            {
+                "HiveMind/Brain$1/1/789",
+                "HiveMind/Brain$1/2/600",
+                "HiveMind/Brain$1/3/100",
+                "HiveMind/Brain$1/3/444",
+                "HiveMind/Brain$1/4/800",
+                "HiveMind/Brain$1/5/150"
+            };
+
+            var lastSignalTime = new Dictionary<string, DateTime>(); // Store the last signal time for each neuron
+            var nextSignalDuration = new Dictionary<string, TimeSpan>(); // Store the next random signal duration for each neuron
+
             _startIsActive = !_startIsActive;
+
+            // Initialize lastSignalTime and nextSignalDuration dictionaries
+            foreach (var pid in neuronPIDs)
+            {
+                lastSignalTime[pid] = DateTime.Now;
+                nextSignalDuration[pid] = TimeSpan.FromMilliseconds(_random.Next(int.Parse(MinSignalPeriod.Text), int.Parse(MaxSignalPeriod.Text) + 1));
+            }
 
             // Start
             if (_startIsActive)
             {
-                InputNeuronTimer = new(70);
-                InputNeuronTimer.Elapsed += (s, e) =>
+                InputNeuronTimer = new(10);
+                InputNeuronTimer.Elapsed += (s, elapsedEventArgs) =>
                 {
-                    if (_random.Next(0, 15) == 0)
-                        ProtoSystem.Root.Send(new PID($"127.0.0.1:{HiveMindPort}", "HiveMind/Brain$1/1/789"), new SignalMessage { Val = _random.NextDouble() * 2d - 1d });
-                    if (_random.Next(0, 15) == 1)
-                        ProtoSystem.Root.Send(new PID($"127.0.0.1:{HiveMindPort}", "HiveMind/Brain$1/2/600"), new SignalMessage { Val = _random.NextDouble() * 2d - 1d });
-                    if (_random.Next(0, 15) == 2)
-                        ProtoSystem.Root.Send(new PID($"127.0.0.1:{HiveMindPort}", "HiveMind/Brain$1/3/100"), new SignalMessage { Val = _random.NextDouble() * 2d - 1d });
-                    if (_random.Next(0, 15) == 3)
-                        ProtoSystem.Root.Send(new PID($"127.0.0.1:{HiveMindPort}", "HiveMind/Brain$1/3/444"), new SignalMessage { Val = _random.NextDouble() * 2d - 1d });
-                    if (_random.Next(0, 15) == 4)
-                        ProtoSystem.Root.Send(new PID($"127.0.0.1:{HiveMindPort}", "HiveMind/Brain$1/4/800"), new SignalMessage { Val = _random.NextDouble() * 2d - 1d });
-                    if (_random.Next(0, 15) == 5)
-                        ProtoSystem.Root.Send(new PID($"127.0.0.1:{HiveMindPort}", "HiveMind/Brain$1/5/150"), new SignalMessage { Val = _random.NextDouble() * 2d - 1d });
+                    MinSignalPeriod.Dispatcher.Invoke(() => {
+                        foreach (var pid in neuronPIDs)
+                        {
+                            if (DateTime.Now - lastSignalTime[pid] >= nextSignalDuration[pid])
+                            {
+                                ProtoSystem.Root.Send(new PID($"127.0.0.1:{HiveMindPort}", pid), new SignalMessage { Val = _random.NextDouble() * (double.Parse(MaxSignalValue.Text) - double.Parse(MinSignalValue.Text)) + double.Parse(MinSignalValue.Text) });
+                                lastSignalTime[pid] = DateTime.Now;
+                                nextSignalDuration[pid] = TimeSpan.FromMilliseconds(_random.Next(int.Parse(MinSignalPeriod.Text), int.Parse(MaxSignalPeriod.Text) + 1));
+                            }
+                        }
+                    });
                 };
                 InputNeuronTimer.Start();
 

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:designer="clr-namespace:NothingButNeurons.Designer"
         mc:Ignorable="d"
-        Title="Designer" Height="785" Width="800">
+        Title="Designer" Height="800" Width="800">
     <Grid Margin="5,5">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -37,9 +37,9 @@
 
             <!-- Load Brain from File -->
             <Label Grid.Row="0" Content="Load Brain from File" HorizontalAlignment="Center" FontWeight="Bold" FontSize="14"/>
-            <Button Grid.Row="1" Content="Browse" Click="LoadBrainFromFile_Click" HorizontalAlignment="Left"/>
+            <Button Grid.Row="1" Content="Browse" Click="LoadBrainFromFile_Click" HorizontalAlignment="Left" Margin="5,0,0,0"/>
 
-            <Separator Grid.Row="2" Margin="0,10,0,10"/>
+            <Border Grid.Row="2" BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="1" VerticalAlignment="Top" Width="350" Margin="5,8,0,0"/>
 
             <!-- Create Random Brain -->
             <Label Grid.Row="3" Content="Create Random Brain" HorizontalAlignment="Center" FontWeight="Bold" FontSize="14"/>
@@ -166,10 +166,11 @@
                 <TextBox Grid.Column="4" Grid.Row="3" Width="50"/>
             </Grid>
 
-            <Button Grid.Row="10" Content="Generate / Save" Click="GenerateSave_Click" HorizontalAlignment="Left"/>
+            <Button Grid.Row="10" Content="Generate / Save" Click="GenerateSave_Click" HorizontalAlignment="Left"  Margin="5,10,0,0"/>
 
+            <Border Grid.Row="11" BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="1" VerticalAlignment="Top" Width="350" Margin="5,8,0,0"/>
+            
             <!-- Spawn -->
-            <Separator Grid.Row="11" Margin="0,10,0,10" Height="1"/>
 
             <Label Grid.Row="12" Content="Spawn Loaded Brain" HorizontalAlignment="Center" FontWeight="Bold" FontSize="14"/>
             <Grid Grid.Row="13">
@@ -196,8 +197,8 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <Button Grid.Column="0" Content="Spawn" Click="Spawn_Click" />
-                <Ellipse Grid.Column="1" Width="20" Height="20" Fill="Gray" x:Name="SpawnLight"/>
+                <Button Grid.Column="0" Content="Spawn" Click="Spawn_Click" x:Name="SpawnButton" IsEnabled="False" Margin="5,0,0,0"/>
+                <Ellipse Grid.Column="1" Width="20" Height="20" Fill="Gray" x:Name="SpawnLight" Margin="5,0"/>
             </Grid>
 
         </Grid>
@@ -216,7 +217,7 @@
 
             <StackPanel Grid.Row="1" Orientation="Horizontal">
                 <Label Content="Select Brain" HorizontalAlignment="Left"/>
-                <ComboBox x:Name="SelectBrainDropdown" />
+                <ComboBox x:Name="SelectBrainDropdown" Margin="5,0"/>
                 <Button x:Name="RefreshButton" Content="Refresh" Click="Refresh_Click" />
             </StackPanel>
 
@@ -236,22 +237,23 @@
                 <Label Grid.Column="2" Grid.Row="0" Content="Max" HorizontalAlignment="Center"/>
 
                 <Label Grid.Column="0" Grid.Row="1" Content="Signal Value" HorizontalAlignment="Left"/>
-                <TextBox Grid.Column="1" Grid.Row="1" Width="50"/>
-                <TextBox Grid.Column="2" Grid.Row="1" Width="50"/>
+                <TextBox Grid.Column="1" Grid.Row="1" Width="50" x:Name="MinSignalValue" Text="-1.0"/>
+                <TextBox Grid.Column="2" Grid.Row="1" Width="50" x:Name="MaxSignalValue" Text="1.0"/>
 
                 <Label Grid.Column="0" Grid.Row="2" Content="Signal Period (ms)" HorizontalAlignment="Left"/>
-                <TextBox Grid.Column="1" Grid.Row="2" Width="50"/>
-                <TextBox Grid.Column="2" Grid.Row="2" Width="50"/>
+                <TextBox Grid.Column="1" Grid.Row="2" Width="50" x:Name="MinSignalPeriod" Text="50"/>
+                <TextBox Grid.Column="2" Grid.Row="2" Width="50" x:Name="MaxSignalPeriod" Text="750"/>
             </Grid>
 
-            <Grid Grid.Row="4" VerticalAlignment="Bottom">
+            <Grid Grid.Row="4" VerticalAlignment="Top" Margin="5,10">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <Button Grid.Column="0" x:Name="StartStopButton" Content="Start" Click="StartStop_Click" />
-                <Ellipse Grid.Column="1" Width="20" Height="20" Fill="Gray" x:Name="StartStopLight"/>
+                <Ellipse Grid.Column="1" Width="20" Height="20" Fill="Gray" x:Name="StartStopLight" Margin="5,0"/>
             </Grid>
+            <Border BorderBrush="Black" BorderThickness="1,0,0,0" Margin="-15,-5,0,-5" Grid.RowSpan="5"/>
         </Grid>
     </Grid>
 

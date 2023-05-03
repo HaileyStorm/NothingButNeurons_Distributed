@@ -82,6 +82,8 @@ internal class ServiceLauncher
             Process.Start(startInfo);
 
             service.StatusColor = Brushes.Green;
+            // Preventing launching another copy (not that this is *always* a problem, but it's unnecessary for sure, at least for now)
+            service.Enabled = false;
         }
         catch (Exception ex)
         {
