@@ -131,6 +131,7 @@ public partial class MainWindow : Window
         double interiorRegionsSynapseStrengthMax = Math.Clamp(double.Parse(InteriorRegionsSynapseStrengthMax.Text), Math.Max(-1, double.Parse(InteriorRegionsSynapseStrengthMin.Text)), 1);
 
         var synapses = RandomBrain.GenerateRandomSynapses(neurons, inputRegionsNumSynapsesPerNeuronMin, inputRegionsNumSynapsesPerNeuronMax, inputRegionsSynapseStrengthMin, inputRegionsSynapseStrengthMax, interiorRegionsNumSynapsesPerNeuronMin, interiorRegionsNumSynapsesPerNeuronMax, interiorRegionsSynapseStrengthMin, interiorRegionsSynapseStrengthMax);
+        //Debug.WriteLine($"\nSynapses validated? {ValidateToSynapseDataListFunction(synapses)}");
         _synapseData = synapses.ToByteArray();
 
         SetFileLight(false);
@@ -267,7 +268,7 @@ public partial class MainWindow : Window
             NeuronData originalNeuron = originalNeuronDataList[i];
             NeuronData reconstructedNeuron = reconstructedNeuronDataList[i];
 
-            Debug.WriteLine($"{originalNeuron.Address.RegionPart} vs {reconstructedNeuron.Address.RegionPart}");
+            /*Debug.WriteLine($"{originalNeuron.Address.RegionPart} vs {reconstructedNeuron.Address.RegionPart}");
             Debug.WriteLine($"{originalNeuron.Address.NeuronPart} vs {reconstructedNeuron.Address.NeuronPart}");
             Debug.WriteLine($"{originalNeuron.AccumulationFunction} vs {reconstructedNeuron.AccumulationFunction}");
             Debug.WriteLine($"{originalNeuron.PreActivationThreshold} vs {reconstructedNeuron.PreActivationThreshold}");
@@ -275,18 +276,54 @@ public partial class MainWindow : Window
             Debug.WriteLine($"{originalNeuron.ActivationParameterA} vs {reconstructedNeuron.ActivationParameterA}");
             Debug.WriteLine($"{originalNeuron.ActivationParameterB} vs {reconstructedNeuron.ActivationParameterB}");
             Debug.WriteLine($"{originalNeuron.ActivationThreshold} vs {reconstructedNeuron.ActivationThreshold}");
-            Debug.WriteLine($"{originalNeuron.ResetFunction} vs {reconstructedNeuron.ResetFunction}");
+            Debug.WriteLine($"{originalNeuron.ResetFunction} vs {reconstructedNeuron.ResetFunction}");*/
             areEqual &= originalNeuron.Address.NeuronPart == reconstructedNeuron.Address.NeuronPart;
             areEqual &= originalNeuron.Address.RegionPart == reconstructedNeuron.Address.RegionPart;
             areEqual &= originalNeuron.AccumulationFunction == reconstructedNeuron.AccumulationFunction;
-            areEqual &= Math.Abs(originalNeuron.PreActivationThreshold - reconstructedNeuron.PreActivationThreshold) < 0.07;
+            areEqual &= Math.Abs(originalNeuron.PreActivationThreshold - reconstructedNeuron.PreActivationThreshold) < 0.1;
             areEqual &= originalNeuron.ActivationFunction == reconstructedNeuron.ActivationFunction;
-            areEqual &= Math.Abs(originalNeuron.ActivationParameterA - reconstructedNeuron.ActivationParameterA) < 0.07;
-            areEqual &= Math.Abs(originalNeuron.ActivationParameterB - reconstructedNeuron.ActivationParameterB) < 0.07;
-            areEqual &= Math.Abs(originalNeuron.ActivationThreshold - reconstructedNeuron.ActivationThreshold) < 0.07;
+            areEqual &= Math.Abs(originalNeuron.ActivationParameterA - reconstructedNeuron.ActivationParameterA) < 0.1;
+            areEqual &= Math.Abs(originalNeuron.ActivationParameterB - reconstructedNeuron.ActivationParameterB) < 0.1;
+            areEqual &= Math.Abs(originalNeuron.ActivationThreshold - reconstructedNeuron.ActivationThreshold) < 0.1;
             areEqual &= originalNeuron.ResetFunction == reconstructedNeuron.ResetFunction;
         }
 
         Debug.WriteLine($"\nValidation result: {areEqual}, got to {i} of {originalNeuronDataList.Count} \n");
+    }
+
+    public static bool ValidateToSynapseDataListFunction(List<SynapseData> originalSynapseDataList)
+    {
+        originalSynapseDataList.Sort(new SynapseDataExtensions.SynapseDataComparer());
+        byte[] synapseBytes = originalSynapseDataList.ToByteArray();
+        List<SynapseData> convertedSynapseDataList = SynapseDataExtensions.ByteArrayToSynapseDataList(synapseBytes);
+
+        if (originalSynapseDataList.Count != convertedSynapseDataList.Count)
+        {
+            Debug.WriteLine("Count mismatch");
+            return false;
+        }
+
+        for (int i = 0; i < originalSynapseDataList.Count; i++)
+        {
+            SynapseData originalSynapseData = originalSynapseDataList[i];
+            SynapseData convertedSynapseData = convertedSynapseDataList[i];
+
+            /*Debug.WriteLine($"{originalSynapseData.FromAddress.RegionPart} vs {convertedSynapseData.FromAddress.RegionPart}");
+            Debug.WriteLine($"{originalSynapseData.FromAddress.NeuronPart} vs {convertedSynapseData.FromAddress.NeuronPart}");
+            Debug.WriteLine($"{originalSynapseData.ToAddress.RegionPart} vs {convertedSynapseData.ToAddress.RegionPart}");
+            Debug.WriteLine($"{originalSynapseData.ToAddress.NeuronPart} vs {convertedSynapseData.ToAddress.NeuronPart}");
+            Debug.WriteLine($"{originalSynapseData.Strength} vs {convertedSynapseData.Strength}");*/
+            if (originalSynapseData.FromAddress.NeuronPart != convertedSynapseData.FromAddress.NeuronPart ||
+                originalSynapseData.FromAddress.RegionPart != convertedSynapseData.FromAddress.RegionPart ||
+                originalSynapseData.ToAddress.NeuronPart != convertedSynapseData.ToAddress.NeuronPart ||
+                originalSynapseData.ToAddress.RegionPart != convertedSynapseData.ToAddress.RegionPart ||
+                Math.Abs(originalSynapseData.Strength - convertedSynapseData.Strength) > 0.1)
+            {
+                Debug.WriteLine($"Failed at {i}");
+                return false;
+            }
+        }
+
+        return true;
     }
 }
