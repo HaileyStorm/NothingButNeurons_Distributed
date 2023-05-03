@@ -113,7 +113,7 @@ public class Brain : ActorBaseWithBroadcaster
                 AddRoutee(pid);
                 AwaitingNeuronAck += neuronCt;
 
-                // Find all matching sections for the neuron and synapse data.
+                // Find all matching sections for the neuron and synapse data (that is, find all the synapses starting at each neuron).
                 List<(byte[] neuronData, List<int> synapseData)> neurons = FindAllMatchingSections(msg.NeuronData.ToByteArray(), msg.SynapseData.ToByteArray());
                 Span<byte> neuronData;
                 List<int> synapseData;

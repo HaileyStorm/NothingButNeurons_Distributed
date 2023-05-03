@@ -65,20 +65,20 @@
                 <Label Grid.Column="2" Grid.Row="1" Content="Min" HorizontalAlignment="Center"/>
                 <Label Grid.Column="3" Grid.Row="1" Content="Max" HorizontalAlignment="Center"/>
 
-                <TextBox Grid.Column="0" Grid.Row="2" Width="50"/>
+                <TextBox x:Name="NumInputRegions" Grid.Column="0" Grid.Row="2" Width="50" Text="2"/>
                 <Label Grid.Column="1" Grid.Row="2" Content="Input" HorizontalAlignment="Left"/>
-                <TextBox Grid.Column="2" Grid.Row="2" Width="50"/>
-                <TextBox Grid.Column="3" Grid.Row="2" Width="50"/>
+                <TextBox x:Name="InputRegionsNumNeuronsMin" Grid.Column="2" Grid.Row="2" Width="50" Text="1"/>
+                <TextBox x:Name="InputRegionsNumNeuronsMax" Grid.Column="3" Grid.Row="2" Width="50" Text="50"/>
 
-                <TextBox Grid.Column="0" Grid.Row="3" Width="50"/>
+                <TextBox x:Name="NumInteriorRegions" Grid.Column="0" Grid.Row="3" Width="50" Text="5"/>
                 <Label Grid.Column="1" Grid.Row="3" Content="Interior" HorizontalAlignment="Left"/>
-                <TextBox Grid.Column="2" Grid.Row="3" Width="50"/>
-                <TextBox Grid.Column="3" Grid.Row="3" Width="50"/>
+                <TextBox x:Name="InteriorRegionsNumNeuronsMin" Grid.Column="2" Grid.Row="3" Width="50" Text="1"/>
+                <TextBox x:Name="InteriorRegionsNumNeuronsMax" Grid.Column="3" Grid.Row="3" Width="50" Text="100"/>
 
-                <TextBox Grid.Column="0" Grid.Row="4" Width="50"/>
+                <TextBox x:Name="NumOutputRegions" Grid.Column="0" Grid.Row="4" Width="50" Text="2"/>
                 <Label Grid.Column="1" Grid.Row="4" Content="Output" HorizontalAlignment="Left"/>
-                <TextBox Grid.Column="2" Grid.Row="4" Width="50"/>
-                <TextBox Grid.Column="3" Grid.Row="4" Width="50"/>
+                <TextBox x:Name="OutputRegionsNumNeuronsMin" Grid.Column="2" Grid.Row="4" Width="50" Text="1"/>
+                <TextBox x:Name="OutputRegionsNumNeuronsMax" Grid.Column="3" Grid.Row="4" Width="50" Text="10"/>
             </Grid>
 
             <!-- Neurons -->
@@ -107,23 +107,23 @@
                 <ComboBox Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" x:Name="AccumulationFunctionDropdown" ItemsSource="{Binding AccumulationFunctions}" Margin="0,0,0,26" Grid.RowSpan="2"  SelectedIndex="0"/>
 
                 <Label Grid.Column="0" Grid.Row="2" Content="Pre-Activation Threshold" HorizontalAlignment="Left"/>
-                <TextBox Grid.Column="1" Grid.Row="2" Width="50"/>
-                <TextBox Grid.Column="2" Grid.Row="2" Width="50"/>
+                <TextBox x:Name="PreActivationThresholdMin" Grid.Column="1" Grid.Row="2" Width="50" Text="-1"/>
+                <TextBox x:Name="PreActivationThresholdMax" Grid.Column="2" Grid.Row="2" Width="50" Text="1"/>
 
                 <Label Grid.Column="0" Grid.Row="3" Content="Activation Function" HorizontalAlignment="Left"/>
                 <ComboBox Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="3" x:Name="ActivationFunctionDropdown" ItemsSource="{Binding ActivationFunctions}"  SelectedIndex="0"/>
 
                 <Label Grid.Column="0" Grid.Row="4" Content="Activation Parameter A" HorizontalAlignment="Left"/>
-                <TextBox Grid.Column="1" Grid.Row="4" Width="50"/>
-                <TextBox Grid.Column="2" Grid.Row="4" Width="50"/>
+                <TextBox x:Name="ActivationParameterAMin" Grid.Column="1" Grid.Row="4" Width="50" Text="-3"/>
+                <TextBox x:Name="ActivationParameterAMax" Grid.Column="2" Grid.Row="4" Width="50" Text="3"/>
 
                 <Label Grid.Column="0" Grid.Row="5" Content="Activation Parameter B" HorizontalAlignment="Left"/>
-                <TextBox Grid.Column="1" Grid.Row="5" Width="50"/>
-                <TextBox Grid.Column="2" Grid.Row="5" Width="50"/>
+                <TextBox x:Name="ActivationParameterBMin" Grid.Column="1" Grid.Row="5" Width="50" Text="-3"/>
+                <TextBox x:Name="ActivationParameterBMax" Grid.Column="2" Grid.Row="5" Width="50" Text="3"/>
 
                 <Label Grid.Column="0" Grid.Row="6" Content="Activation Threshold" HorizontalAlignment="Left"/>
-                <TextBox Grid.Column="1" Grid.Row="6" Width="50"/>
-                <TextBox Grid.Column="2" Grid.Row="6" Width="50"/>
+                <TextBox x:Name="ActivationThresholdMin" Grid.Column="1" Grid.Row="6" Width="50" Text="0"/>
+                <TextBox x:Name="ActivationThresholdMax" Grid.Column="2" Grid.Row="6" Width="50" Text="1"/>
 
                 <Label Grid.Column="0" Grid.Row="7" Content="Reset Function" HorizontalAlignment="Left"/>
                 <ComboBox Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="7" x:Name="ResetFunctionDropdown" ItemsSource="{Binding ResetFunctions}"  SelectedIndex="0"/>
@@ -146,7 +146,7 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <Label Grid.Column="1" Grid.Row="0" Grid.ColumnSpan="2" Content="Count" HorizontalAlignment="Center"/>
+                <Label Grid.Column="1" Grid.Row="0" Grid.ColumnSpan="2" Content="Ct/Neuron" HorizontalAlignment="Center"/>
                 <Label Grid.Column="3" Grid.Row="0" Grid.ColumnSpan="2" Content="Strength" HorizontalAlignment="Center"/>
                 <Label Grid.Column="1" Grid.Row="1" Content="Min" HorizontalAlignment="Center"/>
                 <Label Grid.Column="2" Grid.Row="1" Content="Max" HorizontalAlignment="Center"/>
@@ -154,16 +154,16 @@
                 <Label Grid.Column="4" Grid.Row="1" Content="Max" HorizontalAlignment="Center"/>
 
                 <Label Grid.Column="0" Grid.Row="2" Content="Input" HorizontalAlignment="Left"/>
-                <TextBox Grid.Column="1" Grid.Row="2" Width="50"/>
-                <TextBox Grid.Column="2" Grid.Row="2" Width="50"/>
-                <TextBox Grid.Column="3" Grid.Row="2" Width="50"/>
-                <TextBox Grid.Column="4" Grid.Row="2" Width="50"/>
+                <TextBox x:Name="InputRegionsNumSynapsesPerNeuronMin" Grid.Column="1" Grid.Row="2" Width="50" Text="1"/>
+                <TextBox x:Name="InputRegionsNumSynapsesPerNeuronMax" Grid.Column="2" Grid.Row="2" Width="50" Text="10"/>
+                <TextBox x:Name="InputRegionsSynapseStrengthMin" Grid.Column="3" Grid.Row="2" Width="50" Text="-1"/>
+                <TextBox x:Name="InputRegionsSynapseStrengthMax" Grid.Column="4" Grid.Row="2" Width="50" Text="1"/>
 
                 <Label Grid.Column="0" Grid.Row="3" Content="Interior" HorizontalAlignment="Left"/>
-                <TextBox Grid.Column="1" Grid.Row="3" Width="50"/>
-                <TextBox Grid.Column="2" Grid.Row="3" Width="50"/>
-                <TextBox Grid.Column="3" Grid.Row="3" Width="50"/>
-                <TextBox Grid.Column="4" Grid.Row="3" Width="50"/>
+                <TextBox x:Name="InteriorRegionsNumSynapsesPerNeuronMin" Grid.Column="1" Grid.Row="3" Width="50" Text="1"/>
+                <TextBox x:Name="InteriorRegionsNumSynapsesPerNeuronMax" Grid.Column="2" Grid.Row="3" Width="50" Text="25"/>
+                <TextBox x:Name="InteriorRegionsSynapseStrengthMin" Grid.Column="3" Grid.Row="3" Width="50" Text="-1"/>
+                <TextBox x:Name="InteriorRegionsSynapseStrengthMax" Grid.Column="4" Grid.Row="3" Width="50" Text="1"/>
             </Grid>
 
             <Button Grid.Row="10" Content="Generate / Save" Click="GenerateSave_Click" HorizontalAlignment="Left"  Margin="5,10,0,0"/>

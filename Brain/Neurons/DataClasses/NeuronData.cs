@@ -85,6 +85,35 @@ public static class NeuronDataExtensions
 
         return neuronBytes;
     }
+    public static List<NeuronData> ByteArrayToNeuronDataList(byte[] neuronBytes)
+    {
+        List<NeuronData> neuronDataList = new List<NeuronData>();
+
+        for (int i = 0; i < neuronBytes.Length;)
+        {
+            int part1Int = BitConverter.ToInt32(neuronBytes.Skip(i).Take(4).ToArray(), 0);
+            NeuronPart1BitField part1 = new NeuronPart1BitField(part1Int);
+            i += 4;
+
+            int part2Int = BitConverter.ToInt16(neuronBytes.Skip(i).Take(2).Reverse().ToArray(), 0);
+            NeuronPart2BitField part2 = new NeuronPart2BitField(part2Int.ReverseBytes());
+            i += 2;
+
+            NeuronData neuron = new NeuronData(
+                part1.Address,
+                part1.AccumulationFunction,
+                NeuronBase.BitsToDouble(part1.PreActivationThreshold, 31),
+                part1.ActivationFunction,
+                NeuronBase.BitsToDouble(part1.ActivationParameterA, 63, -3d, 3d),
+                NeuronBase.BitsToDouble(part2.ActivationParameterB, 63, -3d, 3d),
+                NeuronBase.BitsToDouble(part2.ActivationThreshold, 15, 0d, 1d),
+                part2.ResetFunction);
+
+            neuronDataList.Add(neuron);
+        }
+
+        return neuronDataList;
+    }
 
     public class NeuronDataComparer : IComparer<NeuronData>
     {

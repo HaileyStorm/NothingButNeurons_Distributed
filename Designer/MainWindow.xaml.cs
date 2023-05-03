@@ -16,264 +16,277 @@ using Microsoft.Win32;
 using System.IO;
 using Proto.Timers;
 using System.Collections.Generic;
+using NothingButNeurons.Brain.Neurons.DataClasses;
+using static NothingButNeurons.Brain.Neurons.DataClasses.NeuronDataExtensions;
 
-namespace NothingButNeurons.Designer
+namespace NothingButNeurons.Designer;
+
+public partial class MainWindow : Window
 {
-    public partial class MainWindow : Window
+    private const int TickTime = 300;
+
+    ActorSystem ProtoSystem;
+    PID HiveMind;
+
+    private bool _startIsActive = false;
+    private byte[] _neuronData;
+    private byte[] _synapseData;
+    private Random _random;
+
+    private int Port;
+    private int HiveMindPort;
+
+    private System.Timers.Timer InputNeuronTimer;
+
+    public MainWindow()
     {
-        private const int TickTime = 300;
+        InitializeComponent();
+        DataContext = new MainWindowViewModel();
 
-        ActorSystem ProtoSystem;
-        PID HiveMind;
+        _random = new System.Random();
 
-        private bool _startIsActive = false;
-        private byte[] _neuronData;
-        private byte[] _synapseData;
-        private Random _random;
+        InitializeActorSystem();
+    }
 
-        private int Port;
-        private int HiveMindPort;
-
-        private System.Timers.Timer InputNeuronTimer;
-
-        public MainWindow()
+    private void InitializeActorSystem()
+    {
+        // Get command-line arguments
+        string[] args = Environment.GetCommandLineArgs();
+        Console.WriteLine($"\nCommand line args: {string.Join(',', args)}");
+        if (args.Length >= 2)
         {
-            InitializeComponent();
-            DataContext = new MainWindowViewModel();
-
-            _random = new System.Random();
-
-            InitializeActorSystem();
+            // In this app, the first argument is a dll
+            args = args[1].Split(' ');
+            Port = int.Parse(args[0]);
+            HiveMindPort = int.Parse(args[1]);
+            Console.WriteLine($"Parsed ports: {Port}, {HiveMindPort}");
+        }
+        else
+        {
+            Port = Shared.Consts.DefaultPorts.DESIGNER;
+            HiveMindPort = Shared.Consts.DefaultPorts.IO;
+            Console.WriteLine($"Default ports: {Port}, {HiveMindPort}");
         }
 
-        private void InitializeActorSystem()
+        ProtoSystem = Nodes.GetActorSystem(Port);
+
+        ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DesignerHelper()), "DesignerHelper");
+    }
+
+    private void LoadBrainFromFile_Click(object sender, RoutedEventArgs e)
+    {
+        OpenFileDialog openFileDialog = new OpenFileDialog
         {
-            // Get command-line arguments
-            string[] args = Environment.GetCommandLineArgs();
-            Console.WriteLine($"\nCommand line args: {string.Join(',', args)}");
-            if (args.Length >= 2)
-            {
-                // In this app, the first argument is a dll
-                args = args[1].Split(' ');
-                Port = int.Parse(args[0]);
-                HiveMindPort = int.Parse(args[1]);
-                Console.WriteLine($"Parsed ports: {Port}, {HiveMindPort}");
-            }
-            else
-            {
-                Port = Shared.Consts.DefaultPorts.DESIGNER;
-                HiveMindPort = Shared.Consts.DefaultPorts.IO;
-                Console.WriteLine($"Default ports: {Port}, {HiveMindPort}");
-            }
-
-            ProtoSystem = Nodes.GetActorSystem(Port);
-
-            ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DesignerHelper()), "DesignerHelper");
-        }
-
-        private void LoadBrainFromFile_Click(object sender, RoutedEventArgs e)
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog
-            {
-                Filter = "Nothings files (*.nbn)|*.nbn",
-                InitialDirectory = Directory.GetCurrentDirectory() // Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
-            };
-
-            if (openFileDialog.ShowDialog() == true)
-            {
-                string fileName = openFileDialog.FileName;
-
-                (_neuronData, _synapseData) = Shared.Serialization.Brain.ReadDataFromFile(fileName);
-
-                SetFileLight(true);
-                SetGenLight(false);
-            }
-        }
-
-        private void GenerateSave_Click(object sender, RoutedEventArgs e)
-        {
-            /*List<NeuronData> neurons = new()
-        {
-            // Intentionally out of order to test the sorting in ToByteArray()
-            new(new NeuronAddress(15, 929), AccumulationFunction.Sum, -0.21092151536762183d, ActivationFunction.TanH, -1.7631583456920181d, 0d, 0.3756515834738581d, ResetFunction.Zero),
-            new(new NeuronAddress(1, 789), AccumulationFunction.Sum, 0d, ActivationFunction.TanH, -0.09408328947811073d, 0d, 0.3102968627042596d, ResetFunction.Hold),
-            new(new NeuronAddress(7, 512), AccumulationFunction.Sum, -0.6972573007778182d, ActivationFunction.TanH, -0.6618229161312104d, 0d, 0.5220185133018942d, ResetFunction.Clamp1),
-            new(new NeuronAddress(2, 600), AccumulationFunction.Product, -0.15816826832005448d, ActivationFunction.TanH, 0.5810408471041231d, 0d, 0.3756515834738581d, ResetFunction.Zero),
-            new(new NeuronAddress(3, 100), AccumulationFunction.Sum, 0d, ActivationFunction.TanH, 0d, 0d, 0.23604621666228753d, ResetFunction.Clamp1),
-            new(new NeuronAddress(10, 20), AccumulationFunction.Sum, -0.6195143149204596d, ActivationFunction.TanH, 1.539525432336215d, 0d, 0.7639537833377125d, ResetFunction.Half),
-            new(new NeuronAddress(3, 444), AccumulationFunction.Sum, -0.06435270007257976d, ActivationFunction.Identity, 2.2217183878210376d, 0d, 0d, ResetFunction.Zero),
-            new(new NeuronAddress(4, 800), AccumulationFunction.Sum, -0.7751348713404214d, ActivationFunction.TanH, 0.22254413860750688d, 0d, 0.4308581751064845d, ResetFunction.Zero),
-            new(new NeuronAddress(13, 980), AccumulationFunction.Sum, -0.8521343495571289d, ActivationFunction.SiLu, 1.763158345692018d, 0d, 0.47798148669810575d, ResetFunction.Zero),
-            new(new NeuronAddress(5, 150), AccumulationFunction.Sum, 0.06435270007257965d, ActivationFunction.TanH, 0.8339034132770404d, 0d, 0.15656961151675708d, ResetFunction.Inverse),
-            new(new NeuronAddress(7, 250), AccumulationFunction.Product, -0.15816826832005448d, ActivationFunction.Gauss, -0.5036150896731022, 0d, 0.5691418248935155d, ResetFunction.Zero),
-            new(new NeuronAddress(7, 555), AccumulationFunction.Sum, 0.2683961526980623d, ActivationFunction.Clamp, 2.785568175044677d, 0d, 0.07647637600944429d, ResetFunction.Zero),
-            new(new NeuronAddress(9, 200), AccumulationFunction.Sum, -0.2683961526980625d, ActivationFunction.SoftP, -1.7631583456920181d, 0d, 0.47798148669810575d, ResetFunction.Zero),
-            new(new NeuronAddress(11, 123), AccumulationFunction.Product, -0.4687066603212533d, ActivationFunction.ReLu, 2.6754208091457112d, 0d, 0.6897031372957403d, ResetFunction.Hold),
-            new(new NeuronAddress(12, 333), AccumulationFunction.Sum, -0.3307299830628878d, ActivationFunction.TanH, -0.15767329484039294d, 0d, 0d, ResetFunction.Zero),
-            new(new NeuronAddress(13, 356), AccumulationFunction.Sum, -0.6972573007778182d, ActivationFunction.TanH, 1.0200662315024553d, 0d, 0.5220185133018942d, ResetFunction.Zero),
+            Filter = "Nothings files (*.nbn)|*.nbn",
+            InitialDirectory = Directory.GetCurrentDirectory() // Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
         };
-        byte[] neuronData = neurons.ToByteArray();*/
-            /* Debug.WriteLine("Created neuronData: ");
-             foreach (byte b in neuronData)
-             {
-                 string binary = Convert.ToString(b, 2).PadLeft(8, '0');
-                 Debug.WriteLine(binary);
-             }*/
 
-            /*byte[] synapseData = new List<SynapseData>()
-            {
-                // Intentionally out of order to test the sorting in ToByteArray()
-                new SynapseData(new NeuronAddress(11, 123), new NeuronAddress(7, 512), 0.24869683305228385),
-                new SynapseData(new NeuronAddress(1, 789), new NeuronAddress(9, 200), 0.6868607769664858d),
-                new SynapseData(new NeuronAddress(2, 600), new NeuronAddress(7, 250), 0.8470472479811115d),
-                new SynapseData(new NeuronAddress(2, 600), new NeuronAddress(13, 980), -0.6868607769664858d),
-                new SynapseData(new NeuronAddress(3, 100), new NeuronAddress(15, 929), 1d),
-                new SynapseData(new NeuronAddress(3, 444), new NeuronAddress(12, 333), -0.6868607769664858d),
-                new SynapseData(new NeuronAddress(3, 444), new NeuronAddress(13, 356), 0.3794062745914806d),
-                new SynapseData(new NeuronAddress(1, 789), new NeuronAddress(15, 929), -1d),
-                new SynapseData(new NeuronAddress(3, 444), new NeuronAddress(15, 929), -0.24869683305228385d),
-                new SynapseData(new NeuronAddress(4, 800), new NeuronAddress(7, 512), 0.6868607769664858d),
-                new SynapseData(new NeuronAddress(4, 800), new NeuronAddress(13, 980), -0.8470472479811114d),
-                new SynapseData(new NeuronAddress(5, 150), new NeuronAddress(7, 555), 0.24869683305228385d),
-                new SynapseData(new NeuronAddress(5, 150), new NeuronAddress(12, 333), -0.8470472479811114d),
-                new SynapseData(new NeuronAddress(3, 100), new NeuronAddress(9, 200), -0.3794062745914808d),
-                new SynapseData(new NeuronAddress(3, 100), new NeuronAddress(10, 20), 0.5279075666754249d),
-                new SynapseData(new NeuronAddress(7, 250), new NeuronAddress(11, 123), -0.5279075666754249d),
-                new SynapseData(new NeuronAddress(9, 200), new NeuronAddress(10, 20), -0.3794062745914808d),
-                new SynapseData(new NeuronAddress(7, 512), new NeuronAddress(11, 123), 0.5279075666754249d),
-                new SynapseData(new NeuronAddress(9, 200), new NeuronAddress(7, 555), -0.138283649787031d),
-                new SynapseData(new NeuronAddress(7, 512), new NeuronAddress(13, 356), 1d),
-                new SynapseData(new NeuronAddress(7, 555), new NeuronAddress(11, 123), -1d),
-                new SynapseData(new NeuronAddress(9, 200), new NeuronAddress(13, 980), -0.5279075666754249d),
-                new SynapseData(new NeuronAddress(10, 20), new NeuronAddress(10, 20), -0.8470472479811114),
-                new SynapseData(new NeuronAddress(12, 333), new NeuronAddress(7, 555), 0.6868607769664858d),
-                new SynapseData(new NeuronAddress(10, 20), new NeuronAddress(15, 929), -0.3794062745914808),
-                new SynapseData(new NeuronAddress(11, 123), new NeuronAddress(10, 20), 0.24869683305228385),
-                new SynapseData(new NeuronAddress(12, 333), new NeuronAddress(7, 250), -0.24869683305228385),
-            }.ToByteArray();*/
-            /*Debug.WriteLine("Created synapseData: ");
-            foreach (byte b in synapseData)
-            {
-                string binary = Convert.ToString(b, 2).PadLeft(8, '0');
-                Debug.WriteLine(binary);
-            }*/
+        if (openFileDialog.ShowDialog() == true)
+        {
+            string fileName = openFileDialog.FileName;
 
-            SaveFileDialog saveFileDialog = new SaveFileDialog
-            {
-                Filter = "Nothings files (*.nbn)|*.nbn",
-                InitialDirectory = Directory.GetCurrentDirectory() // Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
-            };
+            (_neuronData, _synapseData) = Shared.Serialization.Brain.ReadDataFromFile(fileName);
 
-            if (saveFileDialog.ShowDialog() == true)
-            {
-                string fileName = saveFileDialog.FileName;
-                Shared.Serialization.Brain.WriteDataToFile(fileName, _neuronData, _synapseData);
+            SetFileLight(true);
+            SetGenLight(false);
+        }
+    }
 
-                SetFileLight(false);
-                SetGenLight(true);
-            }
+    private void GenerateSave_Click(object sender, RoutedEventArgs e)
+    {
+        // Get the region/neuron parameters from GUI and ensure they're in range
+        int numInputRegions = Math.Clamp(int.Parse(NumInputRegions.Text), 1, 5);
+        int inputRegionsNumNeuronsMin = Math.Clamp(int.Parse(InputRegionsNumNeuronsMin.Text), 1, Math.Min(1024, int.Parse(InputRegionsNumNeuronsMax.Text)));
+        int inputRegionsNumNeuronsMax = Math.Clamp(int.Parse(InputRegionsNumNeuronsMax.Text), Math.Max(1, int.Parse(InputRegionsNumNeuronsMin.Text)), 1024);
+        int numInteriorRegions = Math.Clamp(int.Parse(NumInteriorRegions.Text), 1, 7);
+        int interiorRegionsNumNeuronsMin = Math.Clamp(int.Parse(InteriorRegionsNumNeuronsMin.Text), 1, Math.Min(1024, int.Parse(InteriorRegionsNumNeuronsMax.Text)));
+        int interiorRegionsNumNeuronsMax = Math.Clamp(int.Parse(InteriorRegionsNumNeuronsMax.Text), Math.Max(1, int.Parse(InteriorRegionsNumNeuronsMin.Text)), 1024);
+        int numOutputRegions = Math.Clamp(int.Parse(NumOutputRegions.Text), 1, 3);
+        int outputRegionsNumNeuronsMin = Math.Clamp(int.Parse(OutputRegionsNumNeuronsMin.Text), 1, Math.Min(1024, int.Parse(OutputRegionsNumNeuronsMax.Text)));
+        int outputRegionsNumNeuronsMax = Math.Clamp(int.Parse(OutputRegionsNumNeuronsMax.Text), Math.Max(1, int.Parse(OutputRegionsNumNeuronsMin.Text)), 1024);
+        string accumulationFunction = AccumulationFunctionDropdown.Text;
+        double preActivationThresholdMin = Math.Clamp(double.Parse(PreActivationThresholdMin.Text), -1, Math.Min(1, double.Parse(PreActivationThresholdMax.Text)));
+        double preActivationThresholdMax = Math.Clamp(double.Parse(PreActivationThresholdMax.Text), Math.Max(-1, double.Parse(PreActivationThresholdMin.Text)), 1);
+        string activationFunction = ActivationFunctionDropdown.Text;
+        double activationParameterAMin = Math.Clamp(double.Parse(ActivationParameterAMin.Text), -1, Math.Min(1, double.Parse(ActivationParameterAMax.Text)));
+        double activationParameterAMax = Math.Clamp(double.Parse(ActivationParameterAMax.Text), Math.Max(-1, double.Parse(ActivationParameterAMin.Text)), 1);
+        double activationParameterBMin = Math.Clamp(double.Parse(ActivationParameterBMin.Text), -1, Math.Min(1, double.Parse(ActivationParameterBMax.Text)));
+        double activationParameterBMax = Math.Clamp(double.Parse(ActivationParameterBMax.Text), Math.Max(-1, double.Parse(ActivationParameterBMin.Text)), 1);
+        double activationThresholdMin = Math.Clamp(double.Parse(ActivationThresholdMin.Text), -1, Math.Min(1, double.Parse(ActivationThresholdMax.Text)));
+        double activationThresholdMax = Math.Clamp(double.Parse(ActivationThresholdMax.Text), Math.Max(-1, double.Parse(ActivationThresholdMin.Text)), 1);
+        string resetFunction = ResetFunctionDropdown.Text;
+
+        var neurons = RandomBrain.GenerateRandomNeurons(numInputRegions, inputRegionsNumNeuronsMin, inputRegionsNumNeuronsMax, numInteriorRegions, interiorRegionsNumNeuronsMin, interiorRegionsNumNeuronsMax, numOutputRegions, outputRegionsNumNeuronsMin, outputRegionsNumNeuronsMax, accumulationFunction, preActivationThresholdMin, preActivationThresholdMax, activationFunction, activationParameterAMin, activationParameterAMax, activationParameterBMin, activationParameterBMax, activationThresholdMin, activationThresholdMax, resetFunction);
+        //ValidateToNeuronDataListFunction(neurons);
+        _neuronData = neurons.ToByteArray();
+
+        // Get the synapse parameters from GUI and ensure they're in range
+        int inputRegionsNumSynapsesPerNeuronMin = Math.Clamp(int.Parse(InputRegionsNumSynapsesPerNeuronMin.Text), 1, int.Parse(InputRegionsNumSynapsesPerNeuronMax.Text));
+        int inputRegionsNumSynapsesPerNeuronMax = Math.Max(int.Parse(InputRegionsNumSynapsesPerNeuronMax.Text), int.Parse(InputRegionsNumSynapsesPerNeuronMin.Text));
+        double inputRegionsSynapseStrengthMin = Math.Clamp(double.Parse(InputRegionsSynapseStrengthMin.Text), -1, Math.Min(1, double.Parse(InputRegionsSynapseStrengthMax.Text)));
+        double inputRegionsSynapseStrengthMax = Math.Clamp(double.Parse(InputRegionsSynapseStrengthMax.Text), Math.Max(-1, double.Parse(InputRegionsSynapseStrengthMin.Text)), 1);
+        int interiorRegionsNumSynapsesPerNeuronMin = Math.Clamp(int.Parse(InteriorRegionsNumSynapsesPerNeuronMin.Text), 1, int.Parse(InteriorRegionsNumSynapsesPerNeuronMax.Text));
+        int interiorRegionsNumSynapsesPerNeuronMax = Math.Max(int.Parse(InteriorRegionsNumSynapsesPerNeuronMax.Text), int.Parse(InteriorRegionsNumSynapsesPerNeuronMin.Text));
+        double interiorRegionsSynapseStrengthMin = Math.Clamp(double.Parse(InteriorRegionsSynapseStrengthMin.Text), -1, Math.Min(1, double.Parse(InteriorRegionsSynapseStrengthMax.Text)));
+        double interiorRegionsSynapseStrengthMax = Math.Clamp(double.Parse(InteriorRegionsSynapseStrengthMax.Text), Math.Max(-1, double.Parse(InteriorRegionsSynapseStrengthMin.Text)), 1);
+
+        var synapses = RandomBrain.GenerateRandomSynapses(neurons, inputRegionsNumSynapsesPerNeuronMin, inputRegionsNumSynapsesPerNeuronMax, inputRegionsSynapseStrengthMin, inputRegionsSynapseStrengthMax, interiorRegionsNumSynapsesPerNeuronMin, interiorRegionsNumSynapsesPerNeuronMax, interiorRegionsSynapseStrengthMin, interiorRegionsSynapseStrengthMax);
+        _synapseData = synapses.ToByteArray();
+
+        SetFileLight(false);
+        SetGenLight(true);
+
+        SaveFileDialog saveFileDialog = new SaveFileDialog
+        {
+            Filter = "Nothings files (*.nbn)|*.nbn",
+            InitialDirectory = Directory.GetCurrentDirectory() // Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+        };
+        if (saveFileDialog.ShowDialog() == true)
+        {
+            string fileName = saveFileDialog.FileName;
+            Shared.Serialization.Brain.WriteDataToFile(fileName, _neuronData, _synapseData);
+        }
+    }
+
+    private void SetFileLight(bool isActive)
+    {
+        if (isActive) SpawnButton.IsEnabled = true;
+        FileLoadedLight.Fill = isActive ? Brushes.Green : Brushes.Gray;
+    }
+
+    private void SetGenLight(bool isActive)
+    {
+        if (isActive) SpawnButton.IsEnabled = true;
+        GenLoadedLight.Fill = isActive ? Brushes.Green : Brushes.Gray;
+    }
+
+    private void Spawn_Click(object sender, RoutedEventArgs e)
+    {
+        if (_neuronData == null || _neuronData.Length == 0)
+            return;
+
+        HiveMind = PID.FromAddress($"127.0.0.1:{HiveMindPort}", "HiveMind");
+        ProtoSystem.Root.Send(HiveMind, new SpawnBrainMessage { NeuronData = ByteString.CopyFrom(_neuronData), SynapseData = ByteString.CopyFrom(_synapseData) });
+        // TODO: Instead of sleeping, use SpawnBrainAck (will have to send SpawnBrainMessage from an actor, as it sends the act to the sender of the spawn)
+        Thread.Sleep(1200);
+        ProtoSystem.Root.Send(HiveMind, new ActivateHiveMindMessage());
+
+        // TODO: Does this belong in IO project or ... ? Or perhaps ActivateHiveMind should take a tick time and HiveMind should use that to start sending Ticks to itself?
+        Scheduler scheduler = new(ProtoSystem.Root);
+        scheduler.SendRepeatedly(TimeSpan.FromMilliseconds(TickTime), HiveMind, new TickMessage());
+
+        SetSpawnLight(true);
+    }
+
+    private void SetSpawnLight(bool isActive)
+    {
+        SpawnLight.Fill = isActive ? Brushes.Green : Brushes.Gray;
+    }
+
+    private void Refresh_Click(object sender, RoutedEventArgs e)
+    {
+        // Get list of brains from HiveMind
+    }
+
+    private void StartStop_Click(object sender, RoutedEventArgs e)
+    {
+        string[] neuronPIDs = new string[]
+        {
+            "HiveMind/Brain$1/1/789",
+            "HiveMind/Brain$1/2/600",
+            "HiveMind/Brain$1/3/100",
+            "HiveMind/Brain$1/3/444",
+            "HiveMind/Brain$1/4/800",
+            "HiveMind/Brain$1/5/150"
+        };
+
+        var lastSignalTime = new Dictionary<string, DateTime>(); // Store the last signal time for each neuron
+        var nextSignalDuration = new Dictionary<string, TimeSpan>(); // Store the next random signal duration for each neuron
+
+        _startIsActive = !_startIsActive;
+
+        // Initialize lastSignalTime and nextSignalDuration dictionaries
+        foreach (var pid in neuronPIDs)
+        {
+            lastSignalTime[pid] = DateTime.Now;
+            nextSignalDuration[pid] = TimeSpan.FromMilliseconds(_random.Next(int.Parse(MinSignalPeriod.Text), int.Parse(MaxSignalPeriod.Text) + 1));
         }
 
-        private void SetFileLight(bool isActive)
+        // Start
+        if (_startIsActive)
         {
-            if (isActive) SpawnButton.IsEnabled = true;
-            FileLoadedLight.Fill = isActive ? Brushes.Green : Brushes.Gray;
-        }
-
-        private void SetGenLight(bool isActive)
-        {
-            if (isActive) SpawnButton.IsEnabled = true;
-            GenLoadedLight.Fill = isActive ? Brushes.Green : Brushes.Gray;
-        }
-
-        private void Spawn_Click(object sender, RoutedEventArgs e)
-        {
-            if (_neuronData == null || _neuronData.Length == 0)
-                return;
-
-            HiveMind = PID.FromAddress($"127.0.0.1:{HiveMindPort}", "HiveMind");
-            ProtoSystem.Root.Send(HiveMind, new SpawnBrainMessage { NeuronData = ByteString.CopyFrom(_neuronData), SynapseData = ByteString.CopyFrom(_synapseData) });
-            // TODO: Instead of sleeping, use SpawnBrainAck (will have to send SpawnBrainMessage from an actor, as it sends the act to the sender of the spawn)
-            Thread.Sleep(1200);
-            ProtoSystem.Root.Send(HiveMind, new ActivateHiveMindMessage());
-
-            // TODO: Does this belong in IO project or ... ? Or perhaps ActivateHiveMind should take a tick time and HiveMind should use that to start sending Ticks to itself?
-            Scheduler scheduler = new(ProtoSystem.Root);
-            scheduler.SendRepeatedly(TimeSpan.FromMilliseconds(TickTime), HiveMind, new TickMessage());
-
-            SetSpawnLight(true);
-        }
-
-        private void SetSpawnLight(bool isActive)
-        {
-            SpawnLight.Fill = isActive ? Brushes.Green : Brushes.Gray;
-        }
-
-        private void Refresh_Click(object sender, RoutedEventArgs e)
-        {
-            // Get list of brains from HiveMind
-        }
-
-        private void StartStop_Click(object sender, RoutedEventArgs e)
-        {
-            string[] neuronPIDs = new string[]
+            InputNeuronTimer = new(10);
+            InputNeuronTimer.Elapsed += (s, elapsedEventArgs) =>
             {
-                "HiveMind/Brain$1/1/789",
-                "HiveMind/Brain$1/2/600",
-                "HiveMind/Brain$1/3/100",
-                "HiveMind/Brain$1/3/444",
-                "HiveMind/Brain$1/4/800",
-                "HiveMind/Brain$1/5/150"
-            };
-
-            var lastSignalTime = new Dictionary<string, DateTime>(); // Store the last signal time for each neuron
-            var nextSignalDuration = new Dictionary<string, TimeSpan>(); // Store the next random signal duration for each neuron
-
-            _startIsActive = !_startIsActive;
-
-            // Initialize lastSignalTime and nextSignalDuration dictionaries
-            foreach (var pid in neuronPIDs)
-            {
-                lastSignalTime[pid] = DateTime.Now;
-                nextSignalDuration[pid] = TimeSpan.FromMilliseconds(_random.Next(int.Parse(MinSignalPeriod.Text), int.Parse(MaxSignalPeriod.Text) + 1));
-            }
-
-            // Start
-            if (_startIsActive)
-            {
-                InputNeuronTimer = new(10);
-                InputNeuronTimer.Elapsed += (s, elapsedEventArgs) =>
-                {
-                    MinSignalPeriod.Dispatcher.Invoke(() => {
-                        foreach (var pid in neuronPIDs)
+                MinSignalPeriod.Dispatcher.Invoke(() => {
+                    foreach (var pid in neuronPIDs)
+                    {
+                        if (DateTime.Now - lastSignalTime[pid] >= nextSignalDuration[pid])
                         {
-                            if (DateTime.Now - lastSignalTime[pid] >= nextSignalDuration[pid])
-                            {
-                                ProtoSystem.Root.Send(new PID($"127.0.0.1:{HiveMindPort}", pid), new SignalMessage { Val = _random.NextDouble() * (double.Parse(MaxSignalValue.Text) - double.Parse(MinSignalValue.Text)) + double.Parse(MinSignalValue.Text) });
-                                lastSignalTime[pid] = DateTime.Now;
-                                nextSignalDuration[pid] = TimeSpan.FromMilliseconds(_random.Next(int.Parse(MinSignalPeriod.Text), int.Parse(MaxSignalPeriod.Text) + 1));
-                            }
+                            ProtoSystem.Root.Send(new PID($"127.0.0.1:{HiveMindPort}", pid), new SignalMessage { Val = _random.NextDouble() * (double.Parse(MaxSignalValue.Text) - double.Parse(MinSignalValue.Text)) + double.Parse(MinSignalValue.Text) });
+                            lastSignalTime[pid] = DateTime.Now;
+                            nextSignalDuration[pid] = TimeSpan.FromMilliseconds(_random.Next(int.Parse(MinSignalPeriod.Text), int.Parse(MaxSignalPeriod.Text) + 1));
                         }
-                    });
-                };
-                InputNeuronTimer.Start();
+                    }
+                });
+            };
+            InputNeuronTimer.Start();
 
-                StartStopButton.Content = "Stop";
-                SetStartStopLight(true);
-            }
-            // Stop
-            else
-            {
-                InputNeuronTimer.Stop();
-
-                StartStopButton.Content = "Start";
-                SetStartStopLight(false);
-            }
+            StartStopButton.Content = "Stop";
+            SetStartStopLight(true);
         }
-
-        private void SetStartStopLight(bool isActive)
+        // Stop
+        else
         {
-            StartStopLight.Fill = isActive ? Brushes.Green : Brushes.Gray;
+            InputNeuronTimer.Stop();
+
+            StartStopButton.Content = "Start";
+            SetStartStopLight(false);
         }
+    }
+
+    private void SetStartStopLight(bool isActive)
+    {
+        StartStopLight.Fill = isActive ? Brushes.Green : Brushes.Gray;
+    }
+
+    public static void ValidateToNeuronDataListFunction(List<NeuronData> originalNeuronDataList)
+    {
+        originalNeuronDataList.Sort(new NeuronDataComparer());
+        // Convert the original List<NeuronData> to byte array
+        byte[] neuronBytes = originalNeuronDataList.ToByteArray();
+
+        // Convert the byte array back to List<NeuronData>
+        List<NeuronData> reconstructedNeuronDataList = NeuronDataExtensions.ByteArrayToNeuronDataList(neuronBytes);
+
+        // Compare the original and reconstructed List<NeuronData>
+        bool areEqual = originalNeuronDataList.Count == reconstructedNeuronDataList.Count;
+        int i;
+        for (i = 0; i < originalNeuronDataList.Count && areEqual; i++)
+        {
+            NeuronData originalNeuron = originalNeuronDataList[i];
+            NeuronData reconstructedNeuron = reconstructedNeuronDataList[i];
+
+            Debug.WriteLine($"{originalNeuron.Address.RegionPart} vs {reconstructedNeuron.Address.RegionPart}");
+            Debug.WriteLine($"{originalNeuron.Address.NeuronPart} vs {reconstructedNeuron.Address.NeuronPart}");
+            Debug.WriteLine($"{originalNeuron.AccumulationFunction} vs {reconstructedNeuron.AccumulationFunction}");
+            Debug.WriteLine($"{originalNeuron.PreActivationThreshold} vs {reconstructedNeuron.PreActivationThreshold}");
+            Debug.WriteLine($"{originalNeuron.ActivationFunction} vs {reconstructedNeuron.ActivationFunction}");
+            Debug.WriteLine($"{originalNeuron.ActivationParameterA} vs {reconstructedNeuron.ActivationParameterA}");
+            Debug.WriteLine($"{originalNeuron.ActivationParameterB} vs {reconstructedNeuron.ActivationParameterB}");
+            Debug.WriteLine($"{originalNeuron.ActivationThreshold} vs {reconstructedNeuron.ActivationThreshold}");
+            Debug.WriteLine($"{originalNeuron.ResetFunction} vs {reconstructedNeuron.ResetFunction}");
+            areEqual &= originalNeuron.Address.NeuronPart == reconstructedNeuron.Address.NeuronPart;
+            areEqual &= originalNeuron.Address.RegionPart == reconstructedNeuron.Address.RegionPart;
+            areEqual &= originalNeuron.AccumulationFunction == reconstructedNeuron.AccumulationFunction;
+            areEqual &= Math.Abs(originalNeuron.PreActivationThreshold - reconstructedNeuron.PreActivationThreshold) < 0.07;
+            areEqual &= originalNeuron.ActivationFunction == reconstructedNeuron.ActivationFunction;
+            areEqual &= Math.Abs(originalNeuron.ActivationParameterA - reconstructedNeuron.ActivationParameterA) < 0.07;
+            areEqual &= Math.Abs(originalNeuron.ActivationParameterB - reconstructedNeuron.ActivationParameterB) < 0.07;
+            areEqual &= Math.Abs(originalNeuron.ActivationThreshold - reconstructedNeuron.ActivationThreshold) < 0.07;
+            areEqual &= originalNeuron.ResetFunction == reconstructedNeuron.ResetFunction;
+        }
+
+        Debug.WriteLine($"\nValidation result: {areEqual}, got to {i} of {originalNeuronDataList.Count} \n");
     }
 }
