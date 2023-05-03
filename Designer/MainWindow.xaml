@@ -250,7 +250,7 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <Button Grid.Column="0" x:Name="StartStopButton" Content="Start" Click="StartStop_Click" />
+                <Button Grid.Column="0" x:Name="StartStopButton" Content="Start" Click="StartStop_Click" IsEnabled="False" />
                 <Ellipse Grid.Column="1" Width="20" Height="20" Fill="Gray" x:Name="StartStopLight" Margin="5,0"/>
             </Grid>
             <Border BorderBrush="Black" BorderThickness="1,0,0,0" Margin="-15,-5,0,-5" Grid.RowSpan="5"/>

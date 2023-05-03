@@ -17,7 +17,7 @@ using System.IO;
 using Proto.Timers;
 using System.Collections.Generic;
 using NothingButNeurons.Brain.Neurons.DataClasses;
-using static NothingButNeurons.Brain.Neurons.DataClasses.NeuronDataExtensions;
+using System.Linq;
 
 namespace NothingButNeurons.Designer;
 
@@ -151,13 +151,21 @@ public partial class MainWindow : Window
 
     private void SetFileLight(bool isActive)
     {
-        if (isActive) SpawnButton.IsEnabled = true;
+        if (isActive)
+        {
+            SpawnButton.IsEnabled = true;
+            StartStopButton.IsEnabled = true;
+        }
         FileLoadedLight.Fill = isActive ? Brushes.Green : Brushes.Gray;
     }
 
     private void SetGenLight(bool isActive)
     {
-        if (isActive) SpawnButton.IsEnabled = true;
+        if (isActive)
+        {
+            SpawnButton.IsEnabled = true;
+            StartStopButton.IsEnabled = true;
+        }
         GenLoadedLight.Fill = isActive ? Brushes.Green : Brushes.Gray;
     }
 
@@ -186,36 +194,31 @@ public partial class MainWindow : Window
 
     private void Refresh_Click(object sender, RoutedEventArgs e)
     {
-        // Get list of brains from HiveMind
+        // Get list of brains from HiveMind, etc.
     }
 
     private void StartStop_Click(object sender, RoutedEventArgs e)
     {
-        string[] neuronPIDs = new string[]
-        {
-            "HiveMind/Brain$1/1/789",
-            "HiveMind/Brain$1/2/600",
-            "HiveMind/Brain$1/3/100",
-            "HiveMind/Brain$1/3/444",
-            "HiveMind/Brain$1/4/800",
-            "HiveMind/Brain$1/5/150"
-        };
+        if (_neuronData == null || _neuronData.Length == 0)
+            return;
 
         var lastSignalTime = new Dictionary<string, DateTime>(); // Store the last signal time for each neuron
         var nextSignalDuration = new Dictionary<string, TimeSpan>(); // Store the next random signal duration for each neuron
 
         _startIsActive = !_startIsActive;
 
-        // Initialize lastSignalTime and nextSignalDuration dictionaries
-        foreach (var pid in neuronPIDs)
-        {
-            lastSignalTime[pid] = DateTime.Now;
-            nextSignalDuration[pid] = TimeSpan.FromMilliseconds(_random.Next(int.Parse(MinSignalPeriod.Text), int.Parse(MaxSignalPeriod.Text) + 1));
-        }
-
         // Start
         if (_startIsActive)
         {
+            var neuronPIDs = NeuronDataExtensions.ByteArrayToNeuronDataList(_neuronData).Where(n => n.Address.RegionPart < 6).ToList().ConvertAll(n => $"HiveMind/Brain$1/{n.Address.RegionPart}/{n.Address.NeuronPart}");
+
+            // Initialize lastSignalTime and nextSignalDuration dictionaries
+            foreach (var pid in neuronPIDs)
+            {
+                lastSignalTime[pid] = DateTime.Now;
+                nextSignalDuration[pid] = TimeSpan.FromMilliseconds(_random.Next(int.Parse(MinSignalPeriod.Text), int.Parse(MaxSignalPeriod.Text) + 1));
+            }
+
             InputNeuronTimer = new(10);
             InputNeuronTimer.Elapsed += (s, elapsedEventArgs) =>
             {
@@ -253,7 +256,7 @@ public partial class MainWindow : Window
 
     public static void ValidateToNeuronDataListFunction(List<NeuronData> originalNeuronDataList)
     {
-        originalNeuronDataList.Sort(new NeuronDataComparer());
+        originalNeuronDataList.Sort(new NeuronDataExtensions.NeuronDataComparer());
         // Convert the original List<NeuronData> to byte array
         byte[] neuronBytes = originalNeuronDataList.ToByteArray();
 
