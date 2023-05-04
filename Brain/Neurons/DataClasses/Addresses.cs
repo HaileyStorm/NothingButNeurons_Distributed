@@ -32,6 +32,7 @@ public struct NeuronAddress
 
     /// <summary>
     /// Calculates the distance between this NeuronAddress and another NeuronAddress.
+    /// Basically distance is (how far from either end of 0-1023, modular, source neuron is + same for destination neuron) * number of regions apart
     /// </summary>
     /// <param name="other">The other NeuronAddress.</param>
     /// <returns>The distance between the NeuronAddresses.</returns>

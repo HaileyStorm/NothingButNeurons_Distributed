@@ -114,6 +114,7 @@ public class Brain : ActorBaseWithBroadcaster
                 AwaitingNeuronAck += neuronCt;
 
                 // Find all matching sections for the neuron and synapse data (that is, find all the synapses starting at each neuron).
+                // This is much more efficient than taking neuronData to a List<NeuronData>, parsing by region, etc. ... thisway we're only converting from binary once, in the neuron/synapse spawn code in Region.
                 List<(byte[] neuronData, List<int> synapseData)> neurons = FindAllMatchingSections(msg.NeuronData.ToByteArray(), msg.SynapseData.ToByteArray());
                 Span<byte> neuronData;
                 List<int> synapseData;
