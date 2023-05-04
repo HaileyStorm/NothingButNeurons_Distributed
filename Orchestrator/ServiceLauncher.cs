@@ -46,7 +46,13 @@ internal class ServiceLauncher
         string arguments = "";
         switch (service.ProjectName) {
             case "IO":
-                arguments = $"{service.Port} {DebugServerPort}";
+                if (MainWindow.Instance.Services.Where(s => string.Equals(s.ProjectName, "DebugServer", StringComparison.InvariantCultureIgnoreCase)).First().StatusColor == Brushes.Green)
+                {
+                    arguments = $"{service.Port} {DebugServerPort}";
+                } else
+                {
+                    arguments = $"{service.Port}";
+                }
                 break;
             case "DebugServer":
                 arguments = $"{service.Port}";

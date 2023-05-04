@@ -144,28 +144,42 @@ public abstract class ActorBase : IActor
     #region Unstable Message Handling
     protected virtual void SubscribeToDebugs(DebugSeverity severity = DebugSeverity.Trace, string context = "")
     {
-        if (BaseContext == null || DebugServerPID == null || SelfPID == null)
+        if (DebugServerPID == null)
         {
-            Debug.WriteLine($"\n\n\nSubscribeToDebugs called before startup. BaseContext ({BaseContext}) or DebugServerPID ({DebugServerPID}) or SelfPID ({SelfPID}) null.\n\n\n");
-            SendDebugMessage(DebugSeverity.Warning, "Spawn(?)", "SubscribeToDebugs called before startup", "BaseContext or DebugServerPID or SelfPID null.");
+            Debug.WriteLine($"SubscribeToDebugs called by {SelfPID} with null DebugServerPID.");
+            return;
+        }
+        if (BaseContext == null || SelfPID == null)
+        {
+            Debug.WriteLine($"SubscribeToDebugs called before startup. BaseContext ({BaseContext}) or SelfPID ({SelfPID}) null.");
+            SendDebugMessage(DebugSeverity.Warning, "Spawn(?)", "SubscribeToDebugs called before startup", "BaseContext or SelfPID null.");
             return;
         }
         BaseContext.Send(DebugServerPID, new DebugSubscribeMessage { Subscriber = SelfPID, Severity = severity, Context = context });
     }
     protected virtual void UnsubscribeFromDebugs()
     {
-        if (BaseContext == null || DebugServerPID == null || SelfPID == null)
+        if (DebugServerPID == null)
         {
-            SendDebugMessage(DebugSeverity.Warning, "Spawn(?)", "UnsubscribeFromDebugs called before startup", "BaseContext or DebugServerPID or SelfPID null.");
+            Debug.WriteLine($"UnsubscribeFromDebugs called by {SelfPID} with null DebugServerPID.");
+            return;
+        }
+        if (BaseContext == null ||  SelfPID == null)
+        {
+            Debug.WriteLine($"UnsubscribeFromDebugs called before startup. BaseContext ({BaseContext}) or SelfPID ({SelfPID}) null.");
+            SendDebugMessage(DebugSeverity.Warning, "Spawn(?)", "UnsubscribeFromDebugs called before startup", "BaseContext or SelfPID null.");
             return;
         }
         BaseContext.Send(DebugServerPID, new DebugUnsubscribeMessage { Subscriber = SelfPID });
     }
     protected virtual void SendDebugMessage(DebugOutboundMessage msg)
     {
-        if (BaseContext == null || DebugServerPID == null)
+        if (DebugServerPID == null)
+            return;
+        if (BaseContext == null)
         {
-            SendDebugMessage(DebugSeverity.Warning, "Spawn(?)", "SendDebugMessage called before startup", "BaseContext or DebugServerPID null.");
+            Debug.WriteLine($"SendDebugMessage called before startup. BaseContext ({BaseContext}) null.");
+            SendDebugMessage(DebugSeverity.Warning, "Spawn(?)", "SendDebugMessage called before startup", "BaseContext null.");
             return;
         }
         BaseContext.Send(DebugServerPID, msg);

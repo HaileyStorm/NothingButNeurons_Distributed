@@ -28,7 +28,7 @@ public partial class MainWindow : Window
     public ObservableCollection<Service> Services { get; set; } = new ObservableCollection<Service>
     {
         // IO will not require DebugServer, but realistically does right now
-        new Service { Name = "IO / HiveMind", ProjectName="IO", ActorName="HiveMind", PreReqProjects = new string[] { "DebugServer" }, IsWPF=false, Port = Shared.Consts.DefaultPorts.IO, StatusColor = Brushes.Gray },
+        new Service { Name = "IO / HiveMind", ProjectName="IO", ActorName="HiveMind", PreReqProjects = new string[] { }, IsWPF=false, Port = Shared.Consts.DefaultPorts.IO, StatusColor = Brushes.Gray },
         new Service { Name = "Debug Server", ProjectName="DebugServer", ActorName="DebugServer", PreReqProjects = Array.Empty<string>(), IsWPF=false, Port = Shared.Consts.DefaultPorts.DEBUG_SERVER, StatusColor = Brushes.Gray },
         new Service { Name = "Debug File Writer", ProjectName="DebugFileWriter", ActorName="DebugFileWriter", PreReqProjects = new string[] { "DebugServer" }, IsWPF=false, Port = Shared.Consts.DefaultPorts.DEBUG_FILE_WRITER, StatusColor = Brushes.Gray },
         new Service { Name = "Debug Log Viewer", ProjectName="DebugLogViewer", ActorName="DebugUI", PreReqProjects = new string[] { "DebugServer" }, IsWPF=true, Port = Shared.Consts.DefaultPorts.DEBUG_LOG_VIEWER, StatusColor = Brushes.Gray },

@@ -16,7 +16,7 @@ public class HiveMind : ActorBaseWithBroadcaster
     /// <summary>
     /// Initializes a new instance of the <see cref="HiveMind"/> class.
     /// </summary>
-    public HiveMind(PID debugServerPID) : base(debugServerPID)
+    public HiveMind(PID? debugServerPID) : base(debugServerPID)
     {
         _behavior = new Behavior(Spawn);
     }

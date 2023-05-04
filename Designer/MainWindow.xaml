@@ -253,6 +253,17 @@
                 <Button Grid.Column="0" x:Name="StartStopButton" Content="Start" Click="StartStop_Click" IsEnabled="False" />
                 <Ellipse Grid.Column="1" Width="20" Height="20" Fill="Gray" x:Name="StartStopLight" Margin="5,0"/>
             </Grid>
+
+            <Grid Grid.Row="5" VerticalAlignment="Top" Margin="0,40">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Label Grid.Row="0" Grid.Column="0" Content="Tick time (ms)" HorizontalAlignment="Left"/>
+                <TextBox Grid.Row="0" Grid.Column="1" Width="50" x:Name="txtTickTime" Text="300" TextChanged="txtTickTime_TextChanged"/>
+            </Grid>
+            
+            
             <Border BorderBrush="Black" BorderThickness="1,0,0,0" Margin="-15,-5,0,-5" Grid.RowSpan="5"/>
         </Grid>
     </Grid>

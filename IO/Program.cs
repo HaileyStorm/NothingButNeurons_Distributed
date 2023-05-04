@@ -15,26 +15,33 @@ namespace NothingButNeurons.IO
     {
         static ActorSystem ProtoSystem;
         static int Port;
-        static int DebugServerPort;
+        static int? DebugServerPort;
         static PID HiveMind;
 
         static void Main(string[] args)
         {
-            if (args.Length >= 2)
+            switch (args.Length)
             {
-                Port = int.Parse(args[0]);
-                DebugServerPort = int.Parse(args[1]);
-            } else
-            {
-                Port = Shared.Consts.DefaultPorts.IO;
-                DebugServerPort = Shared.Consts.DefaultPorts.DEBUG_SERVER;
+                case >= 2:
+                    Port = int.Parse(args[0]);
+                    DebugServerPort = int.Parse(args[1]);
+                    break;
+                case 1:
+                    Port = int.Parse(args[0]);
+                    break;
+                default:
+                    Port = Shared.Consts.DefaultPorts.IO;
+                    DebugServerPort = Shared.Consts.DefaultPorts.DEBUG_SERVER;
+                    break;
             }
             
             CombinedWriteLine($"NothingButNeurons.IO program starting on port {Port}, with DebugServer on port {DebugServerPort}...");
 
             ProtoSystem = Nodes.GetActorSystem(Port);
 
-            PID debugServerPID = PID.FromAddress($"127.0.0.1:{DebugServerPort}", "DebugServer");
+            PID? debugServerPID = null;
+            if (DebugServerPort != null)
+                debugServerPID = PID.FromAddress($"127.0.0.1:{DebugServerPort}", "DebugServer");
             HiveMind = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new HiveMind(debugServerPID)), "HiveMind");
 
             CombinedWriteLine("NothingButNeurons.IO program ready.");

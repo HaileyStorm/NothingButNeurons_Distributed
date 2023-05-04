@@ -23,7 +23,8 @@ namespace NothingButNeurons.Designer;
 
 public partial class MainWindow : Window
 {
-    private const int TickTime = 300;
+    private int TickTime = 300;
+    private CancellationTokenSource TickCanceller;
 
     ActorSystem ProtoSystem;
     PID HiveMind;
@@ -42,6 +43,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         DataContext = new MainWindowViewModel();
+        TickTime = int.Parse(txtTickTime.Text);
 
         _random = new System.Random();
 
@@ -182,7 +184,7 @@ public partial class MainWindow : Window
 
         // TODO: Does this belong in IO project or ... ? Or perhaps ActivateHiveMind should take a tick time and HiveMind should use that to start sending Ticks to itself?
         Scheduler scheduler = new(ProtoSystem.Root);
-        scheduler.SendRepeatedly(TimeSpan.FromMilliseconds(TickTime), HiveMind, new TickMessage());
+        TickCanceller = scheduler.SendRepeatedly(TimeSpan.FromMilliseconds(TickTime), HiveMind, new TickMessage());
 
         SetSpawnLight(true);
     }
@@ -328,5 +330,17 @@ public partial class MainWindow : Window
         }
 
         return true;
+    }
+
+    private void txtTickTime_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        int newTime = int.Parse(txtTickTime.Text);
+        if (SpawnLight.Fill == Brushes.Green && TickCanceller != null && !TickCanceller.IsCancellationRequested && newTime != TickTime)
+        {
+            TickCanceller.Cancel();
+            Scheduler scheduler = new(ProtoSystem.Root);
+            TickCanceller = scheduler.SendRepeatedly(TimeSpan.FromMilliseconds(newTime), HiveMind, new TickMessage());
+        }
+        TickTime = newTime;
     }
 }
