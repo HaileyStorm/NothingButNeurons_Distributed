@@ -5,16 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:NothingButNeurons.Visualizer"
         mc:Ignorable="d"
-        Title="MainWindow" Height="940" Width="1060">
+        Title="MainWindow" Height="1380" Width="1515">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="150*"/>
-            <ColumnDefinition Width="910*"/>
+            <ColumnDefinition Width="1350*"/>
         </Grid.ColumnDefinitions>
         <Label Content="Visualizer controls here" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         <Border Grid.Column="1" BorderBrush="Gray" BorderThickness="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
-                <Canvas x:Name="networkVisualizationCanvas" Width="900" Height="900" Background="DarkGray"/>
+                <Canvas x:Name="networkVisualizationCanvas" Width="1340" Height="1340" Background="DarkGray"/>
             </ScrollViewer>
         </Border>
     </Grid>
