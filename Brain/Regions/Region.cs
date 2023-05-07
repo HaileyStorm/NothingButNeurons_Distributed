@@ -1,6 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using NothingButNeurons.Brain.Neurons;
-using NothingButNeurons.Brain.Neurons.DataClasses;
+using NothingButNeurons.Shared.DataClasses.Neurons;
 using Proto;
 
 namespace NothingButNeurons.Brain.Regions;
@@ -80,11 +80,11 @@ internal class Region : ActorBaseWithBroadcaster
                 {
                     Address = msg.Address,
                     AccumulationFunction = msg.AccumulationFunction,
-                    PreActivationThreshold = NeuronBase.BitsToDouble(msg.PreActivationThreshold, 31),
+                    PreActivationThreshold = BitMath.BitsToDouble(msg.PreActivationThreshold, 31),
                     ActivationFunction = msg.ActivationFunction,
-                    ActivationParameterA = NeuronBase.BitsToDouble(msg.ActivationParameterA, 63, -3d, 3d),
-                    ActivationParameterB = NeuronBase.BitsToDouble(msg.ActivationParameterB, 63, -3d, 3d),
-                    ActivationThreshold = NeuronBase.BitsToDouble(msg.ActivationThreshold, 15, 0d, 1d),
+                    ActivationParameterA = BitMath.BitsToDouble(msg.ActivationParameterA, 63, -3d, 3d),
+                    ActivationParameterB = BitMath.BitsToDouble(msg.ActivationParameterB, 63, -3d, 3d),
+                    ActivationThreshold = BitMath.BitsToDouble(msg.ActivationThreshold, 15, 0d, 1d),
                     ResetFunction = msg.ResetFunction,
                 };
                 spawnNeuronReturnMessage.Synapses.AddRange(msg.Synapses);

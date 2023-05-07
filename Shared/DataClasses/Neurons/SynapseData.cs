@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NothingButNeurons.Brain.Neurons;
-
-namespace NothingButNeurons.Brain.Neurons.DataClasses;
+﻿namespace NothingButNeurons.Shared.DataClasses.Neurons;
 
 public struct SynapseData
 {
@@ -22,7 +15,7 @@ public struct SynapseData
 
     public SynapseBitField ToBitField()
     {
-        return new SynapseBitField(FromAddress, ToAddress, (byte)NeuronBase.DoubleToBits(Strength));
+        return new SynapseBitField(FromAddress, ToAddress, (byte)BitMath.DoubleToBits(Strength));
     }
 
     public static SynapseBitField ToBitField(SynapseData synapseData)
@@ -49,7 +42,7 @@ public static class SynapseDataExtensions
 
             NeuronAddress fromAddress = synapseBitField.FromAddress;
             NeuronAddress toAddress = synapseBitField.ToAddress;
-            double strength = NeuronBase.BitsToDouble(synapseBitField.Strength);
+            double strength = BitMath.BitsToDouble(synapseBitField.Strength);
 
             SynapseData synapseData = new SynapseData(fromAddress, toAddress, strength);
             synapseDataList.Add(synapseData);

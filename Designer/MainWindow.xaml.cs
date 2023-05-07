@@ -16,7 +16,7 @@ using Microsoft.Win32;
 using System.IO;
 using Proto.Timers;
 using System.Collections.Generic;
-using NothingButNeurons.Brain.Neurons.DataClasses;
+using NothingButNeurons.Shared.DataClasses.Neurons;
 using System.Linq;
 
 namespace NothingButNeurons.Designer;

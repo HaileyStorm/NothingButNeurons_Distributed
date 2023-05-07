@@ -1,4 +1,4 @@
-﻿using NothingButNeurons.Brain.Neurons.DataClasses;
+﻿using NothingButNeurons.Shared.DataClasses.Neurons;
 using Proto;
 
 namespace NothingButNeurons.Brain.Neurons;

@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using NothingButNeurons.CCSL;
 using System.Collections.Specialized;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace NothingButNeurons.Brain.Neurons.DataClasses;
+namespace NothingButNeurons.Shared.DataClasses.Neurons;
 
 // Internal class containing sections for SynapseBitField's BitVector32
 internal static class SynapseBitVectorSections

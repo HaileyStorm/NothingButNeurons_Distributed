@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NothingButNeurons.Brain.Neurons;
+﻿using NothingButNeurons.Shared.Messages;
 
-namespace NothingButNeurons.Brain.Neurons.DataClasses;
+namespace NothingButNeurons.Shared.DataClasses.Neurons;
 
 // An axon is, basically, a single-ended synapse
 public struct Axon
@@ -16,7 +11,7 @@ public struct Axon
     public Axon(SynapseBitField synapse)
     {
         ToAddress = synapse.ToAddress;
-        Strength = NeuronBase.BitsToDouble(synapse.Strength);
+        Strength = BitMath.BitsToDouble(synapse.Strength);
     }
 
     /// <summary>
@@ -45,6 +40,6 @@ public struct Axon
 
     public SynapseBitField ToSynapseBitField(NeuronAddress fromAddress)
     {
-        return new SynapseBitField(fromAddress, ToAddress, (byte)NeuronBase.DoubleToBits(Strength));
+        return new SynapseBitField(fromAddress, ToAddress, (byte)BitMath.DoubleToBits(Strength));
     }
 }

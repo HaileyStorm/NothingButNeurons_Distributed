@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NothingButNeurons.Brain.Neurons;
+﻿using NothingButNeurons.CCSL;
+using NothingButNeurons.Shared.Messages;
 
-namespace NothingButNeurons.Brain.Neurons.DataClasses;
+namespace NothingButNeurons.Shared.DataClasses.Neurons;
 
 public struct NeuronData
 {
@@ -36,12 +32,12 @@ public struct NeuronData
         NeuronPart1BitField part1 = new(
             Address,
             AccumulationFunction,
-            (byte)NeuronBase.DoubleToBits(PreActivationThreshold, 31),
+            (byte)BitMath.DoubleToBits(PreActivationThreshold, 31),
             ActivationFunction,
-            (byte)NeuronBase.DoubleToBits(ActivationParameterA, 63, -3d, 3d));
+            (byte)BitMath.DoubleToBits(ActivationParameterA, 63, -3d, 3d));
         NeuronPart2BitField part2 = new(
-            (byte)NeuronBase.DoubleToBits(ActivationParameterB, 63, -3d, 3d),
-            (byte)NeuronBase.DoubleToBits(ActivationThreshold, 15, 0d, 1d),
+            (byte)BitMath.DoubleToBits(ActivationParameterB, 63, -3d, 3d),
+            (byte)BitMath.DoubleToBits(ActivationThreshold, 15, 0d, 1d),
             ResetFunction);
 
         return (part1, part2);
@@ -102,11 +98,11 @@ public static class NeuronDataExtensions
             NeuronData neuron = new NeuronData(
                 part1.Address,
                 part1.AccumulationFunction,
-                NeuronBase.BitsToDouble(part1.PreActivationThreshold, 31),
+                BitMath.BitsToDouble(part1.PreActivationThreshold, 31),
                 part1.ActivationFunction,
-                NeuronBase.BitsToDouble(part1.ActivationParameterA, 63, -3d, 3d),
-                NeuronBase.BitsToDouble(part2.ActivationParameterB, 63, -3d, 3d),
-                NeuronBase.BitsToDouble(part2.ActivationThreshold, 15, 0d, 1d),
+                BitMath.BitsToDouble(part1.ActivationParameterA, 63, -3d, 3d),
+                BitMath.BitsToDouble(part2.ActivationParameterB, 63, -3d, 3d),
+                BitMath.BitsToDouble(part2.ActivationThreshold, 15, 0d, 1d),
                 part2.ResetFunction);
 
             neuronDataList.Add(neuron);
