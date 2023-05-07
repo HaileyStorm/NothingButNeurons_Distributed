@@ -240,19 +240,19 @@ internal partial class DebugUI : ActorBase
                                 brush = new SolidColorBrush(Colors.LightSteelBlue);
                                 weight = FontWeights.Light;
                                 break;
-                            case DebugSeverity.Info:
+                            case DebugSeverity.Debug:
                                 brush = new SolidColorBrush(Colors.DeepSkyBlue);
                                 weight = FontWeights.Light;
                                 break;
-                            case DebugSeverity.Debug:
+                            case DebugSeverity.Info:
                                 brush = new SolidColorBrush(Colors.Green);
                                 weight = FontWeights.Normal;
                                 break;
-                            case DebugSeverity.Warning:
+                            case DebugSeverity.Notice:
                                 brush = new SolidColorBrush(Colors.Goldenrod);
                                 weight = FontWeights.Medium;
                                 break;
-                            case DebugSeverity.Alert:
+                            case DebugSeverity.Warning:
                                 brush = new SolidColorBrush(Colors.Orange);
                                 weight = FontWeights.Medium;
                                 break;
@@ -264,7 +264,7 @@ internal partial class DebugUI : ActorBase
                                 brush = new SolidColorBrush(Colors.Red);
                                 weight = FontWeights.Bold;
                                 break;
-                            case DebugSeverity.Test:
+                            case DebugSeverity.Fatal:
                                 brush = new SolidColorBrush(Colors.DeepPink);
                                 weight = FontWeights.Bold;
                                 break;
@@ -272,7 +272,7 @@ internal partial class DebugUI : ActorBase
                                 brush = new SolidColorBrush(Colors.Black);
                                 break;
                         }
-                        size = item.Severity == DebugSeverity.Test ? 13d : 11d;
+                        size = item.Severity == DebugSeverity.Fatal ? 13d : 11d;
 
                         Paragraph paragraph = new Paragraph();
 

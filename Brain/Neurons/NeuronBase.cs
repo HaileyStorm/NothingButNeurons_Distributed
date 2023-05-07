@@ -163,7 +163,7 @@ public abstract class NeuronBase : ActorBase
                 CheckAxons();
                 // Acknowledge the successful spawning of the synapse.
                 context.Send(ParentPID!, new SpawnSynapseAckMessage());
-                SendDebugMessage(DebugSeverity.Trace, "Spawn", $"Neuron {SelfPID!.Address}/{SelfPID!.Id} spawned a synapse/axon.", $"Synapse connection to Neuron with address {new Axon(msg.Axon!).ToAddress.RegionPart}/{new Axon(msg.Axon!).ToAddress.NeuronPart} has strength {msg.Axon.Strength}");
+                SendDebugMessage(DebugSeverity.Notice, "Spawn", $"Neuron {SelfPID!.Address}/{SelfPID!.Id} spawned a synapse/axon.", $"Synapse connection to Neuron with address {new Axon(msg.Axon!).ToAddress.RegionPart}/{new Axon(msg.Axon!).ToAddress.NeuronPart} has strength {msg.Axon.Strength}");
                 _processed = true;
                 break;
         }
@@ -188,7 +188,7 @@ public abstract class NeuronBase : ActorBase
                 break;
             // The neuron is already disabled, log the redundant message.
             case DisableMessage:
-                SendDebugMessage(DebugSeverity.Info, "Neuron Disable", $"{SelfPID!.Address}/{SelfPID.Id} received DisableMessage when already disabled.");
+                SendDebugMessage(DebugSeverity.Debug, "Neuron Disable", $"{SelfPID!.Address}/{SelfPID.Id} received DisableMessage when already disabled.");
                 break;
         }
 
@@ -206,7 +206,7 @@ public abstract class NeuronBase : ActorBase
             // The neuron is already enabled, log the redundant message.
             case EnableMessage:
                 _processed = true;
-                SendDebugMessage(DebugSeverity.Info, "Neuron Enable", $"{SelfPID!.Address}/{SelfPID.Id} received EnableMessage when already enabled.");
+                SendDebugMessage(DebugSeverity.Debug, "Neuron Enable", $"{SelfPID!.Address}/{SelfPID.Id} received EnableMessage when already enabled.");
                 break;
             // Disable the neuron and switch to the Disabled behavior.
             case DisableMessage:
@@ -224,7 +224,7 @@ public abstract class NeuronBase : ActorBase
                 double f = PreActivationThreshold < 0 ? -2 : -1;
                 SignalBuffer = Math.Max(SignalBuffer, f * Math.Abs(PreActivationThreshold));
 
-                SendDebugMessage(DebugSeverity.Trace, "Signal", $"Neuron {SelfPID!.Address}/{SelfPID.Id} processed Signal ({signal.Val})", $"New SignalBuffer: {SignalBuffer}");
+                SendDebugMessage(DebugSeverity.Info, "Signal", $"Neuron {SelfPID!.Address}/{SelfPID.Id} processed Signal ({signal.Val})", $"New SignalBuffer: {SignalBuffer}");
                 //Debug.WriteLine($"Neuron {SelfPID!.Address}/{SelfPID.Id} processed Signal ({signal.Val}). New SignalBuffer: {SignalBuffer}");
                 _processed = true;
                 break;
@@ -243,7 +243,7 @@ public abstract class NeuronBase : ActorBase
                     double reset = neuronFunctionReturn.Val;
                     // TODO: Cost
                     SignalBuffer = reset;
-                    SendDebugMessage(DebugSeverity.Trace, "Tick", $"Neuron {SelfPID!.Address}/{SelfPID.Id} Activated & Reset", $"Potential = {potential}, and SignalBuffer reset to {reset}. Firing {Axons.Length} axons if > threshold ({Math.Abs(potential)} > {ActivationThreshold}).");
+                    SendDebugMessage(DebugSeverity.Info, "Tick", $"Neuron {SelfPID!.Address}/{SelfPID.Id} Activated & Reset", $"Potential = {potential}, and SignalBuffer reset to {reset}. Firing {Axons.Length} axons if > threshold ({Math.Abs(potential)} > {ActivationThreshold}).");
                     //Debug.WriteLine($"Neuron {SelfPID!.Address}/{SelfPID.Id} Activated & Reset", $"Potential = {potential}, and SignalBuffer reset to {reset}. Firing {Axons.Length} axons if > threshold ({Math.Abs(potential)} > {ActivationThreshold}).");
                     // If potential is greater than the activation threshold, fire signals through axons.
                     if (Math.Abs(potential) > ActivationThreshold) // Note this IS absolute value. When a neuron fires, the signal may be negative (and the strength of the connection may be negative and if both, will cancel) ... we want to fire either way (if it's a meaningful signal / above this neuron's threshold)

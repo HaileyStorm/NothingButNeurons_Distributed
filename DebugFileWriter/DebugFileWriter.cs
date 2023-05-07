@@ -57,7 +57,7 @@ internal class DebugFileWriter : ActorBase
                         file.Dispose();
                     } catch (TimeoutException)
                     {
-                        SendDebugMessage(DebugSeverity.Alert, "DebugFileWriter", "Failed to write debug message to log file (IOException/timeout).");
+                        SendDebugMessage(DebugSeverity.Warning, "DebugFileWriter", "Failed to write debug message to log file (IOException/timeout).");
                     }
                 });
                 break;
@@ -73,10 +73,10 @@ internal class DebugFileWriter : ActorBase
                         await file.WriteLineAsync($"{CCSL.DatesAndTimes.UnixTimeToLocalDateTime(DateTimeOffset.Now.ToUnixTimeMilliseconds()):MM/dd/yyyy hh:mm:ss.fff tt}: Log file flushed.");
                         file.Flush();
                         file.Dispose();
-                        SendDebugMessage(DebugSeverity.Info, "DebugFileWriter", "Log file flushed.");
+                        SendDebugMessage(DebugSeverity.Debug, "DebugFileWriter", "Log file flushed.");
                     } catch (TimeoutException)
                     {
-                        SendDebugMessage(DebugSeverity.Alert, "DebugFileWriter", "Failed to flush log file (IOException/timeout).");
+                        SendDebugMessage(DebugSeverity.Warning, "DebugFileWriter", "Failed to flush log file (IOException/timeout).");
                     }
                 });
 

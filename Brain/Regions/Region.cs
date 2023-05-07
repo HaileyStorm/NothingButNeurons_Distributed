@@ -118,7 +118,7 @@ internal class Region : ActorBaseWithBroadcaster
                     context.Send(pid, new SpawnSynapseMessage { Data = synapse });
                 }
                 context.Send(ParentPID!, new SpawnNeuronAckMessage());
-                SendDebugMessage(DebugSeverity.Trace, "Spawn", $"Region {SelfPID!.Address}/{SelfPID!.Id} spawned neuron {pid.Address}/{pid.Id}.", $"Neuron {pid.Address}/{pid.Id} has address {new NeuronAddress(msg.Address).NeuronPart} and has {msg.Synapses.Count} synapses.");
+                SendDebugMessage(DebugSeverity.Notice, "Spawn", $"Region {SelfPID!.Address}/{SelfPID!.Id} spawned neuron {pid.Address}/{pid.Id}.", $"Neuron {pid.Address}/{pid.Id} has address {new NeuronAddress(msg.Address).NeuronPart} and has {msg.Synapses.Count} synapses.");
                 AwaitingNeurons--;
                 if (msg.Synapses.Count == 0) CheckNeuronsAndSynapses();
                 _processed = true;
@@ -132,7 +132,7 @@ internal class Region : ActorBaseWithBroadcaster
                 break;
             case SpawnSynapseFailedMessage msg:
                 // TODO: Handle
-                SendDebugMessage(DebugSeverity.Alert, "Spawn", "Spawn synapse failed.", msg.FailedMessage.ToString());
+                SendDebugMessage(DebugSeverity.Error, "Spawn", "Spawn synapse failed.", msg.FailedMessage.ToString());
                 AwaitingSynapseAck--;
                 CheckNeuronsAndSynapses();
                 _processed = true;
@@ -174,7 +174,7 @@ internal class Region : ActorBaseWithBroadcaster
                     if (Neurons.TryGetValue(axon.ToAddress, out PID pid))
                     {
                         double str = msg.Val * axon.Strength;
-                        SendDebugMessage(DebugSeverity.Trace, "Signal", $"Region {SelfPID!.Address}/{SelfPID!.Id} sending Signal to {pid.Address}/{pid.Id}", $"Signal is from {msg.Sender.Address}/{msg.Sender.Id} and has total strength (axon connection strength * signal strength) {str}");
+                        SendDebugMessage(DebugSeverity.Debug, "Signal", $"Region {SelfPID!.Address}/{SelfPID!.Id} sending Signal to {pid.Address}/{pid.Id}", $"Signal is from {msg.Sender.Address}/{msg.Sender.Id} and has total strength (axon connection strength * signal strength) {str}");
                         context.Send(pid, new SignalMessage { Val = str });
                     } else
                     {

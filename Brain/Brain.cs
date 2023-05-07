@@ -77,7 +77,7 @@ public class Brain : ActorBaseWithBroadcaster
             if (AwaitingRegions == 0 && AwaitingNeuronAck == 0)
             {
                 // If all regions and neurons are spawned, switch to the Active behavior.
-                SendDebugMessage(DebugSeverity.Trace, "Spawn", $"Brain {SelfPID!.Address}/{SelfPID!.Id} active.", "All regions and neurons spawned.");
+                SendDebugMessage(DebugSeverity.Notice, "Spawn", $"Brain {SelfPID!.Address}/{SelfPID!.Id} active.", "All regions and neurons spawned.");
                 _behavior.Become(Active);
             }
         }
@@ -159,7 +159,7 @@ public class Brain : ActorBaseWithBroadcaster
 
                 // Send an acknowledgement message to the parent actor (HiveMind) that the region has been spawned.
                 context.Send(ParentPID!, new SpawnRegionAckMessage());
-                SendDebugMessage(DebugSeverity.Trace, "Spawn", $"Brain {SelfPID!.Address}/{SelfPID!.Id} spawned {(isInputRegion ? "input" : (isOutputRegion ? "output" : "interior"))} region {pid.Address}/{pid.Id}.", $"Region {pid.Address}/{pid.Id} has address {regionAddress.Address} and contains {neuronCt} neurons.");
+                SendDebugMessage(DebugSeverity.Notice, "Spawn", $"Brain {SelfPID!.Address}/{SelfPID!.Id} spawned {(isInputRegion ? "input" : (isOutputRegion ? "output" : "interior"))} region {pid.Address}/{pid.Id}.", $"Region {pid.Address}/{pid.Id} has address {regionAddress.Address} and contains {neuronCt} neurons.");
                 AwaitingRegions--;
                 if (Regions.Count == 0) CheckRegionsAndNeurons();
 
@@ -168,7 +168,7 @@ public class Brain : ActorBaseWithBroadcaster
             // Handle a failed neuron spawn message.
             case SpawnNeuronFailedMessage msg:
                 // TODO: Handle
-                SendDebugMessage(DebugSeverity.Alert, "Spawn", "Spawn neuron failed.", msg.FailedMessage.ToString());
+                SendDebugMessage(DebugSeverity.Error, "Spawn", "Spawn neuron failed.", msg.FailedMessage.ToString());
                 AwaitingNeuronAck--;
                 CheckRegionsAndNeurons();
                 _processed = true;

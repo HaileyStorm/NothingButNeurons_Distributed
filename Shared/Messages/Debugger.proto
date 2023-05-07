@@ -7,13 +7,13 @@ package debugger;
 
 enum DebugSeverity {
   Trace = 0;
-  Info = 1;
-  Debug = 2;
-  Warning = 3;
-  Alert = 4;
+  Debug = 1;
+  Info = 2;
+  Notice = 3;
+  Warning = 4;
   Error = 5;
   Critical = 6;
-  Test = 7;
+  Fatal = 7;
 }
 
 message DebugUISubUpdateMessage {

@@ -75,7 +75,7 @@ public abstract class ActorBase : IActor
 
             // Process the UnstableHandlerException message
             case UnstableHandlerException msg:
-                SendDebugMessage(DebugSeverity.Alert, "UnstableHandlerException", "InputNeuron Received UnstableHandler Exception:", msg.FailedMessage.ToString());
+                SendDebugMessage(DebugSeverity.Warning, "UnstableHandlerException", "InputNeuron Received UnstableHandler Exception:", msg.FailedMessage.ToString());
                 // Still want descendants to be able to process the exception
                 ReceiveMessage(context);
                 break;
@@ -178,8 +178,8 @@ public abstract class ActorBase : IActor
             return;
         if (BaseContext == null)
         {
-            Debug.WriteLine($"SendDebugMessage called before startup. BaseContext ({BaseContext}) null.");
-            SendDebugMessage(DebugSeverity.Warning, "Spawn(?)", "SendDebugMessage called before startup", "BaseContext null.");
+            Debug.WriteLine($"SendDebugMessage called before startup. BaseContext null.");
+            SendDebugMessage(DebugSeverity.Notice, "Spawn(?)", "SendDebugMessage called before startup", "BaseContext null.");
             return;
         }
         BaseContext.Send(DebugServerPID, msg);

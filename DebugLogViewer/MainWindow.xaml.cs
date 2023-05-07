@@ -76,19 +76,19 @@ public partial class MainWindow : Window
     }
     private void Button_Click_1(object sender, RoutedEventArgs e)
     {
-        SendDebugMessage(DebugSeverity.Info, "Info", "Test debug - Info", "This is a sample debug message to test the DebgUI styling.");
+        SendDebugMessage(DebugSeverity.Debug, "Debug", "Test debug - Debug", "This is a sample debug message to test the DebgUI styling.");
     }
     private void Button_Click_2(object sender, RoutedEventArgs e)
     {
-        SendDebugMessage(DebugSeverity.Debug, "Debug", "Test debug - Debug", "This is a sample debug message to test the DebgUI styling.");
+        SendDebugMessage(DebugSeverity.Info, "Info", "Test debug - Info", "This is a sample debug message to test the DebgUI styling.");
     }
     private void Button_Click_3(object sender, RoutedEventArgs e)
     {
-        SendDebugMessage(DebugSeverity.Warning, "Warning", "Test debug - Warning", "This is a sample debug message to test the DebgUI styling.");
+        SendDebugMessage(DebugSeverity.Notice, "Notice", "Test debug - Notice", "This is a sample debug message to test the DebgUI styling.");
     }
     private void Button_Click_4(object sender, RoutedEventArgs e)
     {
-        SendDebugMessage(DebugSeverity.Alert, "Alert", "Test debug - Alert", "This is a sample debug message to test the DebgUI styling.");
+        SendDebugMessage(DebugSeverity.Warning, "Warning", "Test debug - Warning", "This is a sample debug message to test the DebgUI styling.");
     }
     private void Button_Click_5(object sender, RoutedEventArgs e)
     {
@@ -100,7 +100,7 @@ public partial class MainWindow : Window
     }
     private void Button_Click_7(object sender, RoutedEventArgs e)
     {
-        SendDebugMessage(DebugSeverity.Test, "Test", "Test debug - Test", "This is a sample debug message to test the DebgUI styling.");
+        SendDebugMessage(DebugSeverity.Fatal, "Fatal", "Test debug - Fatal", "This is a sample debug message to test the DebgUI styling.");
     }
 
     /// <summary>
