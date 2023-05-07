@@ -192,6 +192,9 @@ internal partial class Updater : ActorBase
         {
             foreach (var entry in _connectionUpdates)
             {
+                if (entry.Key == null)
+                    continue;
+
                 string connectionId = entry.Key;
                 double signalStrength = entry.Value;
 
