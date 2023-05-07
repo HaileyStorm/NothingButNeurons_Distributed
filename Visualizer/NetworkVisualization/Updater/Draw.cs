@@ -156,58 +156,69 @@ internal partial class Updater : ActorBase
 
     private void UpdateNeuron(string neuronPid, double signalBuffer)
     {
-        if (_neurons.TryGetValue(neuronPid, out NeuronInfo neuron))
+        if (_neurons.ContainsKey(neuronPid))
         {
-            _networkVisualizationCanvas.Dispatcher.Invoke(() =>
-            {
-                if (!_neuronEllipses.TryGetValue(neuron.Id, out Ellipse neuronEllipse))
-                    return;
-
-                SolidColorBrush newColor = GetSignalOrBufferColor(signalBuffer, 1.333d);
-                neuronEllipse.Fill = newColor;
-
-                //Debug.WriteLine($"UpdateNeuron: neuronPid={neuronPid}, signalBuffer={signalBuffer}, color={newColor.Color}");
-            });
+            _neuronUpdates[neuronPid] = signalBuffer;
         }
     }
 
     private void UpdateConnection(string connectionId, double signalStrength)
     {
-        if (_connections.TryGetValue(connectionId, out ConnectionInfo connection))
+        if (_connections.ContainsKey(connectionId))
         {
-            _networkVisualizationCanvas.Dispatcher.Invoke(() =>
-            {
-                NeuronInfo sourceNeuron = connection.SourceNeuron;
-                NeuronInfo targetNeuron = connection.TargetNeuron;
-
-                if (!_connectionPaths.TryGetValue(connectionId, out Path connectionPath))
-                {
-                    (connectionPath, _) = CreateConnectionPath(sourceNeuron.Position, targetNeuron.Position, connection.Id);
-                    _connectionPaths[connectionId] = connectionPath;
-                    Panel.SetZIndex(connectionPath, 3);
-                    _networkVisualizationCanvas.Children.Add(connectionPath);
-                }
-
-                SolidColorBrush newColor = GetSignalOrBufferColor(signalStrength, 6.66d);
-                connectionPath.Stroke = newColor;
-
-                //Debug.WriteLine($"UpdateConnection: connectionId={connectionId}, signalStrength={signalStrength}, color={newColor.Color}");
-
-                // Reset and start the timer
-                connection.Timer.Stop();
-                connection.Timer.Start();
-            });
+            _connectionUpdates[connectionId] = signalStrength;
         }
     }
 
-    private void SetConnectionPathColor(string connectionId, SolidColorBrush color)
+    private void ApplyNeuronUpdates()
+    {
+        foreach (var entry in _neuronUpdates)
+        {
+            string neuronPid = entry.Key;
+            double signalBuffer = entry.Value;
+
+            if (_neurons.TryGetValue(neuronPid, out NeuronInfo neuron) &&
+                _neuronEllipses.TryGetValue(neuron.Id, out Ellipse neuronEllipse))
+            {
+                SolidColorBrush newColor = GetSignalOrBufferColor(signalBuffer, 1.333d);
+                neuronEllipse.Fill = newColor;
+            }
+        }
+    }
+
+    private void ApplyConnectionUpdates()
+    {
+        lock (connectionLock)
+        {
+            foreach (var entry in _connectionUpdates)
+            {
+                string connectionId = entry.Key;
+                double signalStrength = entry.Value;
+
+                if (_connections.TryGetValue(connectionId, out ConnectionInfo connection) &&
+                    _connectionPaths.TryGetValue(connectionId, out Path connectionPath))
+                {
+                    SolidColorBrush newColor = GetSignalOrBufferColor(signalStrength, 6.66d);
+                    connectionPath.Stroke = newColor;
+                    connection.Timer.Stop();
+                    connection.Timer.Start();
+                }
+            }
+        }
+    }
+
+    private void ResetPathColor(string connectionId)
     {
         if (_connectionPaths.TryGetValue(connectionId, out Path connectionPath))
         {
-            _networkVisualizationCanvas.Dispatcher.Invoke(() =>
+            /*_networkVisualizationCanvas.Dispatcher.Invoke(() =>
             {
                 connectionPath.Stroke = color;
-            });
+            });*/
+            lock (connectionLock)
+            {
+                _connectionUpdates[connectionId] = 0;
+            }
         }
     }
 

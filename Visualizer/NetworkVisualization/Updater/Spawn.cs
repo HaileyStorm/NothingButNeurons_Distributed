@@ -28,6 +28,9 @@ internal partial class Updater : ActorBase
     private ConcurrentQueue<DebugInboundMessage> _messageQueue = new ConcurrentQueue<DebugInboundMessage>();
     private DispatcherTimer _messageProcessingTimer;
     private SemaphoreSlim _messageProcessingSemaphore = new SemaphoreSlim(1, 1);
+    private Dictionary<string, double> _neuronUpdates = new Dictionary<string, double>();
+    private Dictionary<string, double> _connectionUpdates = new Dictionary<string, double>();
+    private readonly object connectionLock = new object();
 
     public Updater(PID debugServerPID, Canvas networkVisualizationCanvas, int tickInterval) : base(debugServerPID)
     {
@@ -56,20 +59,26 @@ internal partial class Updater : ActorBase
     {
         _messageProcessingTimer.Stop();
 
-        // Wait for the semaphore before processing messages
         await _messageProcessingSemaphore.WaitAsync();
 
         try
         {
             while (_messageQueue.TryDequeue(out DebugInboundMessage msg))
             {
-                // Process the messages synchronously to ensure order
                 ProcessMessage(msg);
             }
+
+            _networkVisualizationCanvas.Dispatcher.Invoke(() =>
+            {
+                ApplyNeuronUpdates();
+                ApplyConnectionUpdates();
+
+                _neuronUpdates.Clear();
+                _connectionUpdates.Clear();
+            });
         }
         finally
         {
-            // Release the semaphore
             _messageProcessingSemaphore.Release();
         }
 
@@ -169,7 +178,7 @@ internal partial class Updater : ActorBase
                     .SelectMany(r => r.Neurons)
                     .FirstOrDefault(n => n.Address == targetNeuronAddress);
 
-                ConnectionInfo connection = new ConnectionInfo(sourceNeuronPid, targetNeuron, connectionStrength, connectionTimeout, SetConnectionPathColor);
+                ConnectionInfo connection = new ConnectionInfo(sourceNeuronPid, targetNeuron, connectionStrength, connectionTimeout, ResetPathColor);
 
                 // If the target neuron is found, set it in the connection.
                 if (targetNeuron != null)

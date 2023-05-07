@@ -66,15 +66,15 @@ public class ConnectionInfo
     public double Strength { get; set; }
     public Timer Timer { get; set; }
     public int Timeout { get; set; }
-    public Action<string, SolidColorBrush> UpdateConnectionPathColor { get; set; }
+    public Action<string> ResetConnectionColor { get; set; }
 
-    public ConnectionInfo(string sourceNeuronPid, NeuronInfo targetNeuron, double strength, int timeout, Action<string, SolidColorBrush> updateConnectionPathColor)
+    public ConnectionInfo(string sourceNeuronPid, NeuronInfo targetNeuron, double strength, int timeout, Action<string> resetConnectionColor)
     {
         SourceNeuronPid = sourceNeuronPid;
         TargetNeuron = targetNeuron;
         Strength = strength;
         Timeout = timeout;
-        UpdateConnectionPathColor = updateConnectionPathColor;
+        ResetConnectionColor = resetConnectionColor;
         Timer = new Timer(Timeout);
         Timer.Elapsed += Timer_Tick;
         Timer.AutoReset = false;
@@ -97,6 +97,6 @@ public class ConnectionInfo
     private void Timer_Tick(object sender, EventArgs e)
     {
         Timer.Stop();
-        UpdateConnectionPathColor(Id, Brushes.Black);
+        ResetConnectionColor(Id);
     }
 }
