@@ -12,7 +12,7 @@ public abstract class ActorBaseWithBroadcaster : ActorBase
 {
     private PID? RouterPID;
 
-    protected ActorBaseWithBroadcaster(PID debugServerPID) : base(debugServerPID) { }
+    protected ActorBaseWithBroadcaster(PID? debugServerPID) : base(debugServerPID) { }
 
     /// <summary>
     /// Gets or sets the base context for the actor.
@@ -44,6 +44,22 @@ public abstract class ActorBaseWithBroadcaster : ActorBase
         }
             
         BaseContext.Send(RouterPID, new Proto.Router.Messages.RouterAddRoutee(routee));
+    }
+
+    /// <summary>
+    /// Removes a routee from the router.
+    /// </summary>
+    /// <param name="routee">The PID of the routee to be removed.</param>
+    protected virtual void RemoveRoutee(PID routee)
+    {
+        if (BaseContext == null || RouterPID == null)
+        {
+            Debug.WriteLine($"Actor {(SelfPID == null ? "null" : SelfPID.Address + "/" + SelfPID.Id)} received RemoveRoutee request before startup");
+            SendDebugMessage(DebugSeverity.Warning, "Spawn(?)", "Actor received RemoveRoutee request before startup", "BaseContext and/or RouterPID null.");
+            return;
+        }
+
+        BaseContext.Send(RouterPID, new Proto.Router.Messages.RouterRemoveRoutee(routee));
     }
 
     /// <summary>

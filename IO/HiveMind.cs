@@ -1,5 +1,6 @@
 ﻿using Proto;
 using Google.Protobuf;
+using Proto.Remote;
 
 namespace NothingButNeurons.IO;
 
@@ -101,18 +102,6 @@ public class HiveMind : ActorBaseWithBroadcaster
         AddRoutee(pid);
         foreach ((byte[] neuronData, byte[] synapseData) region in regions)
         {
-            /*Debug.WriteLine("SpawnBrain parsed region neuronData: ");
-            foreach (byte b in region.neuronData)
-            {
-                string binary = Convert.ToString(b, 2).PadLeft(8, '0');
-                Debug.WriteLine(binary);
-            }*/
-            /*Debug.WriteLine("SpawnBrain parsed region synapseData: ");
-            foreach (byte b in region.synapseData)
-            {
-                string binary = Convert.ToString(b, 2).PadLeft(8, '0');
-                Debug.WriteLine(binary);
-            }*/
             context.Send(pid, new SpawnRegionMessage { Address = GetLeftMost4Bits(region.neuronData), NeuronData = ByteString.CopyFrom(region.neuronData), SynapseData = ByteString.CopyFrom(region.synapseData) });
         }
         if (context.Sender != null)

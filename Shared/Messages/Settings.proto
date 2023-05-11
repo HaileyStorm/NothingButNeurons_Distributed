@@ -1,0 +1,31 @@
+syntax = "proto3";
+option csharp_namespace = "NothingButNeurons.Shared.Messages";
+
+import "Protos.proto";
+
+package settings;
+
+message SettingChangedMessage {
+	string TableName = 1;
+	string Setting = 2;
+	string Value = 3;
+}
+
+message SettingRequestMessage {
+	string TableName = 1;
+	string Setting = 2;
+}
+
+message SettingResponseMessage {
+	string Value = 1;
+}
+
+message NodeOnlineMessage {
+	string Name = 1;
+	actor.PID PID = 2;
+}
+
+message NodeOfflineMessage {
+	string Name = 1;
+	actor.PID PID = 2;
+}

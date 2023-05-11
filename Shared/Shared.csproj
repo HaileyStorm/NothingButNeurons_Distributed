@@ -12,6 +12,7 @@
     <None Remove="Messages\Debugger.proto" />
     <None Remove="Messages\IO.proto" />
     <None Remove="Messages\Neurons.proto" />
+    <None Remove="Messages\Settings.proto" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,6 +32,7 @@
     <Protobuf Include="Messages\Debugger.proto" />
     <Protobuf Include="Messages\IO.proto" />
     <Protobuf Include="Messages\Neurons.proto" />
+    <Protobuf Include="Messages\Settings.proto" />
   </ItemGroup>
 
 </Project>

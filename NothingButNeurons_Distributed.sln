@@ -17,9 +17,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DebugFileWriter", "DebugFil
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DebugLogViewer", "DebugLogViewer\DebugLogViewer.csproj", "{D9E47968-094F-4870-95BA-09C4A2793919}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visualizer", "Visualizer\Visualizer.csproj", "{E505A57D-6037-45DA-944A-30A75A3CE9AE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Visualizer", "Visualizer\Visualizer.csproj", "{E505A57D-6037-45DA-944A-30A75A3CE9AE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Designer", "Designer\Designer.csproj", "{7A3031CB-7BD9-4CCE-B3BB-6BBE359CA6F0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Designer", "Designer\Designer.csproj", "{7A3031CB-7BD9-4CCE-B3BB-6BBE359CA6F0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SettingsMonitor", "SettingsMonitor\SettingsMonitor.csproj", "{506E5F72-9DE5-4A89-A7DC-D109D225B7B4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,6 +65,10 @@ Global
 		{7A3031CB-7BD9-4CCE-B3BB-6BBE359CA6F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7A3031CB-7BD9-4CCE-B3BB-6BBE359CA6F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7A3031CB-7BD9-4CCE-B3BB-6BBE359CA6F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{506E5F72-9DE5-4A89-A7DC-D109D225B7B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{506E5F72-9DE5-4A89-A7DC-D109D225B7B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{506E5F72-9DE5-4A89-A7DC-D109D225B7B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{506E5F72-9DE5-4A89-A7DC-D109D225B7B4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

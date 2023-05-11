@@ -14,5 +14,6 @@ public static class DefaultPorts
     public const int DEBUG_LOG_VIEWER = 8003;
     public const int VISUALIZER = 8004;
     public const int DESIGNER = 8005;
-    public const int ORCHESTRATOR_MONITOR = 9999;
+    public const int SETTINGS_MONITOR = 9000;
+    public const int ORCHESTRATOR_MONITOR = 9001;
 }
