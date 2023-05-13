@@ -28,17 +28,18 @@ public class SettingsMonitor : ActorBaseWithBroadcaster
         {
             // Requests should be sent in the form context.RequestAsync<SettingResponseMessage>(), see Orchestrator.ServiceMonitor for example
             case SettingRequestMessage msg:
-                HandleUnstable(context, msg, (context, msg) => {
-                    string val = GetSettingValue(msg.TableName, msg.Setting);
-                    if (val != null)
-                    {
-                        SendDebugMessage(DebugSeverity.Trace, "Settings", "Responding to SettingRequestMessage", $"Replying to request for setting {msg.Setting} in {msg.TableName} with value {val}.");
-                        context.Respond(new SettingResponseMessage() { Value = val });
-                    } else
-                    {
-                        SendDebugMessage(DebugSeverity.Warning, "Settings", "Value read for SettingRequestMessage null", $"The request for setting {msg.Setting} in {msg.TableName} returned a null value; check the table and setting (key) names.");
-                    }
-                });
+                // TODO: Change to Trace
+                SendDebugMessage(DebugSeverity.Info, "Settings", $"Received SettingRequestMessage for setting {msg.Setting} in {msg.TableName} from {context.Sender}.");
+                string val = GetSettingValue(msg.TableName, msg.Setting);
+                if (val != null)
+                {
+                    // TODO: Change to Trace
+                    SendDebugMessage(DebugSeverity.Info, "Settings", "Responding to SettingRequestMessage", $"Replying to request (from {context.Sender}) for setting {msg.Setting} in {msg.TableName} with value {val}.");
+                    context.Respond(new SettingResponseMessage() { Value = val });
+                } else
+                {
+                    SendDebugMessage(DebugSeverity.Warning, "Settings", "Value read for SettingRequestMessage null", $"The request for setting {msg.Setting} in {msg.TableName} returned a null value; check the table and setting (key) names.");
+                }
                 break;
             case UnstableHandlerException msg:
                 SettingRequestMessage og = msg.FailedMessage.Unpack<SettingRequestMessage>();
@@ -90,7 +91,7 @@ public class SettingsMonitor : ActorBaseWithBroadcaster
         Broadcast(msg);
     }
 
-    private string GetSettingValue(string tableName, string searchKey)
+    private string? GetSettingValue(string tableName, string searchKey)
     {
         // Get the first and second column names
         var query = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = @TableName AND ORDINAL_POSITION IN (1, 2);";
@@ -108,9 +109,12 @@ public class SettingsMonitor : ActorBaseWithBroadcaster
 
         // Construct and execute the dynamic SQL query
         query = $"SELECT `{columnNames[1]}` FROM `{tableName}` WHERE `{columnNames[0]}` = @SearchKey;";
+        SendDebugMessage(DebugSeverity.Info, "Settings", $"Retrieved column names; executing query: {query} with SearchKey: {searchKey}");
         cmd.CommandText = query;
         cmd.Parameters.AddWithValue("@SearchKey", searchKey);
+
         var result = cmd.ExecuteScalar();
+        SendDebugMessage(DebugSeverity.Info, "Settings", $"Result: {result}");
 
         return result?.ToString();
     }

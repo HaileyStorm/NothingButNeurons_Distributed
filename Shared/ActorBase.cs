@@ -1,6 +1,7 @@
 ﻿global using System.Diagnostics;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
+using NothingButNeurons.Shared.Consts;
 using NothingButNeurons.Shared.Messages;
 using Proto;
 using System;
@@ -75,7 +76,8 @@ public abstract class ActorBase : IActor
 
             // Process the UnstableHandlerException message
             case UnstableHandlerException msg:
-                SendDebugMessage(DebugSeverity.Warning, "UnstableHandlerException", "InputNeuron Received UnstableHandler Exception:", msg.FailedMessage.ToString());
+                var og = Helpers.UnpackAny(msg.FailedMessage);
+                SendDebugMessage(DebugSeverity.Warning, "UnstableHandlerException", $"Received UnstableHandler Exception: {og}");
                 // Still want descendants to be able to process the exception
                 ReceiveMessage(context);
                 break;

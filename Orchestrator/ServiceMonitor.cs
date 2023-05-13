@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
-using System.Threading;
+
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Media;
@@ -24,7 +24,7 @@ internal class ServiceMonitor
     {
         Services = MainWindow.Instance.Services;
 
-        ProtoSystem = Nodes.GetActorSystem(MainWindow.ServiceMonitorPort);
+        ProtoSystem = MainWindow.Instance.ProtoSystem;
 
         _timer = new System.Timers.Timer(1000);
         _timer.Elapsed += Monitor;
@@ -43,7 +43,7 @@ internal class ServiceMonitor
         foreach (var service in Services.Where(s => s.StatusColor != Brushes.Red && s.StatusColor != Brushes.Gray))
         {
             PID servicePID = PID.FromAddress($"127.0.0.1:{service.Port}", service.ActorName);
-            ProtoSystem.Root.RequestAsync<PongMessage>(servicePID, new PingMessage { }, new CancellationToken()).WaitUpTo(TimeSpan.FromMilliseconds(850)).ContinueWith(x =>
+            ProtoSystem.Root.RequestAsync<PongMessage>(servicePID, new PingMessage { }, new System.Threading.CancellationToken()).WaitUpTo(TimeSpan.FromMilliseconds(850)).ContinueWith(x =>
             {
                 if (x.IsFaulted || !x.Result.completed)
                 {

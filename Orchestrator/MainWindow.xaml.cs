@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Linq;
+using Proto;
 
 namespace NothingButNeurons.Orchestrator;
 
@@ -21,22 +22,25 @@ public partial class MainWindow : Window
 {
     internal static MainWindow Instance { get; private set; }
     internal const int ServiceMonitorPort = Shared.Consts.DefaultPorts.ORCHESTRATOR_MONITOR;
-    
+    internal const int SettingsMonitorPort = Shared.Consts.DefaultPorts.SETTINGS_MONITOR;
+
+    internal ActorSystem ProtoSystem;
+
     internal ServiceLauncher ServiceLauncher { get; private set; }
     internal ServiceMonitor ServiceMonitor { get; private set; }
 
     public ObservableCollection<Service> Services { get; set; } = new ObservableCollection<Service>
     {
-        // IO will not require DebugServer, but realistically does right now
-        new Service { Name = "IO / HiveMind", ProjectName="IO", ActorName="HiveMind", PreReqProjects = new string[] { }, IsWPF=false, Port = Shared.Consts.DefaultPorts.IO, StatusColor = Brushes.Gray },
-        new Service { Name = "Debug Server", ProjectName="DebugServer", ActorName="DebugServer", PreReqProjects = Array.Empty<string>(), IsWPF=false, Port = Shared.Consts.DefaultPorts.DEBUG_SERVER, StatusColor = Brushes.Gray },
-        new Service { Name = "Debug File Writer", ProjectName="DebugFileWriter", ActorName="DebugFileWriter", PreReqProjects = new string[] { "DebugServer" }, IsWPF=false, Port = Shared.Consts.DefaultPorts.DEBUG_FILE_WRITER, StatusColor = Brushes.Gray },
-        new Service { Name = "Debug Log Viewer", ProjectName="DebugLogViewer", ActorName="DebugUI", PreReqProjects = new string[] { "DebugServer" }, IsWPF=true, Port = Shared.Consts.DefaultPorts.DEBUG_LOG_VIEWER, StatusColor = Brushes.Gray },
+        new Service { Name = "Settings Monitor", ProjectName="SettingsMonitor", ActorName="SettingsMonitor", PreReqProjects = Array.Empty<string>(), IsWPF=false, Port = Shared.Consts.DefaultPorts.SETTINGS_MONITOR, StatusColor = Brushes.Gray },
+        new Service { Name = "IO / HiveMind", ProjectName="IO", ActorName="HiveMind", PreReqProjects = new string[] { "SettingsMonitor" }, IsWPF=false, Port = Shared.Consts.DefaultPorts.IO, StatusColor = Brushes.Gray },
+        new Service { Name = "Debug Server", ProjectName="DebugServer", ActorName="DebugServer", PreReqProjects = new string[] { "SettingsMonitor" }, IsWPF=false, Port = Shared.Consts.DefaultPorts.DEBUG_SERVER, StatusColor = Brushes.Gray },
+        new Service { Name = "Debug File Writer", ProjectName="DebugFileWriter", ActorName="DebugFileWriter", PreReqProjects = new string[] { "SettingsMonitor", "DebugServer" }, IsWPF=false, Port = Shared.Consts.DefaultPorts.DEBUG_FILE_WRITER, StatusColor = Brushes.Gray },
+        new Service { Name = "Debug Log Viewer", ProjectName="DebugLogViewer", ActorName="DebugUI", PreReqProjects = new string[] { "SettingsMonitor", "DebugServer" }, IsWPF=true, Port = Shared.Consts.DefaultPorts.DEBUG_LOG_VIEWER, StatusColor = Brushes.Gray },
         // Currently there's nothing to visualize unless a brain is spawned and random inputs are sent, which happens via Designer - but a) that's not how things will be, b) Visualizer can be open before or after Designer, so long as it's own before the Designer Spawn button is clicked
         // Technically IO isn't required either...
-        new Service { Name = "Visualizer", ProjectName="Visualizer", ActorName="NetworkVisualizationUpdater", PreReqProjects = new string[] { "DebugServer", "IO" }, IsWPF=true, Port = Shared.Consts.DefaultPorts.VISUALIZER, StatusColor = Brushes.Gray },
+        new Service { Name = "Visualizer", ProjectName="Visualizer", ActorName="NetworkVisualizationUpdater", PreReqProjects = new string[] { "SettingsMonitor", "DebugServer", "IO" }, IsWPF=true, Port = Shared.Consts.DefaultPorts.VISUALIZER, StatusColor = Brushes.Gray },
         // Visualizer must be open before Spawn clicked in Designer now if want Visualizer to catch it, but in order to create Brains or send randomized input Designer does not require Visualizer, so it's not on the prereq list
-        new Service { Name = "Designer", ProjectName="Designer", ActorName="DesignerHelper", PreReqProjects = new string[] { "IO" }, IsWPF=true, Port = Shared.Consts.DefaultPorts.DESIGNER, StatusColor = Brushes.Gray }
+        new Service { Name = "Designer", ProjectName="Designer", ActorName="DesignerHelper", PreReqProjects = new string[] { "SettingsMonitor", "IO" }, IsWPF=true, Port = Shared.Consts.DefaultPorts.DESIGNER, StatusColor = Brushes.Gray }
     };
 
     public MainWindow()
@@ -49,6 +53,9 @@ public partial class MainWindow : Window
         #endif
 
         Instance = this;
+
+        ProtoSystem = Nodes.GetActorSystem(ServiceMonitorPort);
+
         ServiceLauncher = new(isDebug);
         ServiceMonitor = new();
 

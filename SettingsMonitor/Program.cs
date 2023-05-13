@@ -37,7 +37,7 @@ internal class Program
             debugServerPID = PID.FromAddress($"127.0.0.1:{debugServerPort}", "DebugServer");
         Monitor = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new SettingsMonitor(ConnectionString, debugServerPID)), "SettingsMonitor");
 
-        CombinedWriteLine("NothingButNeurons.SettingsMonitor program ready.");
+        CombinedWriteLine($"NothingButNeurons.SettingsMonitor program ready ({Monitor}).");
 
         InitializeDbConnection();
         LastQueryTime = DateTime.UtcNow.AddSeconds(-2 * QueryInterval);
