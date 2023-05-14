@@ -67,15 +67,69 @@ public static class Nodes
         }
 
         if (context is IContext icontext)
-        {
             await icontext.RequestAsync<SettingResponseMessage>(settingsPID, new SettingRequestMessage { TableName = "Ports", Setting = projectName }).ContinueWith(HandleResponse);
-        }
         else if (context is IRootContext rcontext)
-        {
             await rcontext.RequestAsync<SettingResponseMessage>(settingsPID, new SettingRequestMessage { TableName = "Ports", Setting = projectName }).ContinueWith(HandleResponse);
-        }
 
         return port;
+    }
+
+    public static void SendNodeOnline(IContext context, string projectName, PID projectPID, PID? settingsPID = null)
+    {
+        SendNodeOnlineInternal(context, projectName, projectPID, settingsPID);
+    }
+    public static void SendNodeOnline(IRootContext context, string projectName, PID projectPID, PID? settingsPID = null)
+    {
+        SendNodeOnlineInternal(context, projectName, projectPID, settingsPID);
+    }
+    private static void SendNodeOnlineInternal(object context, string projectName, PID projectPID, PID? settingsPID = null)
+    {
+        settingsPID ??= PID.FromAddress($"127.0.0.1:{DefaultPorts.SETTINGS_MONITOR}", "SettingsMonitor");
+
+        NodeOnlineMessage msg = new NodeOnlineMessage() { Name = projectName, PID = projectPID };
+
+        if (context is IContext icontext)
+            icontext.Send(settingsPID, msg);
+        else if (context is IRootContext rcontext)
+            rcontext.Send(settingsPID, msg);
+    }
+
+    public static void SendNodeOffline(IContext context, string projectName, PID? settingsPID = null)
+    {
+        SendNodeOfflineInternal(context, projectName, settingsPID);
+    }
+    public static void SendNodeOffline(IRootContext context, string projectName, PID? settingsPID = null)
+    {
+        SendNodeOfflineInternal(context, projectName, settingsPID);
+    }
+    private static void SendNodeOfflineInternal(object context, string projectName, PID? settingsPID = null)
+    {
+        settingsPID ??= PID.FromAddress($"127.0.0.1:{DefaultPorts.SETTINGS_MONITOR}", "SettingsMonitor");
+
+        NodeOnlineMessage msg = new NodeOnlineMessage() { Name = projectName, PID = null };
+
+        if (context is IContext icontext)
+            icontext.Send(settingsPID, msg);
+        else if (context is IRootContext rcontext)
+            rcontext.Send(settingsPID, msg);
+    }
+
+    public static PID? GetPIDFromString(string? pidString)
+    {
+        PID? pid = null;
+
+        if (!string.IsNullOrEmpty(pidString))
+        {
+            int slashIndex = pidString.IndexOf('/');
+            if (slashIndex != -1)
+            {
+                string address = pidString.Substring(0, slashIndex);
+                string id = pidString.Substring(slashIndex + 1);
+                pid = new PID(address, id);
+            }
+        }
+
+        return pid;
     }
 
 

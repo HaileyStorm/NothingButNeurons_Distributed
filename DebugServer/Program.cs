@@ -30,11 +30,13 @@ internal class Program
         ProtoSystem = Nodes.GetActorSystem(Port);
 
         DebugServer = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DebugServer()), "DebugServer");
+        Nodes.SendNodeOnline(ProtoSystem.Root, "DebugServer", DebugServer);
 
         CombinedWriteLine("NothingButNeurons.DebugServer program ready.");
 
         Console.ReadLine();
         CombinedWriteLine("NothingButNeurons.DebugServer program shutting down...");
+        Nodes.SendNodeOffline(ProtoSystem.Root, "DebugServer");
         ProtoSystem.Remote().ShutdownAsync().GetAwaiter().GetResult();
     }
 

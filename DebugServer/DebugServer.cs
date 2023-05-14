@@ -62,7 +62,6 @@ internal class DebugServer : ActorBase
 
     protected override void ProcessRestartingMessage(IContext context, Restarting msg)
     {
-        
     }
 
     protected override void ProcessStartedMessage(IContext context, Started msg)

@@ -7,6 +7,8 @@ using Proto.Remote.GrpcNet;
 using Proto.Remote;
 using MySqlConnector;
 using System.Data;
+using NothingButNeurons.Shared.Consts;
+using Proto.Utils;
 
 namespace NothingButNeurons.SettingsMonitor;
 
@@ -24,22 +26,43 @@ internal class Program
 
     static void Main(string[] args)
     {
-        Port = Shared.Consts.DefaultPorts.SETTINGS_MONITOR;
+        Port = DefaultPorts.SETTINGS_MONITOR;
 
         CombinedWriteLine($"NothingButNeurons.SettingsMonitor program starting on port {Port}...");
 
         ProtoSystem = Nodes.GetActorSystem(Port);
 
-        // TODO: Read DebugServer running state / pid from db (pass null if not running)
-        int debugServerPort = Shared.Consts.DefaultPorts.DEBUG_SERVER;
-        PID? debugServerPID = null;
-        if (debugServerPort != null)
-            debugServerPID = PID.FromAddress($"127.0.0.1:{debugServerPort}", "DebugServer");
+        InitializeDbConnection();
+
+        // Likely to be null (or inaccurately non-null) - after all, SettingsMonitor is a prereq for DebugServer in Orchestrator - but it's worth checking. And if it's non-null, we check if it is in fact online and update the status accordingly (Orchestrator will be checking/updating it, too, if it's reporting online - but only if Orchestrator is running :P)
+        string query = "SELECT PID FROM NodeStatus WHERE Node = @Node;";
+        using var cmd = new MySqlCommand(query, Connection);
+        cmd.Parameters.AddWithValue("@Node", "DebugServer");
+        string? pidString = cmd.ExecuteScalar() as string;
+        PID? debugServerPID = Nodes.GetPIDFromString(pidString);
+        if (debugServerPID != null)
+        {
+            CombinedWriteLine("DebugServer reports it is online (NodeStatus db entry exists with non-null PID), checking if it actually is...");
+            ProtoSystem.Root.RequestAsync<PongMessage>(debugServerPID, new PingMessage { }, new System.Threading.CancellationToken()).WaitUpTo(TimeSpan.FromMilliseconds(850)).ContinueWith(x =>
+            {
+                if (x.IsFaulted || !x.Result.completed)
+                {
+                    CombinedWriteLine("It isn't. Setting NodeStatus offline.");
+                    SettingsMonitor.UpdateNodeStatus(Connection, "DebugServer", null);
+                    debugServerPID = null;
+                }
+                else
+                {
+                    CombinedWriteLine("It is.");
+                }
+            });
+
+        }
+
         Monitor = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new SettingsMonitor(ConnectionString, debugServerPID)), "SettingsMonitor");
 
         CombinedWriteLine($"NothingButNeurons.SettingsMonitor program ready ({Monitor}).");
 
-        InitializeDbConnection();
         LastQueryTime = DateTime.UtcNow.AddSeconds(-2 * QueryInterval);
         QueryTimer = new System.Timers.Timer(TimeSpan.FromSeconds(QueryInterval));
         QueryTimer.Elapsed += (s, e) => {
@@ -48,9 +71,9 @@ internal class Program
         };
         QueryTimer.Start();
 
-
         Console.ReadLine();
         CombinedWriteLine("NothingButNeurons.SettingsMonitor program shutting down...");
+        SettingsMonitor.UpdateNodeStatus(Connection, "SettingsMonitor", null).Wait();
         Connection.Close();
         ProtoSystem.Remote().ShutdownAsync().GetAwaiter().GetResult();
     }

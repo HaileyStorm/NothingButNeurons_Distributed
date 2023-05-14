@@ -33,6 +33,7 @@ public partial class MainWindow : Window
     {
         new Service { Name = "Settings Monitor", ProjectName="SettingsMonitor", ActorName="SettingsMonitor", PreReqProjects = Array.Empty<string>(), IsWPF=false, Port = Shared.Consts.DefaultPorts.SETTINGS_MONITOR, StatusColor = Brushes.Gray },
         new Service { Name = "IO / HiveMind", ProjectName="IO", ActorName="HiveMind", PreReqProjects = new string[] { "SettingsMonitor" }, IsWPF=false, Port = Shared.Consts.DefaultPorts.IO, StatusColor = Brushes.Gray },
+        // SettingsMonitor is prereq because otherwise DebugServer can never report its online status / PID, so others will never nr updated when it comes online
         new Service { Name = "Debug Server", ProjectName="DebugServer", ActorName="DebugServer", PreReqProjects = new string[] { "SettingsMonitor" }, IsWPF=false, Port = Shared.Consts.DefaultPorts.DEBUG_SERVER, StatusColor = Brushes.Gray },
         new Service { Name = "Debug File Writer", ProjectName="DebugFileWriter", ActorName="DebugFileWriter", PreReqProjects = new string[] { "SettingsMonitor", "DebugServer" }, IsWPF=false, Port = Shared.Consts.DefaultPorts.DEBUG_FILE_WRITER, StatusColor = Brushes.Gray },
         new Service { Name = "Debug Log Viewer", ProjectName="DebugLogViewer", ActorName="DebugUI", PreReqProjects = new string[] { "SettingsMonitor", "DebugServer" }, IsWPF=true, Port = Shared.Consts.DefaultPorts.DEBUG_LOG_VIEWER, StatusColor = Brushes.Gray },
@@ -99,8 +100,10 @@ public partial class MainWindow : Window
 
     private void OnProcessExit(object sender, EventArgs e)
     {
+        // TODO: Need to at least kill SettingsMonitor last, hopefully also handle updating its status before it gets killed
         foreach (var service in Services)
         {
+            Nodes.SendNodeOffline(ProtoSystem.Root, service.ProjectName);
             ServiceLauncher.Kill(service);
         }
     }
