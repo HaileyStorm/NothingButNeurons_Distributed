@@ -28,9 +28,9 @@ internal class ServiceLauncher
     private string WPFBinPath;
     private string ConsoleBinPath;
 
-    internal ServiceLauncher(bool isDebug)
+    internal ServiceLauncher(bool isDebug, ActorSystem protoSystem)
     {
-        ProtoSystem = MainWindow.Instance.ProtoSystem;
+        ProtoSystem = protoSystem;
 
         BasePath = Path.GetDirectoryName(
                     Path.GetDirectoryName(
@@ -49,7 +49,7 @@ internal class ServiceLauncher
         }
     }
 
-    internal async void Launch(Service service)
+    internal async Task Launch(Service service)
     {
         string arguments = "";
 
