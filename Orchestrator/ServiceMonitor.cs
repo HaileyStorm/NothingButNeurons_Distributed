@@ -20,11 +20,11 @@ internal class ServiceMonitor
     private System.Timers.Timer _timer;
     private ActorSystem ProtoSystem;
 
-    internal ServiceMonitor()
+    internal ServiceMonitor(ActorSystem protoSystem)
     {
         Services = MainWindow.Instance.Services;
 
-        ProtoSystem = MainWindow.Instance.ProtoSystem;
+        ProtoSystem = protoSystem;
 
         _timer = new System.Timers.Timer(1000);
         _timer.Elapsed += Monitor;

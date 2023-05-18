@@ -22,7 +22,6 @@ namespace NothingButNeurons.Orchestrator;
 public partial class MainWindow : Window
 {
     internal static MainWindow Instance { get; private set; }
-    internal const int ServiceMonitorPort = Shared.Consts.DefaultPorts.ORCHESTRATOR_MONITOR;
     internal const int SettingsMonitorPort = Shared.Consts.DefaultPorts.SETTINGS_MONITOR;
 
     internal ActorSystem ProtoSystem;
@@ -47,29 +46,47 @@ public partial class MainWindow : Window
 
     public MainWindow()
     {
-        bool isDebug;
-        #if DEBUG
-            isDebug = true;
-        #else
-            isDebug = false;
-        #endif
-
         Instance = this;
-
-        ProtoSystem = Nodes.GetActorSystem(ServiceMonitorPort);
-
-        ServiceLauncher = new(isDebug);
-        ServiceMonitor = new();
 
         // Register the converter in the resources
         this.Resources.Add("IndexToRowConverter", new IndexToRowConverter());
-        InitializeComponent();
         DataContext = this;
+        InitializeComponent();
 
-        Nodes.SendNodeOnline(ProtoSystem.Root, "Orchestrator", ProtoSystem.Root.Self);
+        InitializeActorSystem();
 
         // Kill launched processes on close. Doesn't work for stop button in VS, but it's still more robust than the Closing event.
         AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+    }
+
+    private async void InitializeActorSystem()
+    {
+        bool isDebug;
+#if DEBUG
+        isDebug = true;
+#else
+            isDebug = false;
+#endif
+
+        ProtoSystem = Nodes.GetActorSystem(Shared.Consts.DefaultPorts.ORCHESTRATOR_MONITOR);
+        ServiceLauncher = new(isDebug, ProtoSystem);
+        Service settingsService = Services.Where(s => string.Equals(s.ProjectName, "SettingsMonitor", StringComparison.InvariantCultureIgnoreCase)).Single();
+        await ServiceLauncher.Launch(settingsService);
+        System.Threading.Thread.Sleep(2000);
+        int? servicePort = await Nodes.GetPortFromSettings(ProtoSystem.Root, "OrchestratorMonitor");
+        if (servicePort != null && servicePort != Shared.Consts.DefaultPorts.ORCHESTRATOR_MONITOR)
+        {
+            CCSL.Console.CombinedWriteLine($"OrchestratorMonitor port from settings doesn't match default; restarting with port from settings: {servicePort}");
+            //ProtoSystem.Remote().ShutdownAsync().GetAwaiter().GetResult();
+            ProtoSystem = Nodes.GetActorSystem((int)servicePort!);
+            ServiceLauncher = new(isDebug, ProtoSystem);
+        }
+
+        ServiceMonitor = new(ProtoSystem);
+        settingsService.Enabled = false;
+
+        // Todo: Why is this the only one that doesn't work?
+        Nodes.SendNodeOnline(ProtoSystem.Root, "Orchestrator", new PID(ProtoSystem.Address, ProtoSystem.Id));
     }
 
     private void LaunchButton_Click(object sender, RoutedEventArgs e)
@@ -103,6 +120,9 @@ public partial class MainWindow : Window
 
     private void OnProcessExit(object sender, EventArgs e)
     {
+        CCSL.Console.CombinedWriteLine("NothingButNeurons.Orchestrator program shutting down...");
+        Nodes.SendNodeOffline(ProtoSystem.Root, "Orchestrator");
+
         foreach (var service in Services.OrderByDescending(s => s.PreReqProjects.Length))
         {
             CCSL.Console.CombinedWriteLine($"Killing {service.ProjectName}");
@@ -112,8 +132,6 @@ public partial class MainWindow : Window
             ServiceLauncher.Kill(service);
         }
 
-        CCSL.Console.CombinedWriteLine("NothingButNeurons.Orchestrator program shutting down...");
-        Nodes.SendNodeOffline(ProtoSystem.Root, "Orchestrator");
         ProtoSystem.Remote().ShutdownAsync().GetAwaiter().GetResult();
     }
 
