@@ -43,7 +43,6 @@ namespace NothingButNeurons.IO
             ProtoSystem = Nodes.GetActorSystem(Port);
 
             PID? debugServerPID = await Nodes.GetPIDFromSettings(ProtoSystem.Root, "DebugServer");
-            CCSL.Console.CombinedWriteLine($"Got DebugServer PID: {debugServerPID}");
 
             HiveMind = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new HiveMind(debugServerPID)), "HiveMind");
             Nodes.SendNodeOnline(ProtoSystem.Root, "IO", HiveMind);
