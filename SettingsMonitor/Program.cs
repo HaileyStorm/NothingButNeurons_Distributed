@@ -34,29 +34,59 @@ internal class Program
 
         InitializeDbConnection();
 
-        // Likely to be null (or inaccurately non-null) - after all, SettingsMonitor is a prereq for DebugServer in Orchestrator - but it's worth checking. And if it's non-null, we check if it is in fact online and update the status accordingly (Orchestrator will be checking/updating it, too, if it's reporting online - but only if Orchestrator is running :P)
-        string query = "SELECT PID FROM NodeStatus WHERE Node = @Node;";
-        using var cmd = new MySqlCommand(query, Connection);
-        cmd.Parameters.AddWithValue("@Node", "DebugServer");
-        string? pidString = cmd.ExecuteScalar() as string;
-        PID? debugServerPID = Nodes.GetPIDFromString(pidString);
-        if (debugServerPID != null)
-        {
-            CCSL.Console.CombinedWriteLine("DebugServer reports it is online (NodeStatus db entry exists with non-null PID), checking if it actually is...");
-            ProtoSystem.Root.RequestAsync<PongMessage>(debugServerPID, new PingMessage { }, new System.Threading.CancellationToken()).WaitUpTo(TimeSpan.FromMilliseconds(850)).ContinueWith(x =>
-            {
-                if (x.IsFaulted || !x.Result.completed)
-                {
-                    CCSL.Console.CombinedWriteLine("It isn't. Setting NodeStatus offline.");
-                    SettingsMonitor.UpdateNodeStatus(Connection, "DebugServer", null);
-                    debugServerPID = null;
-                }
-                else
-                {
-                    CCSL.Console.CombinedWriteLine("It is.");
-                }
-            });
+        InitializeActorSystem();
 
+        AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
+
+        System.Console.ReadLine();
+        OnProcessExit(ProtoSystem, new EventArgs());
+    }
+
+    static void InitializeDbConnection()
+    {
+        Connection = new MySqlConnection(ConnectionString);
+        Connection.Open();
+    }
+
+    static async void InitializeActorSystem()
+    {
+        // Get the debugServerPID, and check/update the status of all nodes.
+        string query = "SELECT Node, PID FROM NodeStatus;";
+        using var cmd = new MySqlCommand(query, Connection);
+        using var reader = cmd.ExecuteReader();
+
+        PID? debugServerPID = null;
+
+        while (reader.Read())
+        {
+            string nodeName = reader.GetString(0);
+            string? pidString = reader.IsDBNull(1) ? null : reader.GetString(1);
+            PID? currentPID = Nodes.GetPIDFromString(pidString);
+
+            if (currentPID != null)
+            {
+                //CCSL.Console.CombinedWriteLine($"{nodeName} reports it is online (NodeStatus db entry exists with non-null PID), checking if it actually is...");
+                await ProtoSystem.Root.RequestAsync<PongMessage>(currentPID, new PingMessage { }, new System.Threading.CancellationToken()).WaitUpTo(TimeSpan.FromMilliseconds(850)).ContinueWith(async x =>
+                {
+                    if (x.IsFaulted || !x.Result.completed)
+                    {
+                        //CCSL.Console.CombinedWriteLine($"{nodeName} isn't. Setting NodeStatus offline.");
+                        await SettingsMonitor.UpdateNodeStatus(Connection, nodeName, null);
+                        if (nodeName == "DebugServer")
+                        {
+                            debugServerPID = null;
+                        }
+                    }
+                    else
+                    {
+                        //CCSL.Console.CombinedWriteLine($"{nodeName} is online.");
+                        if (nodeName == "DebugServer")
+                        {
+                            debugServerPID = currentPID;
+                        }
+                    }
+                });
+            }
         }
 
         Monitor = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new SettingsMonitor(ConnectionString, debugServerPID)), "SettingsMonitor");
@@ -65,23 +95,11 @@ internal class Program
 
         LastQueryTime = DateTime.UtcNow.AddSeconds(-2 * QueryInterval);
         QueryTimer = new System.Timers.Timer(TimeSpan.FromSeconds(QueryInterval));
-        QueryTimer.Elapsed += (s, e) => {
-            GetChangesAfterAsync(LastQueryTime);
+        QueryTimer.Elapsed += async (s, e) => {
+            await GetChangesAfterAsync(LastQueryTime);
             LastQueryTime = DateTime.UtcNow;
         };
         QueryTimer.Start();
-
-        System.Console.ReadLine();
-        CCSL.Console.CombinedWriteLine("NothingButNeurons.SettingsMonitor program shutting down...");
-        SettingsMonitor.UpdateNodeStatus(Connection, "SettingsMonitor", null).Wait();
-        Connection.Close();
-        ProtoSystem.Remote().ShutdownAsync().GetAwaiter().GetResult();
-    }
-
-    static void InitializeDbConnection()
-    {
-        Connection = new MySqlConnection(ConnectionString);
-        Connection.Open();
     }
 
     public static async Task GetChangesAfterAsync(DateTime dateTimeUtc)
@@ -93,7 +111,7 @@ internal class Program
         using MySqlCommand command = new(query, Connection);
         command.Parameters.AddWithValue("@dateTimeUtc", dateTimeUtc);
 
-        using MySqlDataReader reader = command.ExecuteReader();
+        using MySqlDataReader reader = await command.ExecuteReaderAsync();
 
         while (reader.Read())
         {
@@ -110,5 +128,12 @@ internal class Program
         CCSL.Console.CombinedWriteLine($"Setting change detected: Table: {tableName}, Setting: {setting}, Value: {value}");
 
         ProtoSystem.EventStream.Publish(new SettingChangedMessage() { TableName=tableName, Setting=setting, Value=value });
+    }
+    private static async void OnProcessExit(object sender, EventArgs e)
+    {
+        CCSL.Console.CombinedWriteLine("NothingButNeurons.SettingsMonitor program shutting down...");
+        await SettingsMonitor.UpdateNodeStatus(Connection, "SettingsMonitor", null);
+        Connection.Close();
+        ProtoSystem.Remote().ShutdownAsync().GetAwaiter().GetResult();
     }
 }

@@ -32,10 +32,10 @@ namespace NothingButNeurons.IO
 
             InitializeActorSystem();
 
+            AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
+
             System.Console.ReadLine();
-            CCSL.Console.CombinedWriteLine("NothingButNeurons.IO program shutting down...");
-            Nodes.SendNodeOffline(ProtoSystem.Root, "IO");
-            ProtoSystem.Remote().ShutdownAsync().GetAwaiter().GetResult();
+            OnProcessExit(ProtoSystem, new EventArgs());
         }
 
         private static async void InitializeActorSystem()
@@ -49,6 +49,13 @@ namespace NothingButNeurons.IO
             Nodes.SendNodeOnline(ProtoSystem.Root, "IO", HiveMind);
 
             CCSL.Console.CombinedWriteLine("NothingButNeurons.IO program ready.");
+        }
+
+        private static void OnProcessExit(object sender, EventArgs e)
+        {
+            CCSL.Console.CombinedWriteLine("NothingButNeurons.IO program shutting down...");
+            Nodes.SendNodeOffline(ProtoSystem.Root, "IO");
+            ProtoSystem.Remote().ShutdownAsync().GetAwaiter().GetResult();
         }
     }
 }

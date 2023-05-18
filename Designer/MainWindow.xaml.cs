@@ -351,5 +351,6 @@ public partial class MainWindow : Window
     private void OnProcessExit(object sender, EventArgs e)
     {
         Nodes.SendNodeOffline(ProtoSystem.Root, "Designer");
+        ProtoSystem.Remote().ShutdownAsync().GetAwaiter().GetResult();
     }
 }

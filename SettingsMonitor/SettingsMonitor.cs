@@ -14,6 +14,7 @@ public class SettingsMonitor : ActorBaseWithBroadcaster
 {
     private bool _processed;
     private MySqlConnection Connection;
+    private static SemaphoreSlim connectionSemaphore = new(1);
 
     public SettingsMonitor(string connectionString, PID? debugServerPID = null) : base(debugServerPID)
     {
@@ -133,11 +134,18 @@ public class SettingsMonitor : ActorBaseWithBroadcaster
 
     internal static async Task UpdateNodeStatus(MySqlConnection connection, string name, PID? pid)
     {
-        string query = @"INSERT INTO NodeStatus (Node, PID) VALUES (@Node, @PID) 
+        await connectionSemaphore.WaitAsync();
+        try
+        {
+            string query = @"INSERT INTO NodeStatus (Node, PID) VALUES (@Node, @PID) 
                 ON DUPLICATE KEY UPDATE PID = VALUES(PID);";
-        using var cmd = new MySqlCommand(query, connection);
-        cmd.Parameters.AddWithValue("@Node", name);
-        cmd.Parameters.AddWithValue("@PID", pid?.ToString());
-        await cmd.ExecuteNonQueryAsync();
+            using var cmd = new MySqlCommand(query, connection);
+            cmd.Parameters.AddWithValue("@Node", name);
+            cmd.Parameters.AddWithValue("@PID", pid?.ToString());
+            await cmd.ExecuteNonQueryAsync();
+        } finally
+        {
+            connectionSemaphore.Release();
+        }
     }
 }

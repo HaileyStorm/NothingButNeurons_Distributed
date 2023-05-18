@@ -27,18 +27,28 @@ internal class Program
 
         CCSL.Console.CombinedWriteLine($"NothingButNeurons.DebugServer program starting on port {Port}...");
 
+        InitializeActorSystem();
+
+        AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
+
+        System.Console.ReadLine();
+        OnProcessExit(ProtoSystem, new EventArgs());
+    }
+
+    private static async void InitializeActorSystem()
+    {
         ProtoSystem = Nodes.GetActorSystem(Port);
 
         DebugServer = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DebugServer()), "DebugServer");
         Nodes.SendNodeOnline(ProtoSystem.Root, "DebugServer", DebugServer);
 
         CCSL.Console.CombinedWriteLine("NothingButNeurons.DebugServer program ready.");
+    }
 
-        System.Console.ReadLine();
+    private static void OnProcessExit(object sender, EventArgs e)
+    {
         CCSL.Console.CombinedWriteLine("NothingButNeurons.DebugServer program shutting down...");
         Nodes.SendNodeOffline(ProtoSystem.Root, "DebugServer");
         ProtoSystem.Remote().ShutdownAsync().GetAwaiter().GetResult();
     }
-
-    
 }

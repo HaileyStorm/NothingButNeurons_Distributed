@@ -66,5 +66,6 @@ public partial class MainWindow : Window
     private void OnProcessExit(object sender, EventArgs e)
     {
         Nodes.SendNodeOffline(ProtoSystem.Root, "Visualizer");
+        ProtoSystem.Remote().ShutdownAsync().GetAwaiter().GetResult();
     }
 }

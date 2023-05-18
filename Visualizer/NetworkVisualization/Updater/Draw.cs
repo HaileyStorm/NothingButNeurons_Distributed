@@ -122,7 +122,6 @@ internal partial class Updater : ActorBase
                         Fill = Brushes.White
                     };
 
-                    //Debug.WriteLine($"Adding neuron {neuron.Id} at : {neuronX - neuronEllipse.Width / 2},{neuronY - neuronEllipse.Height / 2}");
                     Canvas.SetLeft(neuronEllipse, neuronX - neuronEllipse.Width / 2);
                     Canvas.SetTop(neuronEllipse, neuronY - neuronEllipse.Height / 2);
                     Panel.SetZIndex(neuronEllipse, 3);
