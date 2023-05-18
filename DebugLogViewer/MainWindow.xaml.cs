@@ -18,7 +18,7 @@ namespace NothingButNeurons.DebugLogViewer;
 public partial class MainWindow : Window
 {
     ActorSystem ProtoSystem;
-    PID DebugServer;
+    PID? DebugServer;
     PID DebugUI;
 
     // Declare a timer for handling debug context typing
@@ -26,7 +26,6 @@ public partial class MainWindow : Window
     private const int DebugContextTypingTimeout = 500;
     //Proto.Remote ports
     private int Port;
-    private int DebugServerPort;
 
     /// <summary>
     /// Initializes MainWindow components, sets up DebugSeverity dropdown items, and calls InitializeActorSystem.
@@ -38,35 +37,33 @@ public partial class MainWindow : Window
         drpDebugSeverity.SelectedIndex = 2;
 
         InitializeActorSystem();
+
+        AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
     }
 
     /// <summary>
     /// Initializes the Proto.Actor system.
     /// </summary>
-    private void InitializeActorSystem()
+    private async void InitializeActorSystem()
     {
         // Get command-line arguments
         string[] args = Environment.GetCommandLineArgs();
-        Console.WriteLine($"\nCommand line args: {string.Join(',', args)}");
         if (args.Length >= 2)
         {
             // In this app, the first argument is a dll
             args = args[1].Split(' ');
             Port = int.Parse(args[0]);
-            DebugServerPort = int.Parse(args[1]);
-            Console.WriteLine($"Parsed ports: {Port}, {DebugServerPort}");
         }
         else
         {
             Port = Shared.Consts.DefaultPorts.DEBUG_LOG_VIEWER;
-            DebugServerPort = Shared.Consts.DefaultPorts.DEBUG_SERVER;
-            Console.WriteLine($"Default ports: {Port}, {DebugServerPort}");
         }
 
         ProtoSystem = Nodes.GetActorSystem(Port);
 
-        DebugServer = PID.FromAddress($"127.0.0.1:{DebugServerPort}", "DebugServer");
+        DebugServer = await Nodes.GetPIDFromSettings(ProtoSystem.Root, "DebugServer");
         DebugUI = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DebugUI(DebugServer, rtbDebug)), "DebugUI");
+        Nodes.SendNodeOnline(ProtoSystem.Root, "DebugLogViewer", DebugUI);
         UpdateDebugUISubscription();
     }
 
@@ -201,5 +198,10 @@ public partial class MainWindow : Window
     private void btnFlushDebugs_Click(object sender, RoutedEventArgs e)
     {
         ProtoSystem.Root.Send(DebugUI, new DebugFlushMessage());
+    }
+
+    private void OnProcessExit(object sender, EventArgs e)
+    {
+        Nodes.SendNodeOffline(ProtoSystem.Root, "DebugLogViewer");
     }
 }

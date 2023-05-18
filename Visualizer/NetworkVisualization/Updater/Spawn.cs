@@ -32,7 +32,7 @@ internal partial class Updater : ActorBase
     private Dictionary<string, double> _connectionUpdates = new Dictionary<string, double>();
     private readonly object connectionLock = new object();
 
-    public Updater(PID debugServerPID, Canvas networkVisualizationCanvas, int tickInterval) : base(debugServerPID)
+    public Updater(PID? debugServerPID, Canvas networkVisualizationCanvas, int tickInterval) : base(debugServerPID)
     {
         _networkVisualizationCanvas = networkVisualizationCanvas;
         _rng = new Random();
@@ -70,6 +70,7 @@ internal partial class Updater : ActorBase
 
             _networkVisualizationCanvas.Dispatcher.Invoke(() =>
             {
+                //CCSL.Console.CombinedWriteLine("Calling ApplyNeuronUpdates and ApplyConnectionUpdates");
                 ApplyNeuronUpdates();
                 ApplyConnectionUpdates();
 
@@ -223,22 +224,30 @@ internal partial class Updater : ActorBase
         }
         else if (msg.Context == "Signal" && msg.Message.StartsWith("Signal is from "))
         {
+            //CCSL.Console.CombinedWriteLine("Synapse.");
             string toPid = msg.Summary.Split(' ')[5];
             string fromPid = msg.Message.Split(' ')[3];
             double signalStrength = double.Parse(msg.Message.Split(' ')[14]);
 
+            //CCSL.Console.CombinedWriteLine($"\tCalling UpdateConnection with: {fromPid}-{toPid}, {signalStrength}");
             UpdateConnection($"{fromPid}-{toPid}", signalStrength);
         }
         else if (msg.Context == "Signal" && msg.Message.StartsWith("New SignalBuffer"))
         {
+            //CCSL.Console.CombinedWriteLine("Neuron Signal.");
             string neuronPid = msg.Summary.Split(" ")[1];
             double signalBuffer = double.Parse(msg.Message.Split(' ')[2]);
+
+            //CCSL.Console.CombinedWriteLine($"\tCalling UpdateNeuron with: {neuronPid}, {signalBuffer}");
             UpdateNeuron(neuronPid, signalBuffer);
         }
         else if (msg.Context == "Tick" && msg.Summary.EndsWith("Activated & Reset"))
         {
+            //CCSL.Console.CombinedWriteLine("Neuron Reset.");
             string neuronPid = msg.Summary.Split(" ")[1];
             double signalBuffer = double.Parse(msg.Message.Split(' ')[7].TrimEnd('.'));
+
+            //CCSL.Console.CombinedWriteLine($"\tCalling UpdateNeuron with: {neuronPid}, {signalBuffer}");
             UpdateNeuron(neuronPid, signalBuffer);
         }
     }

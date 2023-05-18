@@ -20,41 +20,35 @@ namespace NothingButNeurons.IO
 
         static void Main(string[] args)
         {
-            switch (args.Length)
+            if (args.Length > 0)
             {
-                case >= 2:
-                    Port = int.Parse(args[0]);
-                    DebugServerPort = int.Parse(args[1]);
-                    break;
-                case 1:
-                    Port = int.Parse(args[0]);
-                    break;
-                default:
-                    Port = Shared.Consts.DefaultPorts.IO;
-                    DebugServerPort = Shared.Consts.DefaultPorts.DEBUG_SERVER;
-                    break;
+                Port = int.Parse(args[0]);
+            } else
+            {
+                Port = Shared.Consts.DefaultPorts.IO;
             }
-            
-            CombinedWriteLine($"NothingButNeurons.IO program starting on port {Port}, with DebugServer on port {DebugServerPort}...");
 
-            ProtoSystem = Nodes.GetActorSystem(Port);
+            CCSL.Console.CombinedWriteLine($"NothingButNeurons.IO program starting on port {Port}...");
 
-            PID? debugServerPID = null;
-            if (DebugServerPort != null)
-                debugServerPID = PID.FromAddress($"127.0.0.1:{DebugServerPort}", "DebugServer");
-            HiveMind = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new HiveMind(debugServerPID)), "HiveMind");
+            InitializeActorSystem();
 
-            CombinedWriteLine("NothingButNeurons.IO program ready.");
-
-            Console.ReadLine();
-            CombinedWriteLine("NothingButNeurons.IO program shutting down...");
+            System.Console.ReadLine();
+            CCSL.Console.CombinedWriteLine("NothingButNeurons.IO program shutting down...");
+            Nodes.SendNodeOffline(ProtoSystem.Root, "IO");
             ProtoSystem.Remote().ShutdownAsync().GetAwaiter().GetResult();
         }
 
-        static void CombinedWriteLine(string line)
+        private static async void InitializeActorSystem()
         {
-            Debug.WriteLine(line);
-            Console.WriteLine(line);
+            ProtoSystem = Nodes.GetActorSystem(Port);
+
+            PID? debugServerPID = await Nodes.GetPIDFromSettings(ProtoSystem.Root, "DebugServer");
+            CCSL.Console.CombinedWriteLine($"Got DebugServer PID: {debugServerPID}");
+
+            HiveMind = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new HiveMind(debugServerPID)), "HiveMind");
+            Nodes.SendNodeOnline(ProtoSystem.Root, "IO", HiveMind);
+
+            CCSL.Console.CombinedWriteLine("NothingButNeurons.IO program ready.");
         }
     }
 }

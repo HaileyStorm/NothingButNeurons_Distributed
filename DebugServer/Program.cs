@@ -25,24 +25,20 @@ internal class Program
             Port = Shared.Consts.DefaultPorts.DEBUG_SERVER;
         }
 
-        CombinedWriteLine($"NothingButNeurons.DebugServer program starting on port {Port}...");
+        CCSL.Console.CombinedWriteLine($"NothingButNeurons.DebugServer program starting on port {Port}...");
 
         ProtoSystem = Nodes.GetActorSystem(Port);
 
         DebugServer = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DebugServer()), "DebugServer");
         Nodes.SendNodeOnline(ProtoSystem.Root, "DebugServer", DebugServer);
 
-        CombinedWriteLine("NothingButNeurons.DebugServer program ready.");
+        CCSL.Console.CombinedWriteLine("NothingButNeurons.DebugServer program ready.");
 
-        Console.ReadLine();
-        CombinedWriteLine("NothingButNeurons.DebugServer program shutting down...");
+        System.Console.ReadLine();
+        CCSL.Console.CombinedWriteLine("NothingButNeurons.DebugServer program shutting down...");
         Nodes.SendNodeOffline(ProtoSystem.Root, "DebugServer");
         ProtoSystem.Remote().ShutdownAsync().GetAwaiter().GetResult();
     }
 
-    static void CombinedWriteLine(string line)
-    {
-        Debug.WriteLine(line);
-        Console.WriteLine(line);
-    }
+    
 }

@@ -180,8 +180,11 @@ internal partial class Updater : ActorBase
             if (_neurons.TryGetValue(neuronPid, out NeuronInfo neuron) &&
                 _neuronEllipses.TryGetValue(neuron.Id, out Ellipse neuronEllipse))
             {
-                SolidColorBrush newColor = GetSignalOrBufferColor(signalBuffer, 1.333d);
-                neuronEllipse.Fill = newColor;
+                _networkVisualizationCanvas.Dispatcher.Invoke(() =>
+                {
+                    SolidColorBrush newColor = GetSignalOrBufferColor(signalBuffer, 1.333d);
+                    neuronEllipse.Fill = newColor;
+                });
             }
         }
     }
@@ -201,8 +204,11 @@ internal partial class Updater : ActorBase
                 if (_connections.TryGetValue(connectionId, out ConnectionInfo connection) &&
                     _connectionPaths.TryGetValue(connectionId, out Path connectionPath))
                 {
-                    SolidColorBrush newColor = GetSignalOrBufferColor(signalStrength, 6.66d);
-                    connectionPath.Stroke = newColor;
+                    _networkVisualizationCanvas.Dispatcher.Invoke(() =>
+                    {
+                        SolidColorBrush newColor = GetSignalOrBufferColor(signalStrength, 6.66d);
+                        connectionPath.Stroke = newColor;
+                    });
                     connection.Timer.Stop();
                     connection.Timer.Start();
                 }
@@ -212,12 +218,8 @@ internal partial class Updater : ActorBase
 
     private void ResetPathColor(string connectionId)
     {
-        if (_connectionPaths.TryGetValue(connectionId, out Path connectionPath))
+        if (_connectionPaths.ContainsKey(connectionId))
         {
-            /*_networkVisualizationCanvas.Dispatcher.Invoke(() =>
-            {
-                connectionPath.Stroke = color;
-            });*/
             lock (connectionLock)
             {
                 _connectionUpdates[connectionId] = 0;

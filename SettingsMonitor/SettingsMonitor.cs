@@ -29,14 +29,18 @@ public class SettingsMonitor : ActorBaseWithBroadcaster
         {
             case SettingRequestMessage msg:
                 SendDebugMessage(DebugSeverity.Trace, "Settings", $"Received SettingRequestMessage for setting {msg.Setting} in {msg.TableName} from {context.Sender}.");
-                string val = GetSettingValue(msg.TableName, msg.Setting);
+                //CCSL.Console.CombinedWriteLine($"Received SettingRequestMessage for setting {msg.Setting} in {msg.TableName} from {context.Sender}.");
+                string? val = GetSettingValue(msg.TableName, msg.Setting);
                 if (val != null)
                 {
                     SendDebugMessage(DebugSeverity.Trace, "Settings", "Responding to SettingRequestMessage", $"Replying to request (from {context.Sender}) for setting {msg.Setting} in {msg.TableName} with value {val}.");
+                    //CCSL.Console.CombinedWriteLine($"Replying to request (from {context.Sender}) for setting {msg.Setting} in {msg.TableName} with value {val}.");
                     context.Respond(new SettingResponseMessage() { Value = val });
                 } else
                 {
                     SendDebugMessage(DebugSeverity.Warning, "Settings", "Value read for SettingRequestMessage null", $"The request for setting {msg.Setting} in {msg.TableName} returned a null value; check the table and setting (key) names.");
+                    //CCSL.Console.CombinedWriteLine($"The request for setting {msg.Setting} in {msg.TableName} returned a null value; check the table and setting (key) names.");
+                    context.Respond(new SettingResponseMessage());
                 }
                 break;
             case UnstableHandlerException msg:
@@ -74,13 +78,11 @@ public class SettingsMonitor : ActorBaseWithBroadcaster
         // Subscribe to all events in the local EventStream
         context.System.EventStream.Subscribe<Google.Protobuf.IMessage>(OnEventReceived);
 
-        Debug.WriteLine("Updating node status (online)");
         UpdateNodeStatus(Connection, "SettingsMonitor", SelfPID);
     }
 
     protected override void ProcessStoppingMessage(IContext context, Stopping msg)
     {
-        Debug.WriteLine("Updating node status (offline)");
         UpdateNodeStatus(Connection, "SettingsMonitor", null).Wait();
 
         Connection.Close();
@@ -122,6 +124,8 @@ public class SettingsMonitor : ActorBaseWithBroadcaster
         cmd.Parameters.AddWithValue("@SearchKey", searchKey);
 
         var result = cmd.ExecuteScalar();
+        if (result is DBNull)
+            result = null;
         SendDebugMessage(DebugSeverity.Info, "Settings", $"Result: {result}");
 
         return result?.ToString();

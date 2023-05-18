@@ -28,7 +28,7 @@ internal class Program
     {
         Port = DefaultPorts.SETTINGS_MONITOR;
 
-        CombinedWriteLine($"NothingButNeurons.SettingsMonitor program starting on port {Port}...");
+        CCSL.Console.CombinedWriteLine($"NothingButNeurons.SettingsMonitor program starting on port {Port}...");
 
         ProtoSystem = Nodes.GetActorSystem(Port);
 
@@ -42,18 +42,18 @@ internal class Program
         PID? debugServerPID = Nodes.GetPIDFromString(pidString);
         if (debugServerPID != null)
         {
-            CombinedWriteLine("DebugServer reports it is online (NodeStatus db entry exists with non-null PID), checking if it actually is...");
+            CCSL.Console.CombinedWriteLine("DebugServer reports it is online (NodeStatus db entry exists with non-null PID), checking if it actually is...");
             ProtoSystem.Root.RequestAsync<PongMessage>(debugServerPID, new PingMessage { }, new System.Threading.CancellationToken()).WaitUpTo(TimeSpan.FromMilliseconds(850)).ContinueWith(x =>
             {
                 if (x.IsFaulted || !x.Result.completed)
                 {
-                    CombinedWriteLine("It isn't. Setting NodeStatus offline.");
+                    CCSL.Console.CombinedWriteLine("It isn't. Setting NodeStatus offline.");
                     SettingsMonitor.UpdateNodeStatus(Connection, "DebugServer", null);
                     debugServerPID = null;
                 }
                 else
                 {
-                    CombinedWriteLine("It is.");
+                    CCSL.Console.CombinedWriteLine("It is.");
                 }
             });
 
@@ -61,7 +61,7 @@ internal class Program
 
         Monitor = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new SettingsMonitor(ConnectionString, debugServerPID)), "SettingsMonitor");
 
-        CombinedWriteLine($"NothingButNeurons.SettingsMonitor program ready ({Monitor}).");
+        CCSL.Console.CombinedWriteLine($"NothingButNeurons.SettingsMonitor program ready ({Monitor}).");
 
         LastQueryTime = DateTime.UtcNow.AddSeconds(-2 * QueryInterval);
         QueryTimer = new System.Timers.Timer(TimeSpan.FromSeconds(QueryInterval));
@@ -71,8 +71,8 @@ internal class Program
         };
         QueryTimer.Start();
 
-        Console.ReadLine();
-        CombinedWriteLine("NothingButNeurons.SettingsMonitor program shutting down...");
+        System.Console.ReadLine();
+        CCSL.Console.CombinedWriteLine("NothingButNeurons.SettingsMonitor program shutting down...");
         SettingsMonitor.UpdateNodeStatus(Connection, "SettingsMonitor", null).Wait();
         Connection.Close();
         ProtoSystem.Remote().ShutdownAsync().GetAwaiter().GetResult();
@@ -107,14 +107,8 @@ internal class Program
 
     private static void HandleSettingsEntry(string tableName, string setting, string value)
     {
-        CombinedWriteLine($"Setting change detected: Table: {tableName}, Setting: {setting}, Value: {value}");
+        CCSL.Console.CombinedWriteLine($"Setting change detected: Table: {tableName}, Setting: {setting}, Value: {value}");
 
         ProtoSystem.EventStream.Publish(new SettingChangedMessage() { TableName=tableName, Setting=setting, Value=value });
-    }
-
-    static void CombinedWriteLine(string line)
-    {
-        Debug.WriteLine(line);
-        Console.WriteLine(line);
     }
 }

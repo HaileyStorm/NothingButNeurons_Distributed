@@ -23,7 +23,6 @@ public partial class MainWindow : Window
 {
     static ActorSystem ProtoSystem;
     static int Port;
-    static int DebugServerPort;
 
     PID NetworkVisualizationUpdater;
 
@@ -32,12 +31,14 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         InitializeActorSystem();
+
+        AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
     }
 
     /// <summary>
     /// Initializes the Proto.Actor system.
     /// </summary>
-    private void InitializeActorSystem()
+    private async void InitializeActorSystem()
     {
         int tickTime = 300;
 
@@ -48,17 +49,22 @@ public partial class MainWindow : Window
             // In this app, the first argument is a dll
             args = args[1].Split(' ');
             Port = int.Parse(args[0]);
-            DebugServerPort = int.Parse(args[1]);
         }
         else
         {
             Port = Shared.Consts.DefaultPorts.VISUALIZER;
-            DebugServerPort = Shared.Consts.DefaultPorts.DEBUG_SERVER;
         }
 
         ProtoSystem = Nodes.GetActorSystem(Port);
 
-        PID debugServerPID = PID.FromAddress($"127.0.0.1:{DebugServerPort}", "DebugServer");
+        PID? debugServerPID = await Nodes.GetPIDFromSettings(ProtoSystem.Root, "DebugServer");
+        CCSL.Console.CombinedWriteLine($"Got DebugServer PID: {debugServerPID}");
         NetworkVisualizationUpdater = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new NetworkVisualization.Updater(debugServerPID, networkVisualizationCanvas, tickTime)), "NetworkVisualizationUpdater");
+        Nodes.SendNodeOnline(ProtoSystem.Root, "Visualizer", NetworkVisualizationUpdater);
+    }
+
+    private void OnProcessExit(object sender, EventArgs e)
+    {
+        Nodes.SendNodeOffline(ProtoSystem.Root, "Visualizer");
     }
 }

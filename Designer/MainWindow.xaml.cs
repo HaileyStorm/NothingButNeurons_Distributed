@@ -27,7 +27,7 @@ public partial class MainWindow : Window
     private CancellationTokenSource TickCanceller;
 
     ActorSystem ProtoSystem;
-    PID HiveMind;
+    PID? HiveMind;
 
     private bool _startIsActive = false;
     private byte[] _neuronData;
@@ -35,7 +35,8 @@ public partial class MainWindow : Window
     private Random _random;
 
     private int Port;
-    private int HiveMindPort;
+
+    private PID? Brain = null;
 
     private System.Timers.Timer InputNeuronTimer;
 
@@ -48,31 +49,35 @@ public partial class MainWindow : Window
         _random = new System.Random();
 
         InitializeActorSystem();
+
+        AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
     }
 
-    private void InitializeActorSystem()
+    private async void InitializeActorSystem()
     {
         // Get command-line arguments
         string[] args = Environment.GetCommandLineArgs();
-        Console.WriteLine($"\nCommand line args: {string.Join(',', args)}");
         if (args.Length >= 2)
         {
             // In this app, the first argument is a dll
             args = args[1].Split(' ');
             Port = int.Parse(args[0]);
-            HiveMindPort = int.Parse(args[1]);
-            Console.WriteLine($"Parsed ports: {Port}, {HiveMindPort}");
         }
         else
         {
             Port = Shared.Consts.DefaultPorts.DESIGNER;
-            HiveMindPort = Shared.Consts.DefaultPorts.IO;
-            Console.WriteLine($"Default ports: {Port}, {HiveMindPort}");
         }
 
         ProtoSystem = Nodes.GetActorSystem(Port);
 
-        ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DesignerHelper()), "DesignerHelper");
+        HiveMind = await Nodes.GetPIDFromSettings(ProtoSystem.Root, "IO");
+        if (HiveMind == null)
+        {
+            throw new Exception("IO node must be online to run Designer.");
+        }
+
+        PID pid = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DesignerHelper()), "DesignerHelper");
+        Nodes.SendNodeOnline(ProtoSystem.Root, "Designer", pid);
     }
 
     private void LoadBrainFromFile_Click(object sender, RoutedEventArgs e)
@@ -171,20 +176,18 @@ public partial class MainWindow : Window
         GenLoadedLight.Fill = isActive ? Brushes.Green : Brushes.Gray;
     }
 
-    private void Spawn_Click(object sender, RoutedEventArgs e)
+    private async void Spawn_Click(object sender, RoutedEventArgs e)
     {
         if (_neuronData == null || _neuronData.Length == 0)
             return;
 
-        HiveMind = PID.FromAddress($"127.0.0.1:{HiveMindPort}", "HiveMind");
-        ProtoSystem.Root.Send(HiveMind, new SpawnBrainMessage { NeuronData = ByteString.CopyFrom(_neuronData), SynapseData = ByteString.CopyFrom(_synapseData) });
-        // TODO: Instead of sleeping, use SpawnBrainAck (will have to send SpawnBrainMessage from an actor, as it sends the act to the sender of the spawn)
-        Thread.Sleep(1200);
-        ProtoSystem.Root.Send(HiveMind, new ActivateHiveMindMessage());
+        Brain = (await ProtoSystem.Root.RequestAsync<SpawnBrainAckMessage>(HiveMind!, new SpawnBrainMessage { NeuronData = ByteString.CopyFrom(_neuronData), SynapseData = ByteString.CopyFrom(_synapseData) }, TimeSpan.FromMilliseconds(2500))).BrainPID;
+        CCSL.Console.CombinedWriteLine($"Spawned brain: {Brain}");
+        ProtoSystem.Root.Send(HiveMind!, new ActivateHiveMindMessage());
 
         // TODO: Does this belong in IO project or ... ? Or perhaps ActivateHiveMind should take a tick time and HiveMind should use that to start sending Ticks to itself?
         Scheduler scheduler = new(ProtoSystem.Root);
-        TickCanceller = scheduler.SendRepeatedly(TimeSpan.FromMilliseconds(TickTime), HiveMind, new TickMessage());
+        TickCanceller = scheduler.SendRepeatedly(TimeSpan.FromMilliseconds(TickTime), HiveMind!, new TickMessage());
 
         SetSpawnLight(true);
     }
@@ -212,7 +215,7 @@ public partial class MainWindow : Window
         // Start
         if (_startIsActive)
         {
-            var neuronPIDs = NeuronDataExtensions.ByteArrayToNeuronDataList(_neuronData).Where(n => n.Address.RegionPart < 6).ToList().ConvertAll(n => $"HiveMind/Brain$1/{n.Address.RegionPart}/{n.Address.NeuronPart}");
+            var neuronPIDs = NeuronDataExtensions.ByteArrayToNeuronDataList(_neuronData).Where(n => n.Address.RegionPart < 6).ToList().ConvertAll(n => $"{Brain!.Id}/{n.Address.RegionPart}/{n.Address.NeuronPart}");
 
             // Initialize lastSignalTime and nextSignalDuration dictionaries
             foreach (var pid in neuronPIDs)
@@ -224,12 +227,13 @@ public partial class MainWindow : Window
             InputNeuronTimer = new(10);
             InputNeuronTimer.Elapsed += (s, elapsedEventArgs) =>
             {
-                MinSignalPeriod.Dispatcher.Invoke(() => {
+                MinSignalPeriod.Dispatcher.Invoke(() =>
+                {
                     foreach (var pid in neuronPIDs)
                     {
                         if (DateTime.Now - lastSignalTime[pid] >= nextSignalDuration[pid])
                         {
-                            ProtoSystem.Root.Send(new PID($"127.0.0.1:{HiveMindPort}", pid), new SignalMessage { Val = _random.NextDouble() * (double.Parse(MaxSignalValue.Text) - double.Parse(MinSignalValue.Text)) + double.Parse(MinSignalValue.Text) });
+                            ProtoSystem.Root.Send(new PID(HiveMind!.Address, pid), new SignalMessage { Val = _random.NextDouble() * (double.Parse(MaxSignalValue.Text) - double.Parse(MinSignalValue.Text)) + double.Parse(MinSignalValue.Text) });
                             lastSignalTime[pid] = DateTime.Now;
                             nextSignalDuration[pid] = TimeSpan.FromMilliseconds(_random.Next(int.Parse(MinSignalPeriod.Text), int.Parse(MaxSignalPeriod.Text) + 1));
                         }
@@ -339,8 +343,13 @@ public partial class MainWindow : Window
         {
             TickCanceller.Cancel();
             Scheduler scheduler = new(ProtoSystem.Root);
-            TickCanceller = scheduler.SendRepeatedly(TimeSpan.FromMilliseconds(newTime), HiveMind, new TickMessage());
+            TickCanceller = scheduler.SendRepeatedly(TimeSpan.FromMilliseconds(newTime), HiveMind!, new TickMessage());
         }
         TickTime = newTime;
+    }
+
+    private void OnProcessExit(object sender, EventArgs e)
+    {
+        Nodes.SendNodeOffline(ProtoSystem.Root, "Designer");
     }
 }

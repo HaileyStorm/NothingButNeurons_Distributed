@@ -53,60 +53,25 @@ internal class ServiceLauncher
     {
         string arguments = "";
 
-        if (service.ProjectName != "SettingsMonitor")
+        if (!string.Equals(service.ProjectName, "SettingsMonitor", StringComparison.InvariantCultureIgnoreCase))
         {
-            int? DebugServerPort = await Nodes.GetPortFromSettings(ProtoSystem.Root, "DebugServer");
-            //DebugServerPort = MainWindow.Instance.GetPort("DebugServer");
-            int? IOPort = await Nodes.GetPortFromSettings(ProtoSystem.Root, "IO");
-            //int? IOPort = MainWindow.Instance.GetPort("IO");
             int? servicePort = await Nodes.GetPortFromSettings(ProtoSystem.Root, service.ProjectName);
-            //int? servicePort = service.Port;
 
-            if (servicePort == null || DebugServerPort == null || IOPort == null)
+            if (servicePort == null)
             {
-                Debug.WriteLine($"Error launching service {service.Name}: unable to retrieve DebugServerPort ({DebugServerPort}) or IOPort ({IOPort}).");
+                CCSL.Console.CombinedWriteLine($"Error launching service {service.Name}: unable to retrieve service port from settings.");
                 service.StatusColor = Brushes.Red;
+                return;
             }
 
-            switch (service.ProjectName)
-            {
-                case "SettingsMonitor":
-                    break;
-                case "IO":
-                    if (MainWindow.Instance.Services.Where(s => string.Equals(s.ProjectName, "DebugServer", StringComparison.InvariantCultureIgnoreCase)).First().StatusColor == Brushes.Green)
-                    {
-                        arguments = $"{servicePort} {DebugServerPort}";
-                    }
-                    else
-                    {
-                        arguments = $"{servicePort}";
-                    }
-                    break;
-                case "DebugServer":
-                    arguments = $"{servicePort}";
-                    break;
-                case "DebugFileWriter":
-                    arguments = $"{servicePort} {DebugServerPort}";
-                    break;
-                case "DebugLogViewer":
-                    arguments = $"{servicePort} {DebugServerPort}";
-                    break;
-                case "Visualizer":
-                    arguments = $"{servicePort} {DebugServerPort}";
-                    break;
-                case "Designer":
-                    arguments = $"{servicePort} {IOPort}";
-                    break;
-                default:
-                    throw new ArgumentException("Service project name unexpected, unable to configure/launch.");
-            }
+            arguments = $"{servicePort}";
         }
         
         try
         {
             // Create a new ProcessStartInfo object with the executable path
             string servicePath = Path.Combine(BasePath, service.ProjectName, service.IsWPF ? WPFBinPath : ConsoleBinPath, $"NothingButNeurons.{service.ProjectName}.exe");
-            Debug.WriteLine($"\nLaunching service: {servicePath} {arguments}\n");
+            CCSL.Console.CombinedWriteLine($"\nLaunching service: {servicePath} {arguments}\n");
             ProcessStartInfo startInfo = new ProcessStartInfo(servicePath)
             {
                 Arguments = service.IsWPF ? $"\"{arguments}\"" : arguments
@@ -122,7 +87,7 @@ internal class ServiceLauncher
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Error launching service {service.Name}: {ex.Message}");
+            CCSL.Console.CombinedWriteLine($"Error launching service {service.Name}: {ex.Message}");
             service.StatusColor = Brushes.Red;
         }
     }
@@ -145,7 +110,7 @@ internal class ServiceLauncher
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Error killing service {service.Name}: {ex.Message}");
+            CCSL.Console.CombinedWriteLine($"Error killing service {service.Name}: {ex.Message}");
         }
     }
 }

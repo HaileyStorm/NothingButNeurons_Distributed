@@ -1,6 +1,6 @@
 ﻿namespace NothingButNeurons.CCSL;
 
-public static  class DatesAndTimes
+public static class DatesAndTimes
 {
     /// <summary>
     /// Converts Unix time to local DateTime.

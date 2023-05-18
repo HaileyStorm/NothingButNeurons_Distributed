@@ -13,39 +13,44 @@ internal class Program
 {
     static ActorSystem ProtoSystem;
     static int Port;
-    static int DebugServerPort;
     static PID DebugFileWriter;
 
     static void Main(string[] args)
     {
-        if (args.Length >= 2)
+        if (args.Length >= 1)
         {
             Port = int.Parse(args[0]);
-            DebugServerPort = int.Parse(args[1]);
         }
         else
         {
             Port = Shared.Consts.DefaultPorts.DEBUG_FILE_WRITER;
-            DebugServerPort = Shared.Consts.DefaultPorts.DEBUG_SERVER;
         }
 
-        CombinedWriteLine($"NothingButNeurons.DebugFileWriter program starting on port {Port}, with DebugServer on port {DebugServerPort}...");
+        CCSL.Console.CombinedWriteLine($"NothingButNeurons.DebugFileWriter program starting on port {Port}...");
 
-        ProtoSystem = Nodes.GetActorSystem(Port);
+        InitializeActorSystem();
 
-        PID debugServerPID = PID.FromAddress($"127.0.0.1:{DebugServerPort}", "DebugServer");
-        DebugFileWriter = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DebugFileWriter(debugServerPID)), "DebugFileWriter");
+        AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
 
-        CombinedWriteLine("NothingButNeurons.DebugFileWriter program ready.");
-
-        Console.ReadLine();
-        CombinedWriteLine("NothingButNeurons.DebugFileWriter program shutting down...");
-        ProtoSystem.Remote().ShutdownAsync().GetAwaiter().GetResult();
+        System.Console.ReadLine();
+        OnProcessExit(ProtoSystem, new EventArgs());
     }
 
-    static void CombinedWriteLine(string line)
+    private static async void InitializeActorSystem()
     {
-        Debug.WriteLine(line);
-        Console.WriteLine(line);
+        ProtoSystem = Nodes.GetActorSystem(Port);
+
+        PID? debugServerPID = await Nodes.GetPIDFromSettings(ProtoSystem.Root, "DebugServer");
+        DebugFileWriter = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DebugFileWriter(debugServerPID)), "DebugFileWriter");
+        Nodes.SendNodeOnline(ProtoSystem.Root, "DebugFileWriter", DebugFileWriter);
+
+        CCSL.Console.CombinedWriteLine("NothingButNeurons.DebugFileWriter program ready.");
+    }
+
+    private static void OnProcessExit(object sender, EventArgs e)
+    {
+        CCSL.Console.CombinedWriteLine("NothingButNeurons.DebugFileWriter program shutting down...");
+        Nodes.SendNodeOffline(ProtoSystem.Root, "DebugFileWriter");
+        ProtoSystem.Remote().ShutdownAsync().GetAwaiter().GetResult();
     }
 }

@@ -15,6 +15,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Linq;
 using Proto;
+using Proto.Remote;
 
 namespace NothingButNeurons.Orchestrator;
 
@@ -65,6 +66,8 @@ public partial class MainWindow : Window
         InitializeComponent();
         DataContext = this;
 
+        Nodes.SendNodeOnline(ProtoSystem.Root, "Orchestrator", ProtoSystem.Root.Self);
+
         // Kill launched processes on close. Doesn't work for stop button in VS, but it's still more robust than the Closing event.
         AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
     }
@@ -100,15 +103,21 @@ public partial class MainWindow : Window
 
     private void OnProcessExit(object sender, EventArgs e)
     {
-        // TODO: Need to at least kill SettingsMonitor last, hopefully also handle updating its status before it gets killed
-        foreach (var service in Services)
+        foreach (var service in Services.OrderByDescending(s => s.PreReqProjects.Length))
         {
+            CCSL.Console.CombinedWriteLine($"Killing {service.ProjectName}");
             Nodes.SendNodeOffline(ProtoSystem.Root, service.ProjectName);
+            if (string.Equals(service.ProjectName, "SettingsMonitor", StringComparison.InvariantCultureIgnoreCase))
+                System.Threading.Thread.Sleep(500);
             ServiceLauncher.Kill(service);
         }
+
+        CCSL.Console.CombinedWriteLine("NothingButNeurons.Orchestrator program shutting down...");
+        Nodes.SendNodeOffline(ProtoSystem.Root, "Orchestrator");
+        ProtoSystem.Remote().ShutdownAsync().GetAwaiter().GetResult();
     }
 
-        internal int GetPort(Service service)
+    internal int GetPort(Service service)
     {
         return service.Port;
     }

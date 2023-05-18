@@ -105,7 +105,9 @@ public class HiveMind : ActorBaseWithBroadcaster
             context.Send(pid, new SpawnRegionMessage { Address = GetLeftMost4Bits(region.neuronData), NeuronData = ByteString.CopyFrom(region.neuronData), SynapseData = ByteString.CopyFrom(region.synapseData) });
         }
         if (context.Sender != null)
+        {
             context.Send(context.Sender, new SpawnBrainAckMessage { BrainPID = pid });
+        }
     }
 
     #region Lifecycle methods
