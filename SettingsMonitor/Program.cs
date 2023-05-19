@@ -127,8 +127,9 @@ internal class Program
         LastQueryTime = DateTime.UtcNow.AddSeconds(-5 * QueryInterval);
         QueryTimer = new System.Timers.Timer(TimeSpan.FromSeconds(QueryInterval));
         QueryTimer.Elapsed += async (s, e) => {
+            var newTime = DateTime.UtcNow;
             await GetChangesAfterAsync(LastQueryTime);
-            LastQueryTime = DateTime.UtcNow;
+            LastQueryTime = newTime;
         };
         // Run it once now
         await GetChangesAfterAsync(LastQueryTime);

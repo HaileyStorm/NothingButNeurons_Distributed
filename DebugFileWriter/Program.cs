@@ -44,7 +44,7 @@ internal class Program
             CCSL.Console.CombinedWriteLine($"DebugFileWriter got SelfPortChangedMessage with new port: {msg.Port}. Restarting ActorSystem.");
             Port = msg.Port;
             await ProtoSystem.Remote().ShutdownAsync();
-            Thread.Sleep(5000);
+            Thread.Sleep(7000);
             _InitializeActorSystem();
         });
 

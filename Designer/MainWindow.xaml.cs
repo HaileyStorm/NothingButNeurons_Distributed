@@ -75,7 +75,7 @@ public partial class MainWindow : Window
 
             Port = msg.Port;
             await ProtoSystem.Remote().ShutdownAsync();
-            Thread.Sleep(5000);
+            Thread.Sleep(7000);
             _InitializeActorSystem();
         });
     }
