@@ -12,7 +12,6 @@ namespace NothingButNeurons.SettingsMonitor;
 
 public class SettingsMonitor : ActorBaseWithBroadcaster
 {
-    private bool _processed;
     private MySqlConnection Connection;
     private static SemaphoreSlim connectionSemaphore = new(1);
 
@@ -24,7 +23,7 @@ public class SettingsMonitor : ActorBaseWithBroadcaster
 
     protected override bool ReceiveMessage(IContext context)
     {
-        _processed = false;
+        bool processed = false;
 
         switch (context.Message)
         {
@@ -43,16 +42,19 @@ public class SettingsMonitor : ActorBaseWithBroadcaster
                     //CCSL.Console.CombinedWriteLine($"The request for setting {msg.Setting} in {msg.TableName} returned a null value; check the table and setting (key) names.");
                     context.Respond(new SettingResponseMessage());
                 }
+                processed = true;
                 break;
             case UnstableHandlerException msg:
                 SettingRequestMessage og = msg.FailedMessage.Unpack<SettingRequestMessage>();
                 SendDebugMessage(DebugSeverity.Error, "Settings", "Exception while handling SettingRequestMessage.", $"Failed to retrieve setting {og.Setting} in {og.TableName}.");
+                processed = true;
                 break;
             case NodeOnlineMessage msg:
                 {
                     UpdateNodeStatus(Connection, msg.Name, msg.PID);
 
                     AddRoutee(msg.PID);
+                    processed = true;
                     break;
                 }
             case NodeOfflineMessage msg:
@@ -60,13 +62,14 @@ public class SettingsMonitor : ActorBaseWithBroadcaster
                     UpdateNodeStatus(Connection, msg.Name, null); 
 
                     RemoveRoutee(msg.PID);
+                    processed = true;
                     break;
                 }
             default:
                 break;
         }
 
-        return _processed;
+        return processed;
     }
 
     #region Lifecycle methods

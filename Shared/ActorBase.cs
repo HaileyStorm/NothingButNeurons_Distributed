@@ -51,6 +51,10 @@ public abstract class ActorBase : IActor
                 BaseContext = context;
                 SelfPID = context.Self;
                 ParentPID = context.Parent;
+                context.System.EventStream.Subscribe((DebugServerChangedMessage msg) => {
+                    //CCSL.Console.CombinedWriteLine($"Actor {SelfPID} received DebugServerChangedMessage event, setting DebugServerPID to: {msg.PID}");
+                    DebugServerPID = msg.PID;
+                });
                 _ProcessStartedMessage(context, msg);
                 ProcessStartedMessage(context, msg);
                 SendDebugMessage(DebugSeverity.Trace, "Spawn", $"{SelfPID.Address}/{SelfPID.Id} spawned.");

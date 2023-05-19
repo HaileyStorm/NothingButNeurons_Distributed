@@ -24,9 +24,7 @@ internal class InputNeuron : NeuronBase
         // Process base class messages first
         bool processed = base.ReceiveMessage(context);
         if (processed)
-        {
             return true;
-        }
 
         // Handle InputNeuron-specific messages
         switch (context.Message)

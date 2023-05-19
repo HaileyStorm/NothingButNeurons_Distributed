@@ -26,9 +26,8 @@ namespace NothingButNeurons.Brain.Neurons
             // Process base class messages first
             bool processed = base.ReceiveMessage(context);
             if (processed)
-            {
                 return true;
-            }
+
             Debug.WriteLine($"!!! Output neuron received unhandled message: {context.Message.GetType()}");
             // Handle OutputNeuron-specific messages
             switch (context.Message)

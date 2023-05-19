@@ -45,7 +45,7 @@ internal partial class DebugUI : NodeBase
     /// Initializes a new instance of the DebugUI class with a TextBox control.
     /// </summary>
     /// <param name="debugTextBox">The TextBox control to display debug messages.</param>
-    public DebugUI(PID? debugServerPID, TextBox debugTextBox) : base(debugServerPID)
+    public DebugUI(PID? debugServerPID, TextBox debugTextBox) : base(debugServerPID, "DebugLogViewer")
     {
         DebugTextBox = debugTextBox;
     }
@@ -56,7 +56,7 @@ internal partial class DebugUI : NodeBase
     /// <param name="includeSenderInfo">Whether to include sender information in the displayed messages.</param>
     /// <param name="includeParentInfo">Whether to include parent information in the displayed messages.</param>
     /// <param name="includeServerReceivedTime">Whether to include the server received time in the displayed messages.</param>
-    public DebugUI(PID? debugServerPID, RichTextBox debugRichTextBox, bool includeSenderInfo = true, bool includeParentInfo = false, bool includeServerReceivedTime = false) : base(debugServerPID)
+    public DebugUI(PID? debugServerPID, RichTextBox debugRichTextBox, bool includeSenderInfo = true, bool includeParentInfo = false, bool includeServerReceivedTime = false) : base(debugServerPID, "DebugLogViewer")
     {
         // Initialization of DebugRichTextBox and related properties.
         DebugRichTextBox = debugRichTextBox;
@@ -81,7 +81,10 @@ internal partial class DebugUI : NodeBase
     /// <returns>True if the message was processed; otherwise, false.</returns>
     protected override bool ReceiveMessage(IContext context)
     {
-        bool processed = false;
+        // Process base class messages first
+        bool processed = base.ReceiveMessage(context);
+        if (processed)
+            return true;
 
         switch (context.Message)
         {

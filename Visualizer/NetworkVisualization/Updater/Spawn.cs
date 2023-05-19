@@ -9,6 +9,7 @@ using System.Windows.Shapes;
 using System.Collections.Concurrent;
 using System.Windows.Threading;
 using System.Threading;
+using System.Diagnostics;
 
 namespace NothingButNeurons.Visualizer.NetworkVisualization;
 
@@ -32,7 +33,7 @@ internal partial class Updater : NodeBase
     private Dictionary<string, double> _connectionUpdates = new Dictionary<string, double>();
     private readonly object connectionLock = new object();
 
-    public Updater(PID? debugServerPID, Canvas networkVisualizationCanvas, int tickInterval) : base(debugServerPID)
+    public Updater(PID? debugServerPID, Canvas networkVisualizationCanvas, int tickInterval) : base(debugServerPID, "Visualizer")
     {
         _networkVisualizationCanvas = networkVisualizationCanvas;
         _rng = new Random();
@@ -48,11 +49,13 @@ internal partial class Updater : NodeBase
 
     protected override bool ReceiveMessage(IContext context)
     {
+        bool processed = true;
         if (context.Message is not DebugInboundMessage msg || context.Sender == SelfPID || msg.SenderName == "NetworkVisualizationUpdater")
             return false;
 
         _messageQueue.Enqueue((DebugInboundMessage)context.Message);
-        return true;
+        processed = true;
+        return processed;
     }
 
     private async void ProcessMessageQueueAsync(object sender, EventArgs e)

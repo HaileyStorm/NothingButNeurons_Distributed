@@ -13,7 +13,7 @@ internal class DebugServer : NodeBase
     // Dictionary of subscribers and their subscription settings
     private Dictionary<PID, DebugSubscribeMessage> Subscribers;
 
-    public DebugServer() : base(new PID())
+    public DebugServer() : base(null, "DebugServer")
     {
         Subscribers = new Dictionary<PID, DebugSubscribeMessage>();
     }
@@ -25,7 +25,10 @@ internal class DebugServer : NodeBase
     /// <returns>true if the message was processed, false otherwise.</returns>
     protected override bool ReceiveMessage(IContext context)
     {
-        bool processed = false;
+        // Process base class messages first
+        bool processed = base.ReceiveMessage(context);
+        if (processed)
+            return true;
 
         switch (context.Message)
         {

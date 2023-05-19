@@ -19,7 +19,7 @@ internal class ServiceMonitor : NodeBase
     private ObservableCollection<Service> Services;
     private System.Timers.Timer _timer;
 
-    internal ServiceMonitor(PID? debugServerPID) : base(debugServerPID)
+    internal ServiceMonitor(PID? debugServerPID) : base(debugServerPID, "Orchestrator")
     {
         Services = MainWindow.Instance.Services;
 
@@ -32,6 +32,10 @@ internal class ServiceMonitor : NodeBase
 
     protected override bool ReceiveMessage(IContext context)
     {
+        // Process base class messages first
+        bool processed = base.ReceiveMessage(context);
+        // Do NOT return if processed like usual - we need to catch DebugServer PID changes, which are handled by NodeBase ReceiveMessage.
+
         switch (context.Message)
         {
             case SettingChangedMessage msg:
@@ -57,10 +61,12 @@ internal class ServiceMonitor : NodeBase
                             }
                         }
                     }
+                    processed = true;
                 }
                 break;
         }
-        return true;
+
+        return processed;
     }
 
     protected override void ProcessRestartingMessage(IContext context, Restarting msg)

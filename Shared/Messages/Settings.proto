@@ -29,3 +29,11 @@ message NodeOfflineMessage {
 	string Name = 1;
 	actor.PID PID = 2;
 }
+
+message DebugServerChangedMessage {
+	actor.PID PID = 1;
+}
+
+message SelfPortChangedMessage {
+	int32 Port = 1;
+}

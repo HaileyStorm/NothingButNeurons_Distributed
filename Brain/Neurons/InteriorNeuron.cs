@@ -23,9 +23,7 @@ namespace NothingButNeurons.Brain.Neurons
             // Process base class messages first
             bool processed = base.ReceiveMessage(context);
             if (processed)
-            {
                 return true;
-            }
 
             // Handle InteriorNeuron-specific messages
             switch (context.Message)

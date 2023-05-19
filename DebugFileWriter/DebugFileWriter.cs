@@ -15,7 +15,7 @@ internal class DebugFileWriter : NodeBase
     /// Initializes a new instance of the DebugFileWriter class.
     /// </summary>
     /// <param name="fileName">The name of the log file. Default is "log.txt".</param>
-    public DebugFileWriter(PID? debugServerPID, string fileName = "log.txt") : base(debugServerPID)
+    public DebugFileWriter(PID? debugServerPID, string fileName = "log.txt") : base(debugServerPID, "DebugFileWriter")
     {
         FileName = fileName;
         try
@@ -37,7 +37,10 @@ internal class DebugFileWriter : NodeBase
     /// <returns>True if the message was processed, false otherwise.</returns>
     protected override bool ReceiveMessage(IContext context)
     {
-        bool processed = false;
+        // Process base class messages first
+        bool processed = base.ReceiveMessage(context);
+        if (processed)
+            return true;
 
         switch (context.Message)
         {

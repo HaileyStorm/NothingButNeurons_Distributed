@@ -1,6 +1,7 @@
 ﻿using Proto;
 using Google.Protobuf;
 using Proto.Remote;
+using System.Diagnostics;
 
 namespace NothingButNeurons.IO;
 
@@ -17,7 +18,7 @@ public class HiveMind : NodeBase
     /// <summary>
     /// Initializes a new instance of the <see cref="HiveMind"/> class.
     /// </summary>
-    public HiveMind(PID? debugServerPID) : base(debugServerPID)
+    public HiveMind(PID? debugServerPID) : base(debugServerPID, "IO")
     {
         _behavior = new Behavior(Spawn);
     }
@@ -30,7 +31,10 @@ public class HiveMind : NodeBase
     /// <returns>True if the message was processed, otherwise false.</returns>
     protected override bool ReceiveMessage(IContext context)
     {
-        _processed = false;
+        // Process base class messages first
+        _processed = base.ReceiveMessage(context);
+        if (_processed)
+            return true;
 
         _behavior.ReceiveAsync(context).Wait();
 

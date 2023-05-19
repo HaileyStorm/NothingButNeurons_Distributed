@@ -11,17 +11,22 @@ public class DesignerHelper : NodeBase
 {
     private bool _processed;
 
-    public DesignerHelper() : base(new PID()) { }
+    public DesignerHelper() : base(null, "Designer") { }
 
     /// <summary>
     /// Overrides the ReceiveMessage method from ActorBaseWithBroadcaster, handling messages based on the current behavior.
     /// </summary>
     /// <param name="context">The actor context.</param>
     /// <returns>True if the message was processed, otherwise false.</returns>
-    protected override bool ReceiveMessage(IContext context)
+    /*protected override bool ReceiveMessage(IContext context)
     {
-        return false;
-    }
+        // Process base class messages first
+        bool processed = base.ReceiveMessage(context);
+        if (processed)
+                    return true;
+
+        return processed;
+    }*/
 
     protected override void ProcessRestartingMessage(IContext context, Restarting msg)
     {
