@@ -1,11 +1,11 @@
 ﻿<Window x:Class="NothingButNeurons.Orchestrator.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Orchestrator" Height="265" Width="260">
+        Title="Orchestrator" Height="265" Width="395">
     <Grid Margin="5,0">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
@@ -14,8 +14,9 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Column="0" Grid.Row="0" Text="Port #" />
-        <TextBlock Grid.Column="3" Grid.Row="0" Text="Status" />
+        <TextBlock Grid.Column="1" Grid.Row="0" Text="Name" HorizontalAlignment="Left" Margin="55,0" />
+        <TextBlock Grid.Column="2" Grid.Row="0" Text="Status" HorizontalAlignment="Left" Margin="8,0,-2,0" />
+        <TextBlock Grid.Column="3" Grid.Row="0" Text="PID"  Width="125" HorizontalAlignment="Left" Margin="5,0,3,0" />
 
         <ScrollViewer Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <Grid>
@@ -40,18 +41,10 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <TextBox Grid.Column="0" VerticalAlignment="Center" Margin="0,5">
-                                    <TextBox.Text>
-                                        <Binding Path="Port" UpdateSourceTrigger="PropertyChanged">
-                                            <Binding.ValidationRules>
-                                                <!--validation:PortValidationRule /-->
-                                            </Binding.ValidationRules>
-                                        </Binding>
-                                    </TextBox.Text>
-                                </TextBox>
+                                <Button Grid.Column="0" Content="Launch" Click="LaunchButton_Click" IsEnabled="{Binding Enabled}" VerticalAlignment="Center" Margin="5,5" />
                                 <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" Margin="5,5" />
-                                <Button Grid.Column="2" Content="Launch" Click="LaunchButton_Click" IsEnabled="{Binding Enabled}" VerticalAlignment="Center" Margin="5,5" />
-                                <Ellipse Grid.Column="3" Width="10" Height="10" Fill="{Binding StatusColor}" VerticalAlignment="Center" Margin="5,5" />
+                                <Ellipse Grid.Column="2" Width="10" Height="10" Fill="{Binding StatusColor}" VerticalAlignment="Center" Margin="5,5,10,5" />
+                                <TextBox Grid.Column="3" Text="{Binding PID}" VerticalAlignment="Center" Margin="5,5" Width="175" IsReadOnly="True"/>
                             </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>

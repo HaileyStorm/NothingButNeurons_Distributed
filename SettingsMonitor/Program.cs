@@ -15,7 +15,7 @@ namespace NothingButNeurons.SettingsMonitor;
 internal class Program
 {
     const string ConnectionString = "Server=35.184.181.185;User ID=root;Password=m3)YvNVlZH)4%_A.;Database=settings";
-    const int QueryInterval = 10; // Seconds
+    const int QueryInterval = 5; // Seconds
 
     static int Port;
     static ActorSystem ProtoSystem;
@@ -104,7 +104,7 @@ internal class Program
 
         CCSL.Console.CombinedWriteLine($"NothingButNeurons.SettingsMonitor program ready ({Monitor}).");
 
-        LastQueryTime = DateTime.UtcNow.AddSeconds(-2 * QueryInterval);
+        LastQueryTime = DateTime.UtcNow.AddSeconds(-5 * QueryInterval);
         QueryTimer = new System.Timers.Timer(TimeSpan.FromSeconds(QueryInterval));
         QueryTimer.Elapsed += async (s, e) => {
             await GetChangesAfterAsync(LastQueryTime);

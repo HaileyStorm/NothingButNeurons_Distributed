@@ -16,6 +16,7 @@ using System.Runtime.CompilerServices;
 using System.Linq;
 using Proto;
 using Proto.Remote;
+using NothingButNeurons.Shared.Consts;
 
 namespace NothingButNeurons.Orchestrator;
 
@@ -31,17 +32,17 @@ public partial class MainWindow : Window
 
     public ObservableCollection<Service> Services { get; set; } = new ObservableCollection<Service>
     {
-        new Service { Name = "Settings Monitor", ProjectName="SettingsMonitor", ActorName="SettingsMonitor", PreReqProjects = Array.Empty<string>(), IsWPF=false, Port = Shared.Consts.DefaultPorts.SETTINGS_MONITOR, StatusColor = Brushes.Gray },
-        new Service { Name = "IO / HiveMind", ProjectName="IO", ActorName="HiveMind", PreReqProjects = new string[] { "SettingsMonitor" }, IsWPF=false, Port = Shared.Consts.DefaultPorts.IO, StatusColor = Brushes.Gray },
+        new Service { Name = "Settings Monitor", ProjectName="SettingsMonitor", PreReqProjects = Array.Empty<string>(), IsWPF=false, StatusColor = Brushes.Gray },
+        new Service { Name = "IO / HiveMind", ProjectName="IO",  PreReqProjects = new string[] { "SettingsMonitor" }, IsWPF=false, StatusColor = Brushes.Gray },
         // SettingsMonitor is prereq because otherwise DebugServer can never report its online status / PID, so others will never nr updated when it comes online
-        new Service { Name = "Debug Server", ProjectName="DebugServer", ActorName="DebugServer", PreReqProjects = new string[] { "SettingsMonitor" }, IsWPF=false, Port = Shared.Consts.DefaultPorts.DEBUG_SERVER, StatusColor = Brushes.Gray },
-        new Service { Name = "Debug File Writer", ProjectName="DebugFileWriter", ActorName="DebugFileWriter", PreReqProjects = new string[] { "SettingsMonitor", "DebugServer" }, IsWPF=false, Port = Shared.Consts.DefaultPorts.DEBUG_FILE_WRITER, StatusColor = Brushes.Gray },
-        new Service { Name = "Debug Log Viewer", ProjectName="DebugLogViewer", ActorName="DebugUI", PreReqProjects = new string[] { "SettingsMonitor", "DebugServer" }, IsWPF=true, Port = Shared.Consts.DefaultPorts.DEBUG_LOG_VIEWER, StatusColor = Brushes.Gray },
+        new Service { Name = "Debug Server", ProjectName="DebugServer", PreReqProjects = new string[] { "SettingsMonitor" }, IsWPF=false, StatusColor = Brushes.Gray },
+        new Service { Name = "Debug File Writer", ProjectName="DebugFileWriter", PreReqProjects = new string[] { "SettingsMonitor", "DebugServer" }, IsWPF=false, StatusColor = Brushes.Gray },
+        new Service { Name = "Debug Log Viewer", ProjectName="DebugLogViewer", PreReqProjects = new string[] { "SettingsMonitor", "DebugServer" }, IsWPF=true, StatusColor = Brushes.Gray },
         // Currently there's nothing to visualize unless a brain is spawned and random inputs are sent, which happens via Designer - but a) that's not how things will be, b) Visualizer can be open before or after Designer, so long as it's own before the Designer Spawn button is clicked
         // Technically IO isn't required either...
-        new Service { Name = "Visualizer", ProjectName="Visualizer", ActorName="NetworkVisualizationUpdater", PreReqProjects = new string[] { "SettingsMonitor", "DebugServer", "IO" }, IsWPF=true, Port = Shared.Consts.DefaultPorts.VISUALIZER, StatusColor = Brushes.Gray },
+        new Service { Name = "Visualizer", ProjectName="Visualizer", PreReqProjects = new string[] { "SettingsMonitor", "DebugServer", "IO" }, IsWPF=true, StatusColor = Brushes.Gray },
         // Visualizer must be open before Spawn clicked in Designer now if want Visualizer to catch it, but in order to create Brains or send randomized input Designer does not require Visualizer, so it's not on the prereq list
-        new Service { Name = "Designer", ProjectName="Designer", ActorName="DesignerHelper", PreReqProjects = new string[] { "SettingsMonitor", "IO" }, IsWPF=true, Port = Shared.Consts.DefaultPorts.DESIGNER, StatusColor = Brushes.Gray }
+        new Service { Name = "Designer", ProjectName="Designer", PreReqProjects = new string[] { "SettingsMonitor", "IO" }, IsWPF=true, StatusColor = Brushes.Gray }
     };
 
     public MainWindow()
@@ -99,6 +100,8 @@ public partial class MainWindow : Window
         ServiceMonitor = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new ServiceMonitor(null)), "OrchestratorMonitor");
         settingsService.StatusColor = Brushes.Green;
         settingsService.Enabled = false;
+        // Will be replaced by the real value with SettingChangedMessage
+        settingsService.PID = PID.FromAddress($"127.0.0.1:{DefaultPorts.SETTINGS_MONITOR}", "SettingsMonitor").ToString();
 
         Nodes.SendNodeOnline(ProtoSystem.Root, "Orchestrator", ServiceMonitor);
     }
@@ -148,15 +151,6 @@ public partial class MainWindow : Window
 
         ProtoSystem.Remote().ShutdownAsync().GetAwaiter().GetResult();
     }
-
-    internal int GetPort(Service service)
-    {
-        return service.Port;
-    }
-    internal int GetPort(string ProjectName)
-    {
-        return Services.Where(s => s.ProjectName == ProjectName).First().Port;
-    }
 }
 
 public class Service : INotifyPropertyChanged
@@ -182,13 +176,6 @@ public class Service : INotifyPropertyChanged
         set { _projectName = value; OnPropertyChanged(); }
     }
 
-    private string _actorName;
-    public string ActorName
-    {
-        get { return _actorName; }
-        set { _actorName = value; OnPropertyChanged(); }
-    }
-
     private string[] _preReqProjects;
     public string[] PreReqProjects
     {
@@ -203,11 +190,11 @@ public class Service : INotifyPropertyChanged
         set { _isWPF = value; OnPropertyChanged(); }
     }
 
-    private int _port;
-    public int Port
+    private string? _pid;
+    public string? PID
     {
-        get { return _port; }
-        set { _port = value; OnPropertyChanged(); }
+        get { return _pid; }
+        set { _pid = value; OnPropertyChanged(); }
     }
 
     private SolidColorBrush _statusColor;

@@ -81,9 +81,9 @@ internal class ServiceLauncher
             // Note: don't try to monitor this process, or update status light to anything other than green here - just let ServiceMonitor handle that.
             Process.Start(startInfo);
 
-            service.StatusColor = Brushes.Green;
+           // service.StatusColor = Brushes.Green;
             // Preventing launching another copy (not that this is *always* a problem, but it's unnecessary for sure, at least for now)
-            service.Enabled = false;
+           // service.Enabled = false;
         }
         catch (Exception ex)
         {

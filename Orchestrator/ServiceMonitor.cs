@@ -41,13 +41,14 @@ internal class ServiceMonitor : NodeBase
                     Service? service = Services.Where(s => string.Equals(s.ProjectName, msg.Setting, StringComparison.InvariantCultureIgnoreCase)).SingleOrDefault(defaultValue: null);
                     if (service != null)
                     {
-                        // TODO: Update service PID (and use it for ping test)
                         if (string.IsNullOrEmpty(msg.Value))
                         {
+                            service.PID = null;
                             if (service.StatusColor != Brushes.Gray && service.StatusColor != Brushes.Red)
                                 service.StatusColor = Brushes.Red;
                         } else
                         {
+                            service.PID = msg.Value;
                             if (service.StatusColor != Brushes.Green)
                             {
                                 service.StatusColor = Brushes.Green;
@@ -86,8 +87,15 @@ internal class ServiceMonitor : NodeBase
         // Ping running services and update status according to response
         foreach (var service in Services.Where(s => s.StatusColor != Brushes.Red && s.StatusColor != Brushes.Gray))
         {
-            PID servicePID = PID.FromAddress($"127.0.0.1:{service.Port}", service.ActorName);
-            BaseContext!.RequestAsync<PongMessage>(servicePID, new PingMessage { }, new System.Threading.CancellationToken()).WaitUpTo(TimeSpan.FromMilliseconds(850)).ContinueWith(x =>
+            //PID servicePID = PID.FromAddress($"127.0.0.1:{service.Port}", service.ActorName);
+            if (string.IsNullOrEmpty(service.PID))
+            {
+                CCSL.Console.CombinedWriteLine($"Non-gray/red service PID unexpectedly null, for service: {service.Name}. Cannot ping. Setting service offline.");
+                service.StatusColor = Brushes.Red;
+                Nodes.SendNodeOffline(BaseContext!, service.ProjectName);
+                continue;
+            }
+            BaseContext!.RequestAsync<PongMessage>(Nodes.GetPIDFromString(service.PID)!, new PingMessage { }, new System.Threading.CancellationToken()).WaitUpTo(TimeSpan.FromMilliseconds(850)).ContinueWith(x =>
             {
                 if (x.IsFaulted || !x.Result.completed)
                 {
@@ -100,6 +108,8 @@ internal class ServiceMonitor : NodeBase
                             service.StatusColor = Brushes.Orange;
                             break;
                         case SolidColorBrush b when b == Brushes.Orange:
+                            Nodes.SendNodeOffline(BaseContext!, service.ProjectName);
+                            service.PID = null;
                             service.StatusColor = Brushes.Red;
                             break;
                     }
