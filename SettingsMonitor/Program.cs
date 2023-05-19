@@ -20,6 +20,7 @@ internal class Program
     static int Port;
     static ActorSystem ProtoSystem;
     static PID Monitor;
+    static PID? DebugServerPID;
     static MySqlConnection Connection;
     static System.Timers.Timer QueryTimer;
     static DateTime LastQueryTime;
@@ -66,7 +67,7 @@ internal class Program
 
         reader.Close();
 
-        PID? debugServerPID = null;
+        DebugServerPID = null;
 
         foreach (var nodeStatus in nodeStatuses)
         {
@@ -85,7 +86,7 @@ internal class Program
                         await SettingsMonitor.UpdateNodeStatus(Connection, nodeName, null);
                         if (nodeName == "DebugServer")
                         {
-                            debugServerPID = null;
+                            DebugServerPID = null;
                         }
                     }
                     else
@@ -93,14 +94,33 @@ internal class Program
                         CCSL.Console.CombinedWriteLine($"{nodeName} is online.");
                         if (nodeName == "DebugServer")
                         {
-                            debugServerPID = currentPID;
+                            DebugServerPID = currentPID;
                         }
                     }
                 });
             }
         }
 
-        Monitor = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new SettingsMonitor(ConnectionString, debugServerPID)), "SettingsMonitor");
+        Monitor = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new SettingsMonitor(ConnectionString, DebugServerPID)), "SettingsMonitor");
+
+        ProtoSystem.EventStream.Subscribe((SelfPortChangedMessage msg) => {
+            CCSL.Console.CombinedWriteLine($"SettingsMonitor got SelfPortChangedMessage with new port: {msg.Port}. THIS NODE CANNOT BE RESTARTED AND WILL CONTINUE RUNNING ON ITS OLD PORT.");
+            if (DebugServerPID != null)
+            {
+                ProtoSystem.Root.Send(DebugServerPID, new DebugOutboundMessage()
+                {
+                    Severity = DebugSeverity.Critical,
+                    Context = "Node",
+                    Summary = "SettingMonitor Node received SelfPortChangedMessage event",
+                    Message = "SettingMonitor cannot be restarted and will continue running on its old port.",
+                    MessageSentTime = DateTimeOffset.Now.ToUnixTimeMilliseconds()
+                });
+            }
+
+            // Not a good idea for SettingsMonitor Node:
+            //Port = msg.Port;
+            //_InitializeActorSystem();
+        });
 
         CCSL.Console.CombinedWriteLine($"NothingButNeurons.SettingsMonitor program ready ({Monitor}).");
 

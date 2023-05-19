@@ -42,19 +42,6 @@ public partial class MainWindow : Window
 
     public MainWindow()
     {
-        InitializeComponent();
-        DataContext = new MainWindowViewModel();
-        TickTime = int.Parse(txtTickTime.Text);
-
-        _random = new System.Random();
-
-        InitializeActorSystem();
-
-        AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
-    }
-
-    private async void InitializeActorSystem()
-    {
         // Get command-line arguments
         string[] args = Environment.GetCommandLineArgs();
         if (args.Length >= 2)
@@ -68,6 +55,33 @@ public partial class MainWindow : Window
             Port = Shared.Consts.DefaultPorts.DESIGNER;
         }
 
+        InitializeComponent();
+        DataContext = new MainWindowViewModel();
+        TickTime = int.Parse(txtTickTime.Text);
+
+        _random = new System.Random();
+
+        InitializeActorSystem();
+
+        AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+    }
+
+    private async void InitializeActorSystem()
+    {
+        _InitializeActorSystem();
+
+        ProtoSystem.EventStream.Subscribe(async (SelfPortChangedMessage msg) => {
+            CCSL.Console.CombinedWriteLine($"Designer got SelfPortChangedMessage with new port: {msg.Port}. Restarting ActorSystem.");
+
+            Port = msg.Port;
+            await ProtoSystem.Remote().ShutdownAsync();
+            Thread.Sleep(5000);
+            _InitializeActorSystem();
+        });
+    }
+
+    private async void _InitializeActorSystem()
+    {
         ProtoSystem = Nodes.GetActorSystem(Port);
 
         HiveMind = await Nodes.GetPIDFromSettings(ProtoSystem.Root, "IO");

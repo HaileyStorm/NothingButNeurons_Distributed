@@ -17,6 +17,7 @@ using System.Linq;
 using Proto;
 using Proto.Remote;
 using NothingButNeurons.Shared.Consts;
+using System.Threading;
 
 namespace NothingButNeurons.Orchestrator;
 
@@ -69,7 +70,7 @@ public partial class MainWindow : Window
             isDebug = false;
 #endif
 
-        ProtoSystem = Nodes.GetActorSystem(Shared.Consts.DefaultPorts.ORCHESTRATOR_MONITOR);
+        ProtoSystem = Nodes.GetActorSystem(DefaultPorts.ORCHESTRATOR_MONITOR);
         ServiceLauncher = new(isDebug, ProtoSystem);
         Service settingsService = Services.Where(s => string.Equals(s.ProjectName, "SettingsMonitor", StringComparison.InvariantCultureIgnoreCase)).Single();
         await ServiceLauncher.Launch(settingsService);
@@ -89,7 +90,7 @@ public partial class MainWindow : Window
                 attempts++;
             }
         }
-        if (servicePort != null && servicePort != Shared.Consts.DefaultPorts.ORCHESTRATOR_MONITOR)
+        if (servicePort != null && servicePort != DefaultPorts.ORCHESTRATOR_MONITOR)
         {
             CCSL.Console.CombinedWriteLine($"OrchestratorMonitor port from settings doesn't match default; restarting with port from settings: {servicePort}");
             //ProtoSystem.Remote().ShutdownAsync().GetAwaiter().GetResult();
@@ -102,6 +103,17 @@ public partial class MainWindow : Window
         settingsService.Enabled = false;
         // Will be replaced by the real value with SettingChangedMessage
         settingsService.PID = PID.FromAddress($"127.0.0.1:{DefaultPorts.SETTINGS_MONITOR}", "SettingsMonitor").ToString();
+
+        ProtoSystem.EventStream.Subscribe(async (SelfPortChangedMessage msg) => {
+            CCSL.Console.CombinedWriteLine($"Orchestrator got SelfPortChangedMessage with new port: {msg.Port}. Restarting ActorSystem.");
+
+            servicePort = msg.Port;
+            await ProtoSystem.Remote().ShutdownAsync();
+            Thread.Sleep(5000);
+            ProtoSystem = Nodes.GetActorSystem((int)servicePort!);
+            ServiceLauncher = new(isDebug, ProtoSystem);
+            ServiceMonitor = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new ServiceMonitor(null)), "OrchestratorMonitor");
+        });
 
         Nodes.SendNodeOnline(ProtoSystem.Root, "Orchestrator", ServiceMonitor);
     }

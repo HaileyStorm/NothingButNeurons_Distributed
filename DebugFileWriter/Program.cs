@@ -38,13 +38,26 @@ internal class Program
 
     private static async void InitializeActorSystem()
     {
+        _InitializeActorSystem();
+
+        ProtoSystem.EventStream.Subscribe(async (SelfPortChangedMessage msg) => {
+            CCSL.Console.CombinedWriteLine($"DebugFileWriter got SelfPortChangedMessage with new port: {msg.Port}. Restarting ActorSystem.");
+            Port = msg.Port;
+            await ProtoSystem.Remote().ShutdownAsync();
+            Thread.Sleep(5000);
+            _InitializeActorSystem();
+        });
+
+        CCSL.Console.CombinedWriteLine("NothingButNeurons.DebugFileWriter program ready.");
+    }
+
+    private static async void _InitializeActorSystem()
+    {
         ProtoSystem = Nodes.GetActorSystem(Port);
 
         PID? debugServerPID = await Nodes.GetPIDFromSettings(ProtoSystem.Root, "DebugServer");
         DebugFileWriter = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DebugFileWriter(debugServerPID)), "DebugFileWriter");
         Nodes.SendNodeOnline(ProtoSystem.Root, "DebugFileWriter", DebugFileWriter);
-
-        CCSL.Console.CombinedWriteLine("NothingButNeurons.DebugFileWriter program ready.");
     }
 
     private static void OnProcessExit(object sender, EventArgs e)

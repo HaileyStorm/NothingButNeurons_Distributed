@@ -32,6 +32,19 @@ public partial class MainWindow : Window
     /// </summary>
     public MainWindow()
     {
+        // Get command-line arguments
+        string[] args = Environment.GetCommandLineArgs();
+        if (args.Length >= 2)
+        {
+            // In this app, the first argument is a dll
+            args = args[1].Split(' ');
+            Port = int.Parse(args[0]);
+        }
+        else
+        {
+            Port = Shared.Consts.DefaultPorts.DEBUG_LOG_VIEWER;
+        }
+
         InitializeComponent();
         drpDebugSeverity.ItemsSource = Enum.GetValues(typeof(DebugSeverity));
         drpDebugSeverity.SelectedIndex = 2;
@@ -46,19 +59,20 @@ public partial class MainWindow : Window
     /// </summary>
     private async void InitializeActorSystem()
     {
-        // Get command-line arguments
-        string[] args = Environment.GetCommandLineArgs();
-        if (args.Length >= 2)
-        {
-            // In this app, the first argument is a dll
-            args = args[1].Split(' ');
-            Port = int.Parse(args[0]);
-        }
-        else
-        {
-            Port = Shared.Consts.DefaultPorts.DEBUG_LOG_VIEWER;
-        }
+        _InitializeActorSystem();
 
+        ProtoSystem.EventStream.Subscribe(async (SelfPortChangedMessage msg) => {
+            CCSL.Console.CombinedWriteLine($"DebugLogViewer got SelfPortChangedMessage with new port: {msg.Port}. Restarting ActorSystem.");
+
+            Port = msg.Port;
+            await ProtoSystem.Remote().ShutdownAsync();
+            Thread.Sleep(5000);
+            _InitializeActorSystem();
+        });
+    }
+
+    private async void _InitializeActorSystem()
+    {
         ProtoSystem = Nodes.GetActorSystem(Port);
 
         DebugServer = await Nodes.GetPIDFromSettings(ProtoSystem.Root, "DebugServer");

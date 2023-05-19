@@ -25,6 +25,7 @@ public partial class MainWindow : Window
     static int Port;
 
     PID NetworkVisualizationUpdater;
+    PID? DebugServerPID;
 
     public MainWindow()
     {
@@ -57,9 +58,29 @@ public partial class MainWindow : Window
 
         ProtoSystem = Nodes.GetActorSystem(Port);
 
-        PID? debugServerPID = await Nodes.GetPIDFromSettings(ProtoSystem.Root, "DebugServer");
-        CCSL.Console.CombinedWriteLine($"Got DebugServer PID: {debugServerPID}");
-        NetworkVisualizationUpdater = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new NetworkVisualization.Updater(debugServerPID, networkVisualizationCanvas, tickTime)), "NetworkVisualizationUpdater");
+        DebugServerPID = await Nodes.GetPIDFromSettings(ProtoSystem.Root, "DebugServer");
+        CCSL.Console.CombinedWriteLine($"Got DebugServer PID: {DebugServerPID}");
+        NetworkVisualizationUpdater = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new NetworkVisualization.Updater(DebugServerPID, networkVisualizationCanvas, tickTime)), "NetworkVisualizationUpdater");
+
+        ProtoSystem.EventStream.Subscribe((SelfPortChangedMessage msg) => {
+            CCSL.Console.CombinedWriteLine($"Visualizer got SelfPortChangedMessage with new port: {msg.Port}. THIS NODE CANNOT BE RESTARTED AND WILL CONTINUE RUNNING ON ITS OLD PORT.");
+            if (DebugServerPID != null)
+            {
+                ProtoSystem.Root.Send(DebugServerPID, new DebugOutboundMessage()
+                {
+                    Severity = DebugSeverity.Error,
+                    Context = "Node",
+                    Summary = "Visualizer Node received SelfPortChangedMessage event",
+                    Message = "Visualizer cannot be restarted (will have missed spawn debugs) and will continue running on its old port.",
+                    MessageSentTime = DateTimeOffset.Now.ToUnixTimeMilliseconds()
+                });
+            }
+
+            // Not a good idea for Visualizer Node:
+            //Port = msg.Port;
+            //_InitializeActorSystem();
+        });
+
         Nodes.SendNodeOnline(ProtoSystem.Root, "Visualizer", NetworkVisualizationUpdater);
     }
 

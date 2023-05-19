@@ -37,12 +37,26 @@ internal class Program
 
     private static async void InitializeActorSystem()
     {
+        _InitializeActorSystem();
+
+        ProtoSystem.EventStream.Subscribe(async (SelfPortChangedMessage msg) => {
+            CCSL.Console.CombinedWriteLine($"DebugServer got SelfPortChangedMessage with new port: {msg.Port}. Restarting ActorSystem.");
+            
+            Port = msg.Port;
+            await ProtoSystem.Remote().ShutdownAsync();
+            Thread.Sleep(5000);
+            _InitializeActorSystem();
+        });
+
+        CCSL.Console.CombinedWriteLine("NothingButNeurons.DebugServer program ready.");
+    }
+
+    private static async void _InitializeActorSystem()
+    {
         ProtoSystem = Nodes.GetActorSystem(Port);
 
         DebugServer = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DebugServer()), "DebugServer");
         Nodes.SendNodeOnline(ProtoSystem.Root, "DebugServer", DebugServer);
-
-        CCSL.Console.CombinedWriteLine("NothingButNeurons.DebugServer program ready.");
     }
 
     private static void OnProcessExit(object sender, EventArgs e)
