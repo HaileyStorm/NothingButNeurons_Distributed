@@ -36,6 +36,27 @@ internal class ServiceMonitor : NodeBase
         {
             case SettingChangedMessage msg:
                 CCSL.Console.CombinedWriteLine($"Received SettingChangedMessage. Table: {msg.TableName}, Setting: {msg.Setting}, Value: {msg.Value}");
+                if (string.Equals(msg.TableName, "NodeStatus", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    Service? service = Services.Where(s => string.Equals(s.ProjectName, msg.Setting, StringComparison.InvariantCultureIgnoreCase)).SingleOrDefault(defaultValue: null);
+                    if (service != null)
+                    {
+                        // TODO: Update service PID (and use it for ping test)
+                        if (string.IsNullOrEmpty(msg.Value))
+                        {
+                            if (service.StatusColor != Brushes.Gray && service.StatusColor != Brushes.Red)
+                                service.StatusColor = Brushes.Red;
+                        } else
+                        {
+                            if (service.StatusColor != Brushes.Green)
+                            {
+                                service.StatusColor = Brushes.Green;
+                                // Preventing launching another copy (not that this is *always* a problem, but it's unnecessary for sure, at least for now)
+                                service.Enabled = false;
+                            }
+                        }
+                    }
+                }
                 break;
         }
         return true;

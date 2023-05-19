@@ -110,6 +110,10 @@ internal class Program
             await GetChangesAfterAsync(LastQueryTime);
             LastQueryTime = DateTime.UtcNow;
         };
+        // Run it once now
+        await GetChangesAfterAsync(LastQueryTime);
+        LastQueryTime = DateTime.UtcNow;
+        // And start the schedule
         QueryTimer.Start();
     }
 
