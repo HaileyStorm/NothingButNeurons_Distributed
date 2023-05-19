@@ -13,7 +13,7 @@ namespace NothingButNeurons.DebugLogViewer;
 /// <summary>
 /// Provides a debug user interface for displaying debug messages in a RichTextBox or TextBox control.
 /// </summary>
-internal partial class DebugUI : ActorBase
+internal partial class DebugUI : NodeBase
 {
     // Private properties for UI elements, filtering, and UI update control.
     private TextBox? DebugTextBox { get; init; }

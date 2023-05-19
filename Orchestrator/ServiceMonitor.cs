@@ -14,21 +14,14 @@ using System.Windows.Media;
 
 namespace NothingButNeurons.Orchestrator;
 
-internal class ServiceMonitor
+internal class ServiceMonitor : NodeBase
 {
     private ObservableCollection<Service> Services;
     private System.Timers.Timer _timer;
-    private ActorSystem ProtoSystem;
 
-    internal ServiceMonitor(ActorSystem protoSystem)
+    internal ServiceMonitor(PID? debugServerPID) : base(debugServerPID)
     {
         Services = MainWindow.Instance.Services;
-
-        ProtoSystem = protoSystem;
-
-        _timer = new System.Timers.Timer(1000);
-        _timer.Elapsed += Monitor;
-        _timer.Start();
 
         // Initial enabled status
         foreach (var service in Services)
@@ -37,13 +30,43 @@ internal class ServiceMonitor
         }
     }
 
+    protected override bool ReceiveMessage(IContext context)
+    {
+        switch (context.Message)
+        {
+            case SettingChangedMessage msg:
+                CCSL.Console.CombinedWriteLine($"Received SettingChangedMessage. Table: {msg.TableName}, Setting: {msg.Setting}, Value: {msg.Value}");
+                break;
+        }
+        return true;
+    }
+
+    protected override void ProcessRestartingMessage(IContext context, Restarting msg)
+    {
+    }
+
+    protected override void ProcessStartedMessage(IContext context, Started msg)
+    {
+        _timer = new System.Timers.Timer(1000);
+        _timer.Elapsed += Monitor;
+        _timer.Start();
+    }
+
+    protected override void ProcessStoppingMessage(IContext context, Stopping msg)
+    {
+    }
+
+    protected override void ProcessStoppedMessage(IContext context, Stopped msg)
+    {
+    }
+
     private void Monitor(object sender, ElapsedEventArgs e)
     {
         // Ping running services and update status according to response
         foreach (var service in Services.Where(s => s.StatusColor != Brushes.Red && s.StatusColor != Brushes.Gray))
         {
             PID servicePID = PID.FromAddress($"127.0.0.1:{service.Port}", service.ActorName);
-            ProtoSystem.Root.RequestAsync<PongMessage>(servicePID, new PingMessage { }, new System.Threading.CancellationToken()).WaitUpTo(TimeSpan.FromMilliseconds(850)).ContinueWith(x =>
+            BaseContext!.RequestAsync<PongMessage>(servicePID, new PingMessage { }, new System.Threading.CancellationToken()).WaitUpTo(TimeSpan.FromMilliseconds(850)).ContinueWith(x =>
             {
                 if (x.IsFaulted || !x.Result.completed)
                 {

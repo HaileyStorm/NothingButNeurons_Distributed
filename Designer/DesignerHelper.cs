@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace NothingButNeurons.Designer;
 
-public class DesignerHelper : ActorBase
+public class DesignerHelper : NodeBase
 {
     private bool _processed;
 
@@ -20,11 +20,7 @@ public class DesignerHelper : ActorBase
     /// <returns>True if the message was processed, otherwise false.</returns>
     protected override bool ReceiveMessage(IContext context)
     {
-        _processed = false;
-
-        ReceiveAsync(context).Wait();
-
-        return _processed;
+        return false;
     }
 
     protected override void ProcessRestartingMessage(IContext context, Restarting msg)

@@ -12,7 +12,7 @@ using System.Threading;
 
 namespace NothingButNeurons.Visualizer.NetworkVisualization;
 
-internal partial class Updater : ActorBase
+internal partial class Updater : NodeBase
 {
     private Canvas _networkVisualizationCanvas;
 

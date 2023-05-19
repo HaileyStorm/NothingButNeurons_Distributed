@@ -8,7 +8,7 @@ using System.Windows.Shapes;
 
 namespace NothingButNeurons.Visualizer.NetworkVisualization;
 
-internal partial class Updater : ActorBase
+internal partial class Updater : NodeBase
 {
     private void DrawRegionsAndNeurons()
     {

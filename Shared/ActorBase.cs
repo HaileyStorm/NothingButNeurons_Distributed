@@ -26,7 +26,7 @@ public delegate TUnstableReturn UnstableMessageHandlerWithReturn<TUnstableMessag
 /// </summary>
 public abstract class ActorBase : IActor
 {
-    private IContext? BaseContext { get; set; }
+    protected IContext? BaseContext { get; set; }
     protected virtual PID? SelfPID { get; set; }
     protected virtual PID? ParentPID { get; set; }
     protected virtual PID? DebugServerPID { get; set; }

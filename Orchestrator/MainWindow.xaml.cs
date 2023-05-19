@@ -27,7 +27,7 @@ public partial class MainWindow : Window
     internal ActorSystem ProtoSystem;
 
     internal ServiceLauncher ServiceLauncher { get; private set; }
-    internal ServiceMonitor ServiceMonitor { get; private set; }
+    internal PID ServiceMonitor { get; private set; }
 
     public ObservableCollection<Service> Services { get; set; } = new ObservableCollection<Service>
     {
@@ -72,8 +72,22 @@ public partial class MainWindow : Window
         ServiceLauncher = new(isDebug, ProtoSystem);
         Service settingsService = Services.Where(s => string.Equals(s.ProjectName, "SettingsMonitor", StringComparison.InvariantCultureIgnoreCase)).Single();
         await ServiceLauncher.Launch(settingsService);
-        System.Threading.Thread.Sleep(2000);
-        int? servicePort = await Nodes.GetPortFromSettings(ProtoSystem.Root, "OrchestratorMonitor");
+        int attempts = 0;
+        int? servicePort = null;
+        while (attempts < 20)
+        {
+            try
+            {
+                servicePort = await Nodes.GetPortFromSettings(ProtoSystem.Root, "OrchestratorMonitor");
+                if (servicePort != null)
+                    break;
+            }
+            finally
+            {
+                System.Threading.Thread.Sleep(200);
+                attempts++;
+            }
+        }
         if (servicePort != null && servicePort != Shared.Consts.DefaultPorts.ORCHESTRATOR_MONITOR)
         {
             CCSL.Console.CombinedWriteLine($"OrchestratorMonitor port from settings doesn't match default; restarting with port from settings: {servicePort}");
@@ -82,10 +96,11 @@ public partial class MainWindow : Window
             ServiceLauncher = new(isDebug, ProtoSystem);
         }
 
-        ServiceMonitor = new(ProtoSystem);
+        ServiceMonitor = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new ServiceMonitor(null)), "OrchestratorMonitor");
+        settingsService.StatusColor = Brushes.Green;
         settingsService.Enabled = false;
 
-        Nodes.SendNodeOnline(ProtoSystem.Root, "Orchestrator", new PID(ProtoSystem.Address, ProtoSystem.Id));
+        Nodes.SendNodeOnline(ProtoSystem.Root, "Orchestrator", ServiceMonitor);
     }
 
     private void LaunchButton_Click(object sender, RoutedEventArgs e)
@@ -117,7 +132,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private void OnProcessExit(object sender, EventArgs e)
+    private async void OnProcessExit(object sender, EventArgs e)
     {
         CCSL.Console.CombinedWriteLine("NothingButNeurons.Orchestrator program shutting down...");
         Nodes.SendNodeOffline(ProtoSystem.Root, "Orchestrator");

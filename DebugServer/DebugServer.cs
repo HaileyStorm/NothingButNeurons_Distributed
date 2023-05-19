@@ -8,7 +8,7 @@ namespace NothingButNeurons.DebugServer;
 /// <summary>
 /// Manages subscriptions and processes incoming/outgoing debug messages.
 /// </summary>
-internal class DebugServer : ActorBase
+internal class DebugServer : NodeBase
 {
     // Dictionary of subscribers and their subscription settings
     private Dictionary<PID, DebugSubscribeMessage> Subscribers;

@@ -104,32 +104,46 @@ public class SettingsMonitor : ActorBaseWithBroadcaster
 
     private string? GetSettingValue(string tableName, string searchKey)
     {
-        // Get the first and second column names
-        var query = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = @TableName AND ORDINAL_POSITION IN (1, 2);";
-        using var cmd = new MySqlCommand(query, Connection);
-        cmd.Parameters.AddWithValue("@TableName", tableName);
-        using var reader = cmd.ExecuteReader();
-
-        var columnNames = new string[2];
-        int columnIndex = 0;
-        while (reader.Read())
+        connectionSemaphore.Wait();
+        try
         {
-            columnNames[columnIndex++] = reader.GetString(0);
+
+            // Get the first and second column names
+            var query = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = @TableName AND ORDINAL_POSITION IN (1, 2);";
+            using var cmd = new MySqlCommand(query, Connection);
+            cmd.Parameters.AddWithValue("@TableName", tableName);
+            using var reader = cmd.ExecuteReader();
+
+            var columnNames = new string[2];
+            int columnIndex = 0;
+            while (reader.Read())
+            {
+                columnNames[columnIndex++] = reader.GetString(0);
+            }
+            reader.Close();
+
+            // Construct and execute the dynamic SQL query
+            query = $"SELECT `{columnNames[1]}` FROM `{tableName}` WHERE `{columnNames[0]}` = @SearchKey;";
+            SendDebugMessage(DebugSeverity.Info, "Settings", $"Retrieved column names; executing query: {query} with SearchKey: {searchKey}");
+            cmd.CommandText = query;
+            cmd.Parameters.AddWithValue("@SearchKey", searchKey);
+
+            var result = cmd.ExecuteScalar();
+            if (result is DBNull)
+                result = null;
+            SendDebugMessage(DebugSeverity.Info, "Settings", $"Result: {result}");
+
+            return result?.ToString();
         }
-        reader.Close();
-
-        // Construct and execute the dynamic SQL query
-        query = $"SELECT `{columnNames[1]}` FROM `{tableName}` WHERE `{columnNames[0]}` = @SearchKey;";
-        SendDebugMessage(DebugSeverity.Info, "Settings", $"Retrieved column names; executing query: {query} with SearchKey: {searchKey}");
-        cmd.CommandText = query;
-        cmd.Parameters.AddWithValue("@SearchKey", searchKey);
-
-        var result = cmd.ExecuteScalar();
-        if (result is DBNull)
-            result = null;
-        SendDebugMessage(DebugSeverity.Info, "Settings", $"Result: {result}");
-
-        return result?.ToString();
+        catch (Exception ex)
+        {
+            CCSL.Console.CombinedWriteLine($"GetSettingValue got exception: {ex.ToString()}");
+            return null;
+        }
+        finally
+        {
+            connectionSemaphore.Release();
+        }
     }
 
     internal static async Task UpdateNodeStatus(MySqlConnection connection, string name, PID? pid)
@@ -138,12 +152,18 @@ public class SettingsMonitor : ActorBaseWithBroadcaster
         try
         {
             string query = @"INSERT INTO NodeStatus (Node, PID) VALUES (@Node, @PID) 
-                ON DUPLICATE KEY UPDATE PID = VALUES(PID);";
+                ON DUPLICATE KEY UPDATE PID = @PID;";
             using var cmd = new MySqlCommand(query, connection);
             cmd.Parameters.AddWithValue("@Node", name);
-            cmd.Parameters.AddWithValue("@PID", pid?.ToString());
+            cmd.Parameters.AddWithValue("@PID", pid == null ? DBNull.Value : string.IsNullOrEmpty(pid.ToString()) ? DBNull.Value : pid.ToString());
+            cmd.Prepare();
             await cmd.ExecuteNonQueryAsync();
-        } finally
+        }
+        catch (Exception ex)
+        {
+            CCSL.Console.CombinedWriteLine($"UpdateNodeStatus got exception: {ex.ToString()}");
+        }
+        finally
         {
             connectionSemaphore.Release();
         }

@@ -7,7 +7,7 @@ namespace NothingButNeurons.DebugFileWriter;
 /// <summary>
 /// The DebugFileWriter class is responsible for writing debug messages to a log file.
 /// </summary>
-internal class DebugFileWriter : ActorBase
+internal class DebugFileWriter : NodeBase
 {
     private string FileName;
 

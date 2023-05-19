@@ -8,7 +8,7 @@ namespace NothingButNeurons.IO;
 /// HiveMind is responsible for spawning and managing Brain actors and forwarding TickMessages.
 /// It is the parent of all Brain actors in NothingButNeurons.
 /// </summary>
-public class HiveMind : ActorBaseWithBroadcaster
+public class HiveMind : NodeBase
 {
 
     private readonly Behavior _behavior;

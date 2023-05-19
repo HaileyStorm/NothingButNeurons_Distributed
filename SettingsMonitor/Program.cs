@@ -53,24 +53,35 @@ internal class Program
         // Get the debugServerPID, and check/update the status of all nodes.
         string query = "SELECT Node, PID FROM NodeStatus;";
         using var cmd = new MySqlCommand(query, Connection);
-        using var reader = cmd.ExecuteReader();
+        using var reader = await cmd.ExecuteReaderAsync();
 
-        PID? debugServerPID = null;
+        var nodeStatuses = new List<(string NodeName, string? PIDString)>();
 
-        while (reader.Read())
+        while (await reader.ReadAsync())
         {
             string nodeName = reader.GetString(0);
             string? pidString = reader.IsDBNull(1) ? null : reader.GetString(1);
+            nodeStatuses.Add((nodeName, pidString));
+        }
+
+        reader.Close();
+
+        PID? debugServerPID = null;
+
+        foreach (var nodeStatus in nodeStatuses)
+        {
+            string nodeName = nodeStatus.NodeName;
+            string? pidString = nodeStatus.PIDString;
             PID? currentPID = Nodes.GetPIDFromString(pidString);
 
             if (currentPID != null)
             {
-                //CCSL.Console.CombinedWriteLine($"{nodeName} reports it is online (NodeStatus db entry exists with non-null PID), checking if it actually is...");
+                CCSL.Console.CombinedWriteLine($"{nodeName} reports it is online (NodeStatus db entry exists with non-null PID), checking if it actually is...");
                 await ProtoSystem.Root.RequestAsync<PongMessage>(currentPID, new PingMessage { }, new System.Threading.CancellationToken()).WaitUpTo(TimeSpan.FromMilliseconds(850)).ContinueWith(async x =>
                 {
                     if (x.IsFaulted || !x.Result.completed)
                     {
-                        //CCSL.Console.CombinedWriteLine($"{nodeName} isn't. Setting NodeStatus offline.");
+                        CCSL.Console.CombinedWriteLine($"{nodeName} isn't. Setting NodeStatus offline.");
                         await SettingsMonitor.UpdateNodeStatus(Connection, nodeName, null);
                         if (nodeName == "DebugServer")
                         {
@@ -79,7 +90,7 @@ internal class Program
                     }
                     else
                     {
-                        //CCSL.Console.CombinedWriteLine($"{nodeName} is online.");
+                        CCSL.Console.CombinedWriteLine($"{nodeName} is online.");
                         if (nodeName == "DebugServer")
                         {
                             debugServerPID = currentPID;
@@ -117,7 +128,10 @@ internal class Program
         {
             string tableName = reader.GetString(0);
             string setting = reader.GetString(1);
-            string value = reader.GetString(2);
+            object val = reader.GetValue(2);
+            string value = "";
+            if (val is not DBNull)
+                value = (string)val;
 
             HandleSettingsEntry(tableName, setting, value);
         }

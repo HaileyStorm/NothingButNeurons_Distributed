@@ -62,7 +62,7 @@ public static class Nodes
         void HandleResponse(Task<SettingResponseMessage> x)
         {
             if (x.IsFaulted)
-                throw x.Exception!;
+                return;
             else
                 port = int.Parse(x.Result.Value);
         }
