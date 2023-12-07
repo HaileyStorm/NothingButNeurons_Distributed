@@ -14,6 +14,7 @@ namespace NothingButNeurons.SettingsMonitor;
 
 internal class Program
 {
+    // Note this has been rotate, and obviously need a more secure solution...
     const string ConnectionString = "Server=35.184.181.185;User ID=root;Password=m3)YvNVlZH)4%_A.;Database=settings";
     const int QueryInterval = 5; // Seconds
 
