@@ -103,11 +103,12 @@ public class HiveMind : NodeBase
     {
         List<(byte[] neuronData, byte[] synapseData)> regions = FindAllMatchingSections(msg.NeuronData.ToByteArray(), msg.SynapseData.ToByteArray());
         PID pid = context.SpawnPrefix(Props.FromProducer(() => new Brain.Brain(DebugServerPID, regions.Count)), "Brain");
-        AddRoutee(pid);
         foreach ((byte[] neuronData, byte[] synapseData) region in regions)
         {
             context.Send(pid, new SpawnRegionMessage { Address = GetLeftMost4Bits(region.neuronData), NeuronData = ByteString.CopyFrom(region.neuronData), SynapseData = ByteString.CopyFrom(region.synapseData) });
         }
+        // TODO: track region acks and do below only after the brain is ready (save context.Sender for each pending brain).
+        AddRoutee(pid);
         if (context.Sender != null)
         {
             context.Send(context.Sender, new SpawnBrainAckMessage { BrainPID = pid });

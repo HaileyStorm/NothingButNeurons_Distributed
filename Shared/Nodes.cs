@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NothingButNeurons.Shared.Consts;
 using Proto.Utils;
+using System.Security.Cryptography;
 
 namespace NothingButNeurons.Shared;
 
@@ -143,6 +144,36 @@ public static class Nodes
             await rcontext.RequestAsync<SettingResponseMessage>(settingsPID, new SettingRequestMessage { TableName = "NodeStatus", Setting = projectName }).ContinueWith(HandleResponse);
 
         return pid;
+    }
+
+    public static async Task<string?> GetSetting(IContext context, string table, string setting, PID? settingsPID = null)
+    {
+        return await GetSettingInternal(context, table, setting, settingsPID);
+    }
+    public static async Task<string?> GetSetting(IRootContext context, string table, string setting, PID? settingsPID = null)
+    {
+        return await GetSettingInternal(context, table, setting, settingsPID);
+    }
+    private static async Task<string?> GetSettingInternal(object context, string table, string setting, PID? settingsPID = null)
+    {
+        settingsPID ??= PID.FromAddress($"127.0.0.1:{DefaultPorts.SETTINGS_MONITOR}", "SettingsMonitor");
+
+        string? value = null;
+
+        void HandleResponse(Task<SettingResponseMessage> x)
+        {
+            if (x.IsFaulted)
+                throw x.Exception!;
+            else
+                value = x.Result.Value;
+        }
+
+        if (context is IContext icontext)
+            await icontext.RequestAsync<SettingResponseMessage>(settingsPID, new SettingRequestMessage { TableName = table, Setting = setting }).ContinueWith(HandleResponse);
+        else if (context is IRootContext rcontext)
+            await rcontext.RequestAsync<SettingResponseMessage>(settingsPID, new SettingRequestMessage { TableName = table, Setting = setting }).ContinueWith(HandleResponse);
+
+        return value;
     }
 
     public static PID? GetPIDFromString(string? pidString)

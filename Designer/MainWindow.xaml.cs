@@ -92,6 +92,9 @@ public partial class MainWindow : Window
 
         PID pid = ProtoSystem.Root.SpawnNamed(Props.FromProducer(() => new DesignerHelper()), "DesignerHelper");
         Nodes.SendNodeOnline(ProtoSystem.Root, "Designer", pid);
+
+        int.TryParse(await Nodes.GetSetting(ProtoSystem.Root, "IO", "TickTime") ?? "", out TickTime);
+        CCSL.Console.CombinedWriteLine($"Retrieved TickTime {TickTime}");
     }
 
     private void LoadBrainFromFile_Click(object sender, RoutedEventArgs e)
